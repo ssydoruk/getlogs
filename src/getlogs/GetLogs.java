@@ -50,10 +50,13 @@ public class GetLogs {
     private static String dateSpec;
     private static String timeSpec;
     private static String lfmtInstance;
+    private static boolean useRSync = false;
 
     /**
      * @param args the command line arguments
      */
+    static final String[] commands = new String[]{"ls", "get", "grep"};
+
     public static void main(String[] args) throws Exception {
 
         Options options = new Options();
@@ -64,7 +67,7 @@ public class GetLogs {
         optHosts.setRequired(true);
         options.addOption(optHosts);
 
-        Option optCmd = new Option("c", "command", true, "command to run.\nAccepted values are ls, get");
+        Option optCmd = new Option("c", "command", true, "command to run.\nAccepted values are " + commands);
         optCmd.setRequired(true);
         optCmd.setType(String.class);
         options.addOption(optCmd);
@@ -113,6 +116,14 @@ public class GetLogs {
                 .longOpt("list-files")
                 .build();
         options.addOption(optListFiles);
+
+        Option optUseRSync = Option.builder()
+                .hasArg(false)
+                .required(false)
+                .desc("use rsync for file transfer")
+                .longOpt("use-rsync")
+                .build();
+        options.addOption(optUseRSync);
 
         Option optHelp = Option.builder("h")
                 .hasArg(false)
@@ -166,6 +177,7 @@ public class GetLogs {
         sshUser = (String) cmd.getParsedOptionValue(optSSHUser.getOpt());
 
         listFiles = cmd.hasOption(optListFiles.getLongOpt());
+        useRSync = cmd.hasOption(optUseRSync.getLongOpt());
         lfmtInstance = (String) cmd.getParsedOptionValue(optLFMTInstance.getLongOpt());
 
         //--------------------------------------
@@ -304,43 +316,19 @@ public class GetLogs {
 
         BufferedReader stdInput = null;
         if (isLs) {
-            stdInput = new BufferedReader(new InputStreamReader(procSSH.getInputStream()));
+            ThreadedReader sshInput = new ThreadedReader((procSSH.getInputStream()));
+            sshInput.run();
         }
-        BufferedReader stdError = new BufferedReader(new InputStreamReader(procSSH.getErrorStream()));
-        String s = null;
+        ThreadedReader sshErr = new ThreadedReader((procSSH.getErrorStream()));
+        sshErr.run();
 
-        // read the output from the command
-        if (stdInput != null) {
-            System.out.println(
-                    "Here is the standard output of the command:\n");
-            while ((s = stdInput.readLine()) != null) {
-                System.out.println(s);
-            }
-        }
-
-        // read any errors from the attempted command
-        System.out.println(
-                "Here is the standard error of the command (if any):\n");
-        while ((s = stdError.readLine()) != null) {
-            System.out.println(s);
-        }
         if (procTar != null) {
-            stdInput = new BufferedReader(new InputStreamReader(procTar.getInputStream()));
-            stdError = new BufferedReader(new InputStreamReader(procTar.getErrorStream()));
+            ThreadedReader trTarInput = new ThreadedReader((procSSH.getInputStream()));
+            trTarInput.run();
 
-            // read the output from the command
-            System.out.println(
-                    "Here is the standard output of the command:\n");
-            while ((s = stdInput.readLine()) != null) {
-                System.out.println(s);
-            }
+            ThreadedReader trTarErr = new ThreadedReader((procTar.getErrorStream()));
+            trTarErr.run();
 
-            // read any errors from the attempted command
-            System.out.println(
-                    "Here is the standard error of the command (if any):\n");
-            while ((s = stdError.readLine()) != null) {
-                System.out.println(s);
-            }
         }
 
         procSSH.waitFor();
@@ -479,6 +467,10 @@ public class GetLogs {
             ret++;
         }
         return ret;
+    }
+
+    static void doLog(String s) {
+        logger.info(s);
     }
 
 }
