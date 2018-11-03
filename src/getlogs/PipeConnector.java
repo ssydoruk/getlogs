@@ -52,9 +52,11 @@ public class PipeConnector implements Runnable {
         _process2Input.flush();
       }
       catch (IOException error) {
+//          GetLogs.logger.error("-1-", error);
         break;
       }
-    }
+//           GetLogs.logger.info("-done-");
+   }
  
     try {
       _process1Output.close();

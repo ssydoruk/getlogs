@@ -19,24 +19,28 @@ import java.util.logging.Logger;
 public class ThreadedReader implements Runnable {
 
     private final BufferedReader stream; // no need to buffer it
+    private final String cmd;
+    private final String streamName;
 
-    public ThreadedReader(InputStream in) {
+    public ThreadedReader(InputStream in, String cmd, String stream) {
         this.stream = new BufferedReader(new InputStreamReader(in));
+        this.cmd=cmd;
+        this.streamName=stream;
+        GetLogs.logger.debug("started reader for cmd: "+cmd+" stream:"+streamName);
     }
 
     @Override
     public void run() {
         if (stream != null) {
-            System.out.println(
-                    "Here is the standard output of the command:\n");
             String s;
             try {
                 while ((s = stream.readLine()) != null) {
-                    GetLogs.doLog(s);
+                    GetLogs.doLog(cmd+"_"+streamName+": "+s);
                 }
             } catch (IOException ex) {
-                Logger.getLogger(ThreadedReader.class.getName()).log(Level.SEVERE, null, ex);
+//                Logger.getLogger(ThreadedReader.class.getName()).log(Level.SEVERE, null, ex);
             }
+            GetLogs.logger.debug(cmd+"_"+streamName+": exited");
         }
     }
 

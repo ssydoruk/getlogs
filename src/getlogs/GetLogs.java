@@ -9,6 +9,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,6 +49,7 @@ public class GetLogs {
     private static boolean listFiles = false;
 
     private static final Pattern regDateTimeSpec = Pattern.compile("^[0-9\\[\\]]+$");
+    private static final Pattern regDirectoryStripSlash = Pattern.compile("^(.+)/+$");
     private static String dateSpec;
     private static String timeSpec;
     private static String lfmtInstance;
@@ -56,6 +59,10 @@ public class GetLogs {
      * @param args the command line arguments
      */
     static final String[] commands = new String[]{"ls", "get", "grep"};
+    private static String sLogDirectory;
+    private static String tgtHost;
+    private static Hosts hosts;
+    private static boolean isLs;
 
     public static void main(String[] args) throws Exception {
 
@@ -109,6 +116,14 @@ public class GetLogs {
                 .build();
         options.addOption(optSSHUser);
 
+        Option optLogDirectory = Option.builder("b")
+                .hasArg(true)
+                .required(false)
+                .desc("base directory to which logs should be put")
+                .longOpt("log-directory")
+                .build();
+        options.addOption(optLogDirectory);
+
         Option optListFiles = Option.builder()
                 .hasArg(false)
                 .required(false)
@@ -124,6 +139,14 @@ public class GetLogs {
                 .longOpt("use-rsync")
                 .build();
         options.addOption(optUseRSync);
+
+        Option optForceHost = Option.builder()
+                .hasArg(true)
+                .required(false)
+                .desc("force host <arg> instead of looking up the file")
+                .longOpt("force-host")
+                .build();
+        options.addOption(optForceHost);
 
         Option optHelp = Option.builder("h")
                 .hasArg(false)
@@ -170,7 +193,7 @@ public class GetLogs {
         hostAppFile = (String) cmd.getParsedOptionValue(optHosts.getOpt());
         execCmd = (String) cmd.getParsedOptionValue(optCmd.getOpt());
 
-        boolean isLs = checkCmdCommand(execCmd, options);
+        isLs = checkCmdCommand(execCmd, options);
 
         appsOpt = (String) cmd.getParsedOptionValue(optApp.getOpt());
 
@@ -180,25 +203,65 @@ public class GetLogs {
         useRSync = cmd.hasOption(optUseRSync.getLongOpt());
         lfmtInstance = (String) cmd.getParsedOptionValue(optLFMTInstance.getLongOpt());
 
+        sLogDirectory = (String) cmd.getParsedOptionValue(optLogDirectory.getLongOpt());
+        if (sLogDirectory == null || sLogDirectory.isEmpty()) {
+            sLogDirectory = ".";
+        } else {
+            Matcher m;
+            if ((m = regDirectoryStripSlash.matcher(sLogDirectory)).find()) {
+                sLogDirectory = m.group(1);
+            }
+        }
+
         //--------------------------------------
-        Hosts hosts = new Hosts(hostAppFile);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Current directory:" + getWD());
+            Runtime.getRuntime().exec("ls -l");
+        }
+        hosts = new Hosts(hostAppFile);
 
         apps = new ArrayList<>();
         String[] split = appsOpt.split(",");
         for (String string : split) {
             apps.add(string);
         }
-        //--------------------------------------
-
-        String ap = apps.get(0);
-        String tgtHost = (String) hosts.get(ap); // first for one application only
-        if (tgtHost == null) {
-            System.out.println("Host for app [" + ap + "] not found; exiting");
-            return;
-        }
-
+        tgtHost = (String) cmd.getParsedOptionValue(optForceHost.getLongOpt());
         dateSpec = (String) cmd.getParsedOptionValue(optDay.getOpt());
         timeSpec = (String) cmd.getParsedOptionValue(optTime.getOpt());
+
+        //--------------------------------------
+        for (String app : apps) {
+            processApp(app, options);
+        }
+
+        System.out.println(
+                "allDone");
+
+    }
+
+    public static void processApp(String ap, Options options) throws IOException, InterruptedException {
+        if (tgtHost == null || tgtHost.isEmpty()) {
+            tgtHost = (String) hosts.get(ap); // first for one application only
+            if (tgtHost == null) {
+                System.out.println("Host for app [" + ap + "] not found; exiting");
+                return;
+            }
+        }
+        StringBuilder logsDir = new StringBuilder();
+
+        if (lfmtHost != null) {
+            logsDir.append("/Logs/")
+                    .append(lfmtInstance).append("/")
+                    .append(lfmtInstance).append("_cls/")
+                    .append(tgtHost) //                    .append("/")
+                    //                    .append(ap)
+                    ;
+        } else {
+            logsDir.append("/AppLog/GCTI");
+
+        }
+
+        logger.debug("logsDir clause: [" + logsDir + "]");
 
         if (dateSpec != null && !dateSpec.isEmpty() && !regDateTimeSpec.matcher(dateSpec).matches()) {
             showHelpExit("Date is specified but the format is incorrect", options);
@@ -207,30 +270,12 @@ public class GetLogs {
             showHelpExit("Time is specified but the format is incorrect", options);
         }
 
-        ArrayList<String> sshParams = new ArrayList<>();
-        sshParams.add("ssh");
-        if (sshUser != null) {
-            sshParams.addAll(Arrays.asList(new String[]{"-l", sshUser}));
-        }
-
-        StringBuilder logsDir = new StringBuilder();
-
-        if (lfmtHost != null) {
-            sshParams.add(lfmtHost);
-            logsDir.append("/Logs/")
-                    .append(lfmtInstance).append("/")
-                    .append(lfmtInstance).append("_cls/")
-                    .append(tgtHost) //                    .append("/")
-                    //                    .append(ap)
-                    ;
-        } else {
-            sshParams.add(tgtHost);
-            logsDir.append("/AppLog/GCTI");
-
-        }
-
         StringBuilder fileNameClause = new StringBuilder();
-        fileNameClause.append("\\*\\.");
+        String backSlash = "";
+        if (!useRSync) {
+            backSlash = "\\";
+        }
+        fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
         if (dateSpec != null && !dateSpec.isEmpty()) {
             if (!regDateTimeSpec.matcher(dateSpec).matches()) {
                 showHelpExit("Date is specified but the format is incorrect", options);
@@ -255,89 +300,108 @@ public class GetLogs {
         fileNameClause.append("_");
 
         fileNameClause.append(StringUtils.repeat("[0-9]", 3))
-                .append("\\.\\*");
+                .append("").append(backSlash).append(".").append(backSlash).append("*");
 
-        StringBuilder fileClause = new StringBuilder();
-        if (listFiles || !isLs) {
-            fileClause.append("\\( -type f ");
+        logger.debug("fileName clause: [" + fileNameClause + "]");
 
-            if (fileNameClause.length() > 0) {
-                fileClause.append("-a -name ")
-                        .append(fileNameClause);
-            }
+        if (useRSync) {
+            ArrayList<String> rsyncParams = new ArrayList<>();
+            rsyncParams.add("rsync");
+            rsyncParams.add("-avz");
+            rsyncParams.add("-e");
+            rsyncParams.add("ssh");
+//            rsyncParams.add("--include");
+            rsyncParams.add("--filter");
+            rsyncParams.add("+ /*" + fileNameClause.toString() + "");
+//           rsyncParams.add("--include='*/'");
+            rsyncParams.add("--filter");
+            rsyncParams.add("- **");
+//            rsyncParams.add("'*.log"+"'");
+//            rsync -v -e ssh ./tcpdump.tgz stepan_sydoruk@esv1-c-gir1-01.ivr.airbnb.biz:~/ip/
+            StringBuilder srcSpec = new StringBuilder();
+            srcSpec.append(sshUser).append("@").append(tgtHost).append(":")
+                    .append(logsDir).append("/").append(ap).append("/").append("");
 
-            fileClause.append(" \\) ");
-        }
-        StringBuilder sshCmd = new StringBuilder();
+            rsyncParams.add(srcSpec.toString());
 
-        sshCmd.append("cd ").append(logsDir).append("; ");
-        sshCmd.append("find ")
-                .append(ap)
-                .append(" ")
-                .append(fileClause);
-        if (!listFiles && isLs) {
-            sshCmd.append(" -o -type d ");
-        }
-        if (isLs) {
-            sshCmd.append("-print | sort");
+            StringBuilder dstSpec = new StringBuilder();
+            dstSpec.append(sLogDirectory).append("/").append(ap);
+
+            rsyncParams.add(dstSpec.toString());
+
+            ExtProcess procRSync = new ExtProcess(rsyncParams);
+            procRSync.readOutputs();
+            procRSync.waitFor();
+
         } else {
-//            sshCmd.append(" -print ");
-            sshCmd.append(" -exec ");
-            sshCmd.append("tar -");
-            if (lfmtHost == null) {
-                sshCmd.append("z");
+
+            ArrayList<String> sshParams = new ArrayList<>();
+            sshParams.add("ssh");
+            if (sshUser != null) {
+                sshParams.addAll(Arrays.asList(new String[]{"-l", sshUser}));
             }
-            sshCmd.append("cf - ")
-                    .append("{} +");
+
+            if (lfmtHost != null) {
+                sshParams.add(lfmtHost);
+            } else {
+                sshParams.add(tgtHost);
+
+            }
+
+            StringBuilder fileClause = new StringBuilder();
+            if (listFiles || !isLs) {
+                fileClause.append("\\( -type f ");
+
+                if (fileNameClause.length() > 0) {
+                    fileClause.append("-a -name ")
+                            .append(fileNameClause);
+                }
+
+                fileClause.append(" \\) ");
+            }
+            StringBuilder sshCmd = new StringBuilder();
+
+            sshCmd.append("cd ").append(logsDir).append("; ");
+            sshCmd.append("find ")
+                    .append(ap)
+                    .append(" ")
+                    .append(fileClause);
+            if (!listFiles && isLs) {
+                sshCmd.append(" -o -type d ");
+            }
+            if (isLs) {
+                sshCmd.append("-print | sort");
+            } else {
+//            sshCmd.append(" -print ");
+                sshCmd.append(" -exec ");
+                sshCmd.append("tar -");
+                if (lfmtHost == null) {
+                    sshCmd.append("z");
+                }
+                sshCmd.append("cvf - ")
+                        .append("{} +");
+            }
+            sshParams.add(sshCmd.toString());
+            ExtProcess procSSH = new ExtProcess(sshParams);
+
+            ExtProcess procTar = null;
+            if (!isLs) {
+                ArrayList<String> tarParams = new ArrayList<>();
+                tarParams.add("tar");
+                tarParams.add("-x");
+                tarParams.add("-f");
+                tarParams.add("-");
+
+                procTar = new ExtProcess(tarParams, procSSH);
+                procTar.readOutputs();
+            }
+            procSSH.readOutputs();
+
+            procSSH.waitFor();
+            if (procTar != null) {
+                procTar.waitFor();
+            }
         }
-        sshParams.add(sshCmd.toString());
-        ProcessBuilder pbSSH = getProcessBuilder(sshParams);
-        File f = new File("/Users/stepansydoruk/NetBeansProjects/getLogs/aa.txt");
-//            pbSSH.redirectOutput(f);
-        Process procSSH = pbSSH.start();
-
-        ProcessBuilder pbTar = null;
-        Process procTar = null;
-        if (!isLs) {
-            ArrayList<String> tarParams = new ArrayList<>();
-            tarParams.add("tar");
-            tarParams.add("-xv");
-            tarParams.add("-f");
-            tarParams.add("-");
-
-            pbTar = getProcessBuilder(tarParams);
-            pbTar.redirectInput(pbSSH.redirectOutput());
-//            pbTar.redirectOutput(f);
-
-            procTar = pbTar.start();
-            PipeConnector pc = new PipeConnector(procSSH.getInputStream(), procTar.getOutputStream());
-            pc.run();
-        }
-
-        BufferedReader stdInput = null;
-        if (isLs) {
-            ThreadedReader sshInput = new ThreadedReader((procSSH.getInputStream()));
-            sshInput.run();
-        }
-        ThreadedReader sshErr = new ThreadedReader((procSSH.getErrorStream()));
-        sshErr.run();
-
-        if (procTar != null) {
-            ThreadedReader trTarInput = new ThreadedReader((procSSH.getInputStream()));
-            trTarInput.run();
-
-            ThreadedReader trTarErr = new ThreadedReader((procTar.getErrorStream()));
-            trTarErr.run();
-
-        }
-
-        procSSH.waitFor();
-        if (procTar != null) {
-            procTar.waitFor();
-        }
-
-        System.out.println(
-                "allDone");
 
     }
 
@@ -436,22 +500,6 @@ public class GetLogs {
         return true; // never reached
     }
 
-    private static ProcessBuilder getProcessBuilder(ArrayList<String> sshParameters) throws IOException {
-        if (logger.isDebugEnabled()) {
-            StringBuilder l = new StringBuilder();
-            for (String sshParameter : sshParameters) {
-                if (l.length() > 0) {
-                    l.append(" ");
-                }
-                l.append(sshParameter);
-            }
-            logger.debug("Executing: [" + l + "]");
-        }
-
-        return new ProcessBuilder(sshParameters);
-
-    }
-
     private static String expandPattern(String dateSpec, int max) {
         int i = countDigits(dateSpec);
         return dateSpec + StringUtils.repeat("[0-9]", max - i);
@@ -471,6 +519,11 @@ public class GetLogs {
 
     static void doLog(String s) {
         logger.info(s);
+    }
+
+    static String getWD() {
+        Path currentRelativePath = Paths.get("");
+        return currentRelativePath.toAbsolutePath().toString();
     }
 
 }

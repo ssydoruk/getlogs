@@ -1,0 +1,12 @@
+
+*.class
+
+*.log
+
+*.jar
+
+*.zip
+
+*.tgz
+
+aa.txt
