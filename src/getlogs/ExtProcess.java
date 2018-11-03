@@ -20,14 +20,15 @@ public class ExtProcess {
     String cmd;
 
     Process proc = null;
+    private boolean saveStdErr = false;
+    private boolean saveStdOut = false;
 
     ExtProcess(ArrayList<String> tarParams) throws IOException {
-        cmd=tarParams.get(0);
+        cmd = tarParams.get(0);
         pb = getProcessBuilder(tarParams);
-        GetLogs.logger.debug("Working directory :"+pb.directory());
+        GetLogs.logger.debug("Working directory :" + pb.directory());
 
         proc = pb.start();
-
 
     }
 
@@ -38,14 +39,33 @@ public class ExtProcess {
         pc.run();
 
     }
-    
-    void readOutputs(){
-        ThreadedReader inputReader = new ThreadedReader((proc.getInputStream()), cmd, "in");
+
+    ThreadedReader inputReader = null;
+    ThreadedReader errReader = null;
+
+    void readOutputs() {
+        inputReader = new ThreadedReader((proc.getInputStream()), cmd, "in", saveStdOut);
         inputReader.run();
 
-        ThreadedReader errReader = new ThreadedReader((proc.getErrorStream()), cmd, "err");
+        errReader = new ThreadedReader((proc.getErrorStream()), cmd, "err", saveStdErr);
         errReader.run();
-        
+
+    }
+
+    public ArrayList<String> getOutBuf() {
+        if (inputReader != null) {
+            return inputReader.getOutBuf();
+        } else {
+            return null;
+        }
+    }
+
+    public ArrayList<String> getErrBuf() {
+        if (errReader != null) {
+            return errReader.getOutBuf();
+        } else {
+            return null;
+        }
     }
 
     void start() {
@@ -74,6 +94,19 @@ public class ExtProcess {
 
     int waitFor() throws InterruptedException {
         return proc.waitFor();
+    }
+
+    void readOutputs(boolean saveStdOut, boolean saveStdErr) {
+        this.saveStdOut = saveStdOut;
+        this.saveStdErr = saveStdErr;
+        readOutputs();
+    }
+
+    ArrayList<String> getSTDOut() {
+        if( inputReader!=null)
+            return inputReader.getOutBuf();
+        else
+            return null;
     }
 
 }

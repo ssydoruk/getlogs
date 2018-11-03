@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,12 +22,24 @@ public class ThreadedReader implements Runnable {
     private final BufferedReader stream; // no need to buffer it
     private final String cmd;
     private final String streamName;
+    private boolean saveOutput = false;
+    private ArrayList<String> outBuf;
 
     public ThreadedReader(InputStream in, String cmd, String stream) {
         this.stream = new BufferedReader(new InputStreamReader(in));
-        this.cmd=cmd;
-        this.streamName=stream;
-        GetLogs.logger.debug("started reader for cmd: "+cmd+" stream:"+streamName);
+        this.cmd = cmd;
+        this.streamName = stream;
+        GetLogs.logger.debug("started reader for cmd: " + cmd + " stream:" + streamName);
+    }
+
+    ThreadedReader(InputStream in, String cmd, String stream, boolean saveStdOut) {
+        this(in, cmd, stream);
+        this.saveOutput = saveStdOut;
+        this.outBuf = new ArrayList<>();
+    }
+
+    public ArrayList<String> getOutBuf() {
+        return outBuf;
     }
 
     @Override
@@ -35,12 +48,15 @@ public class ThreadedReader implements Runnable {
             String s;
             try {
                 while ((s = stream.readLine()) != null) {
-                    GetLogs.doLog(cmd+"_"+streamName+": "+s);
+                    GetLogs.doLog(cmd + "_" + streamName + ": " + s);
+                    if (saveOutput) {
+                        outBuf.add(s);
+                    }
                 }
             } catch (IOException ex) {
 //                Logger.getLogger(ThreadedReader.class.getName()).log(Level.SEVERE, null, ex);
             }
-            GetLogs.logger.debug(cmd+"_"+streamName+": exited");
+            GetLogs.logger.debug(cmd + "_" + streamName + ": exited");
         }
     }
 

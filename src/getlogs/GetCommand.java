@@ -4,30 +4,59 @@
  */
 package getlogs;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  *
  * @author ssydoruk
  */
-public enum GetCommand {
 
+
+enum GetCommand {
     LS("ls"),
     GET("get"),
-    GREP("grep"),
+    GREP("grep"), 
+    GREPGET("grepget"),
+    Unknown(""),
     ;
 
-    
-   private final String name;
-
-    private GetCommand(String s) {
-        name = s;
+    static String showAll() {
+        StringBuilder ret=new StringBuilder();
+        for (GetCommand value : GetCommand.values()) {
+            if(ret.length()>0)
+                ret.append(", ");
+            ret.append(value);
+        }
+        return ret.toString();
     }
 
-    public boolean equalsName(String otherName) {
-        return (otherName == null) ? false : name.toLowerCase().equals(otherName.toLowerCase());
-    }
 
-    public String toString() {
-        return this.name;
-    }
+  private String name;
 
+  private static final Map<String,GetCommand> ENUM_MAP;
+
+  GetCommand (String name) {
+    this.name = name;
+  }
+
+  public String getName() {
+    return this.name;
+  }
+
+  // Build an immutable map of String name to enum pairs.
+  // Any Map impl can be used.
+
+  static {
+    Map<String,GetCommand> map = new ConcurrentHashMap<String,GetCommand>();
+    for (GetCommand instance : GetCommand.values()) {
+      map.put(instance.getName(),instance);
+    }
+    ENUM_MAP = Collections.unmodifiableMap(map);
+  }
+
+  public static GetCommand get (String name) {
+    return ENUM_MAP.get(name);
+  }
 }

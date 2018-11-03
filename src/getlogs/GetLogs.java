@@ -13,7 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.cli.*;
@@ -58,11 +60,11 @@ public class GetLogs {
     /**
      * @param args the command line arguments
      */
-    static final String[] commands = new String[]{"ls", "get", "grep"};
     private static String sLogDirectory;
     private static String tgtHost;
     private static Hosts hosts;
-    private static boolean isLs;
+    private static GetCommand execCommand;
+    private static String sGrep = null;
 
     public static void main(String[] args) throws Exception {
 
@@ -74,7 +76,7 @@ public class GetLogs {
         optHosts.setRequired(true);
         options.addOption(optHosts);
 
-        Option optCmd = new Option("c", "command", true, "command to run.\nAccepted values are " + commands);
+        Option optCmd = new Option("c", "command", true, "command to run.\nAccepted values are " + GetCommand.showAll());
         optCmd.setRequired(true);
         optCmd.setType(String.class);
         options.addOption(optCmd);
@@ -148,6 +150,14 @@ public class GetLogs {
                 .build();
         options.addOption(optForceHost);
 
+        Option optGrep = Option.builder("g")
+                .hasArg(true)
+                .required(false)
+                .desc("grep expression to search for <arg>")
+                .longOpt("grep")
+                .build();
+        options.addOption(optGrep);
+
         Option optHelp = Option.builder("h")
                 .hasArg(false)
                 .required(false)
@@ -193,7 +203,7 @@ public class GetLogs {
         hostAppFile = (String) cmd.getParsedOptionValue(optHosts.getOpt());
         execCmd = (String) cmd.getParsedOptionValue(optCmd.getOpt());
 
-        isLs = checkCmdCommand(execCmd, options);
+        execCommand = checkCmdCommand(execCmd, options);
 
         appsOpt = (String) cmd.getParsedOptionValue(optApp.getOpt());
 
@@ -202,6 +212,8 @@ public class GetLogs {
         listFiles = cmd.hasOption(optListFiles.getLongOpt());
         useRSync = cmd.hasOption(optUseRSync.getLongOpt());
         lfmtInstance = (String) cmd.getParsedOptionValue(optLFMTInstance.getLongOpt());
+
+        sGrep = (String) cmd.getParsedOptionValue(optGrep.getLongOpt());
 
         sLogDirectory = (String) cmd.getParsedOptionValue(optLogDirectory.getLongOpt());
         if (sLogDirectory == null || sLogDirectory.isEmpty()) {
@@ -304,103 +316,23 @@ public class GetLogs {
 
         logger.debug("fileName clause: [" + fileNameClause + "]");
 
-        if (useRSync) {
-            ArrayList<String> rsyncParams = new ArrayList<>();
-            rsyncParams.add("rsync");
-            rsyncParams.add("-avz");
-            rsyncParams.add("-e");
-            rsyncParams.add("ssh");
-//            rsyncParams.add("--include");
-            rsyncParams.add("--filter");
-            rsyncParams.add("+ /*" + fileNameClause.toString() + "");
-//           rsyncParams.add("--include='*/'");
-            rsyncParams.add("--filter");
-            rsyncParams.add("- **");
-//            rsyncParams.add("'*.log"+"'");
-//            rsync -v -e ssh ./tcpdump.tgz stepan_sydoruk@esv1-c-gir1-01.ivr.airbnb.biz:~/ip/
-            StringBuilder srcSpec = new StringBuilder();
-            srcSpec.append(sshUser).append("@").append(tgtHost).append(":")
-                    .append(logsDir).append("/").append(ap).append("/").append("");
+        switch (execCommand) {
+            case GREP:
+                executeGrep(ap, logsDir, fileNameClause);
+                break;
 
-            rsyncParams.add(srcSpec.toString());
+            case GET:
+                executeGet(ap, logsDir, fileNameClause, useRSync);
+                break;
 
-            StringBuilder dstSpec = new StringBuilder();
-            dstSpec.append(sLogDirectory).append("/").append(ap);
+            case LS:
+                executeLS(ap, logsDir, fileNameClause);
+                break;
 
-            rsyncParams.add(dstSpec.toString());
+            case GREPGET:
+                executeGrepGet(ap, logsDir, fileNameClause);
+                break;
 
-            ExtProcess procRSync = new ExtProcess(rsyncParams);
-            procRSync.readOutputs();
-            procRSync.waitFor();
-
-        } else {
-
-            ArrayList<String> sshParams = new ArrayList<>();
-            sshParams.add("ssh");
-            if (sshUser != null) {
-                sshParams.addAll(Arrays.asList(new String[]{"-l", sshUser}));
-            }
-
-            if (lfmtHost != null) {
-                sshParams.add(lfmtHost);
-            } else {
-                sshParams.add(tgtHost);
-
-            }
-
-            StringBuilder fileClause = new StringBuilder();
-            if (listFiles || !isLs) {
-                fileClause.append("\\( -type f ");
-
-                if (fileNameClause.length() > 0) {
-                    fileClause.append("-a -name ")
-                            .append(fileNameClause);
-                }
-
-                fileClause.append(" \\) ");
-            }
-            StringBuilder sshCmd = new StringBuilder();
-
-            sshCmd.append("cd ").append(logsDir).append("; ");
-            sshCmd.append("find ")
-                    .append(ap)
-                    .append(" ")
-                    .append(fileClause);
-            if (!listFiles && isLs) {
-                sshCmd.append(" -o -type d ");
-            }
-            if (isLs) {
-                sshCmd.append("-print | sort");
-            } else {
-//            sshCmd.append(" -print ");
-                sshCmd.append(" -exec ");
-                sshCmd.append("tar -");
-                if (lfmtHost == null) {
-                    sshCmd.append("z");
-                }
-                sshCmd.append("cvf - ")
-                        .append("{} +");
-            }
-            sshParams.add(sshCmd.toString());
-            ExtProcess procSSH = new ExtProcess(sshParams);
-
-            ExtProcess procTar = null;
-            if (!isLs) {
-                ArrayList<String> tarParams = new ArrayList<>();
-                tarParams.add("tar");
-                tarParams.add("-x");
-                tarParams.add("-f");
-                tarParams.add("-");
-
-                procTar = new ExtProcess(tarParams, procSSH);
-                procTar.readOutputs();
-            }
-            procSSH.readOutputs();
-
-            procSSH.waitFor();
-            if (procTar != null) {
-                procTar.waitFor();
-            }
         }
 
     }
@@ -487,17 +419,17 @@ public class GetLogs {
      * @param options
      * @return 'true' if it is 'ls'
      */
-    private static boolean checkCmdCommand(String execCmd, Options options) {
+    private static GetCommand checkCmdCommand(String execCmd, Options options) {
+        GetCommand ret = GetCommand.Unknown;
         if (execCmd != null && !execCmd.isEmpty()) {
-            if (execCmd.equalsIgnoreCase("ls")) {
-                return true;
-            } else if (execCmd.equalsIgnoreCase("get")) {
-                return false;
-            }
+
+            ret = GetCommand.get(execCmd);
         }
-        logger.error("Incorrect value for command - [" + execCmd + "]");
-        showHelpExit(options);
-        return true; // never reached
+        if (ret == GetCommand.Unknown) {
+            logger.error("Incorrect value for command - [" + execCmd + "]");
+            showHelpExit(options);
+        }
+        return ret; // never reached
     }
 
     private static String expandPattern(String dateSpec, int max) {
@@ -524,6 +456,242 @@ public class GetLogs {
     static String getWD() {
         Path currentRelativePath = Paths.get("");
         return currentRelativePath.toAbsolutePath().toString();
+    }
+
+    private static void executeGet(String ap, StringBuilder logsDir, StringBuilder fileNameClause, boolean useRSync1) throws IOException, InterruptedException {
+        if (useRSync1) {
+            executeRSync(ap, logsDir, rSyncAddClause(fileNameClause.toString()));
+        } else {
+            ArrayList<String> sshParams = new ArrayList<>();
+            sshParams.add("ssh");
+            if (sshUser != null) {
+                sshParams.addAll(Arrays.asList(new String[]{"-l", sshUser}));
+            }
+
+            if (lfmtHost != null) {
+                sshParams.add(lfmtHost);
+            } else {
+                sshParams.add(tgtHost);
+
+            }
+
+            StringBuilder fileClause = new StringBuilder();
+            if (fileNameClause.length() > 0) {
+                fileClause.append("\\( -type f ");
+
+                fileClause.append("-a -name ")
+                        .append(fileNameClause);
+
+                fileClause.append(" \\) ");
+            }
+            StringBuilder sshCmd = new StringBuilder();
+
+            sshCmd.append("cd ").append(logsDir).append("; ");
+            sshCmd.append("find ")
+                    .append(ap)
+                    .append(" ")
+                    .append(fileClause);
+            sshCmd.append(" -exec ");
+            sshCmd.append("tar -");
+            if (lfmtHost == null) {
+                sshCmd.append("z");
+            }
+            sshCmd.append("cvf - ")
+                    .append("{} +");
+            sshParams.add(sshCmd.toString());
+            ExtProcess procSSH = new ExtProcess(sshParams);
+
+            ExtProcess procTar = null;
+            ArrayList<String> tarParams = new ArrayList<>();
+            tarParams.add("tar");
+            tarParams.add("-x");
+            tarParams.add("-f");
+            tarParams.add("-");
+
+            procTar = new ExtProcess(tarParams, procSSH);
+            procTar.readOutputs();
+
+            procSSH.readOutputs();
+            procSSH.waitFor();
+            procTar.waitFor();
+        }
+
+    }
+
+    private static void executeLS(String ap, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
+        ArrayList<String> sshParams = new ArrayList<>();
+        sshParams.add("ssh");
+        if (sshUser != null) {
+            sshParams.addAll(Arrays.asList(new String[]{"-l", sshUser}));
+        }
+
+        if (lfmtHost != null) {
+            sshParams.add(lfmtHost);
+        } else {
+            sshParams.add(tgtHost);
+
+        }
+
+        StringBuilder fileClause = new StringBuilder();
+        if (listFiles) {
+            fileClause.append("\\( -type f ");
+
+            if (fileNameClause.length() > 0) {
+                fileClause.append("-a -name ")
+                        .append(fileNameClause);
+            }
+
+            fileClause.append(" \\) ");
+        }
+        StringBuilder sshCmd = new StringBuilder();
+
+        sshCmd.append("cd ").append(logsDir).append("; ");
+        sshCmd.append("find ")
+                .append(ap)
+                .append(" ")
+                .append(fileClause);
+        if (!listFiles) {
+            sshCmd.append(" -o -type d ");
+        }
+        sshCmd.append("-print | sort");
+        sshParams.add(sshCmd.toString());
+        ExtProcess procSSH = new ExtProcess(sshParams);
+
+        procSSH.readOutputs();
+
+        procSSH.waitFor();
+
+    }
+
+    private static ArrayList<String> executeGrep(String ap, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
+        ArrayList<String> sshParams = new ArrayList<>();
+        sshParams.add("ssh");
+        if (sshUser != null) {
+            sshParams.addAll(Arrays.asList(new String[]{"-l", sshUser}));
+        }
+
+        if (lfmtHost != null) {
+            sshParams.add(lfmtHost);
+        } else {
+            sshParams.add(tgtHost);
+
+        }
+
+        StringBuilder fileClause = new StringBuilder();
+//        fileClause.append("\\("); 
+
+        if (fileNameClause.length() > 0) {
+            fileClause.append(" -name ")
+                    .append(fileNameClause);
+        }
+
+//        fileClause.append(" \\) ");
+        StringBuilder sshCmd = new StringBuilder();
+
+        sshCmd.append("cd ").append(logsDir).append("; ");
+        sshCmd.append("find ")
+                .append(ap)
+                .append(" ")
+                .append(fileClause);
+        sshCmd.append(" ");
+//        sshCmd.append("\\( ")
+//                .append(" -iname *.log -execdir grep Trc {} \\; -true ");
+//        sshCmd.append("\\)");
+//        sshCmd.append(" -o ");
+        ArrayList<String> matchedFiles = new ArrayList<>();
+        for (Map.Entry<String, String> extUnp : extUnpacker.entrySet()) {
+            for (String matchedFile : execGrep(extUnp.getKey(), extUnp.getValue(), sshParams, sshCmd)) {
+                if (matchedFile.startsWith(filePrefix)) {
+                    matchedFiles.add(matchedFile.substring(filePrefix.length()));
+                } else {
+                    logger.error("Not file name: [" + matchedFile + "]Ï");
+                }
+            }
+
+        }
+        return matchedFiles;
+    }
+
+    public static final HashMap<String, String> extUnpacker = getextUnpacker();
+
+    private static HashMap<String, String> getextUnpacker() {
+        HashMap<String, String> ret = new HashMap<>();
+        ret.put("*.zip", "unzip -p ${f}");
+        ret.put("*.log", "cat ${f}");
+        return ret;
+    }
+
+    final static private String filePrefix = "!file!";
+
+    private static ArrayList<String> execGrep(String ext, String unp, ArrayList<String> sshParams, StringBuilder sshCmd) throws IOException, InterruptedException {
+        StringBuilder grepCmd = new StringBuilder();
+        grepCmd.append(sshCmd)
+                .append(" -iname ").append(ext)
+                .append(" | xargs bash -c '")
+                .append("echo bash is here; echo params: $*; ")
+                .append("for f in $*; do if ")
+                .append(unp)
+                .append("| egrep -q \"").append(sGrep).append("\"; then echo ").append(filePrefix).append("${f}; fi; done' -s" + "");
+        ArrayList<String> paramsRun = new ArrayList<>(sshParams);
+        paramsRun.add(grepCmd.toString());
+        ExtProcess procSSH = new ExtProcess(paramsRun);
+
+        procSSH.readOutputs(true, true);
+        procSSH.waitFor();
+        return procSSH.getSTDOut();
+
+    }
+
+    private static final Pattern fileBaseName = Pattern.compile("([^\\/]+)$");
+
+    static private String stripDir(String fileName) {
+        Matcher m;
+        if ((m = fileBaseName.matcher(fileName)).find()) {
+            return m.group(0);
+        }
+        return fileName;
+    }
+
+    private static void executeGrepGet(String ap, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
+        ArrayList<String> executeGrep = executeGrep(ap, logsDir, fileNameClause);
+        ArrayList<String> rSyncFiles = new ArrayList<>();
+        for (String fileName : executeGrep) {
+            rSyncFiles.addAll(rSyncAddClause(stripDir(fileName)));
+        }
+
+        executeRSync(ap, logsDir, rSyncFiles);
+    }
+
+    private static ArrayList<String> rSyncAddClause(String fileName) {
+        ArrayList<String> ret = new ArrayList<String>();
+        ret.add("-f");//--filter
+        ret.add("+ /*" + fileName);
+        return ret;
+    }
+
+    private static void executeRSync(String ap, StringBuilder logsDir, ArrayList<String> fileNameClause) throws IOException, InterruptedException {
+        ArrayList<String> rsyncParams = new ArrayList<>();
+        rsyncParams.add("rsync");
+        rsyncParams.add("-avz");
+        rsyncParams.add("-e");
+        rsyncParams.add("ssh");
+        rsyncParams.addAll(fileNameClause);
+        rsyncParams.add("-f");
+        rsyncParams.add("- **");
+        StringBuilder srcSpec = new StringBuilder();
+        srcSpec.append(sshUser).append("@").append(tgtHost).append(":")
+                .append(logsDir).append("/").append(ap).append("/").append("");
+
+        rsyncParams.add(srcSpec.toString());
+
+        StringBuilder dstSpec = new StringBuilder();
+        dstSpec.append(sLogDirectory).append("/").append(ap);
+
+        rsyncParams.add(dstSpec.toString());
+
+        ExtProcess procRSync = new ExtProcess(rsyncParams);
+        procRSync.readOutputs();
+        procRSync.waitFor();
     }
 
 }
