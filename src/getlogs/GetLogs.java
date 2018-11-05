@@ -61,7 +61,7 @@ public class GetLogs {
      * @param args the command line arguments
      */
     private static String sLogDirectory;
-    private static String tgtHost;
+    private static String appHost;
     private static Hosts hosts;
     private static GetCommand execCommand;
     private static String sGrep = null;
@@ -197,8 +197,16 @@ public class GetLogs {
         }
 
         initLogger((String) cmd.getParsedOptionValue(optLogLevel.getOpt()));
-
-        lfmtHost = (String) cmd.getParsedOptionValue(optIsLFMT.getOpt());
+        if (logger.isDebugEnabled()) {
+            StringBuilder s = new StringBuilder();
+            for (String arg : args) {
+                if (s.length() > 0) {
+                    s.append(" ");
+                }
+                s.append(arg);
+            }
+            logger.debug("Command line: " + s);
+        }
 
         hostAppFile = (String) cmd.getParsedOptionValue(optHosts.getOpt());
         execCmd = (String) cmd.getParsedOptionValue(optCmd.getOpt());
@@ -211,7 +219,18 @@ public class GetLogs {
 
         listFiles = cmd.hasOption(optListFiles.getLongOpt());
         useRSync = cmd.hasOption(optUseRSync.getLongOpt());
+
         lfmtInstance = (String) cmd.getParsedOptionValue(optLFMTInstance.getLongOpt());
+        lfmtHost = (String) cmd.getParsedOptionValue(optIsLFMT.getOpt());
+
+        if ((lfmtInstance != null && !lfmtInstance.isEmpty()
+                && (lfmtHost == null || lfmtHost.isEmpty()))
+                || ((lfmtHost != null && !lfmtHost.isEmpty())
+                && (lfmtInstance == null || lfmtInstance.isEmpty()))) {
+            logger.error("If LFMT to be used, then both options " + optLFMTInstance.getLongOpt() + " and " + optIsLFMT.getLongOpt()
+                    + " are to be specified");
+            System.exit(1);
+        }
 
         sGrep = (String) cmd.getParsedOptionValue(optGrep.getLongOpt());
 
@@ -237,7 +256,7 @@ public class GetLogs {
         for (String string : split) {
             apps.add(string);
         }
-        tgtHost = (String) cmd.getParsedOptionValue(optForceHost.getLongOpt());
+        appHost = (String) cmd.getParsedOptionValue(optForceHost.getLongOpt());
         dateSpec = (String) cmd.getParsedOptionValue(optDay.getOpt());
         timeSpec = (String) cmd.getParsedOptionValue(optTime.getOpt());
 
@@ -252,20 +271,24 @@ public class GetLogs {
     }
 
     public static void processApp(String ap, Options options) throws IOException, InterruptedException {
-        if (tgtHost == null || tgtHost.isEmpty()) {
-            tgtHost = (String) hosts.get(ap); // first for one application only
-            if (tgtHost == null) {
+        String theAppHost;
+        if (appHost == null || appHost.isEmpty()) {
+            theAppHost = (String) hosts.get(ap); // first for one application only
+            if (theAppHost == null) {
                 System.out.println("Host for app [" + ap + "] not found; exiting");
                 return;
             }
+        } else {
+            theAppHost = appHost;
         }
+
         StringBuilder logsDir = new StringBuilder();
 
         if (lfmtHost != null) {
             logsDir.append("/Logs/")
                     .append(lfmtInstance).append("/")
                     .append(lfmtInstance).append("_cls/")
-                    .append(tgtHost) //                    .append("/")
+                    .append(theAppHost) //                    .append("/")
                     //                    .append(ap)
                     ;
         } else {
@@ -318,19 +341,19 @@ public class GetLogs {
 
         switch (execCommand) {
             case GREP:
-                executeGrep(ap, logsDir, fileNameClause);
+                executeGrep(ap, theAppHost, logsDir, fileNameClause);
                 break;
 
             case GET:
-                executeGet(ap, logsDir, fileNameClause, useRSync);
+                executeGet(ap, theAppHost, logsDir, fileNameClause, useRSync);
                 break;
 
             case LS:
-                executeLS(ap, logsDir, fileNameClause);
+                executeLS(ap, theAppHost, logsDir, fileNameClause);
                 break;
 
             case GREPGET:
-                executeGrepGet(ap, logsDir, fileNameClause);
+                executeGrepGet(ap, theAppHost, logsDir, fileNameClause);
                 break;
 
         }
@@ -458,9 +481,9 @@ public class GetLogs {
         return currentRelativePath.toAbsolutePath().toString();
     }
 
-    private static void executeGet(String ap, StringBuilder logsDir, StringBuilder fileNameClause, boolean useRSync1) throws IOException, InterruptedException {
+    private static void executeGet(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause, boolean useRSync1) throws IOException, InterruptedException {
         if (useRSync1) {
-            executeRSync(ap, logsDir, rSyncAddClause(fileNameClause.toString()));
+            executeRSync(ap, theAppHost, logsDir, rSyncAddClause(fileNameClause.toString()));
         } else {
             ArrayList<String> sshParams = new ArrayList<>();
             sshParams.add("ssh");
@@ -471,7 +494,7 @@ public class GetLogs {
             if (lfmtHost != null) {
                 sshParams.add(lfmtHost);
             } else {
-                sshParams.add(tgtHost);
+                sshParams.add(theAppHost);
 
             }
 
@@ -518,19 +541,14 @@ public class GetLogs {
 
     }
 
-    private static void executeLS(String ap, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
+    private static void executeLS(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
         sshParams.add("ssh");
         if (sshUser != null) {
             sshParams.addAll(Arrays.asList(new String[]{"-l", sshUser}));
         }
 
-        if (lfmtHost != null) {
-            sshParams.add(lfmtHost);
-        } else {
-            sshParams.add(tgtHost);
-
-        }
+        sshParams.add(((lfmtHost != null)) ? lfmtHost : theAppHost);
 
         StringBuilder fileClause = new StringBuilder();
         if (listFiles) {
@@ -563,19 +581,13 @@ public class GetLogs {
 
     }
 
-    private static ArrayList<String> executeGrep(String ap, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
+    private static ArrayList<String> executeGrep(String ap, String appHost1, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
         sshParams.add("ssh");
         if (sshUser != null) {
             sshParams.addAll(Arrays.asList(new String[]{"-l", sshUser}));
         }
-
-        if (lfmtHost != null) {
-            sshParams.add(lfmtHost);
-        } else {
-            sshParams.add(tgtHost);
-
-        }
+        sshParams.add(((lfmtHost != null)) ? lfmtHost : appHost1);
 
         StringBuilder fileClause = new StringBuilder();
 //        fileClause.append("\\("); 
@@ -652,14 +664,14 @@ public class GetLogs {
         return fileName;
     }
 
-    private static void executeGrepGet(String ap, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
-        ArrayList<String> executeGrep = executeGrep(ap, logsDir, fileNameClause);
+    private static void executeGrepGet(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
+        ArrayList<String> executeGrep = executeGrep(ap, theAppHost, logsDir, fileNameClause);
         ArrayList<String> rSyncFiles = new ArrayList<>();
         for (String fileName : executeGrep) {
             rSyncFiles.addAll(rSyncAddClause(stripDir(fileName)));
         }
 
-        executeRSync(ap, logsDir, rSyncFiles);
+        executeRSync(ap, theAppHost, logsDir, rSyncFiles);
     }
 
     private static ArrayList<String> rSyncAddClause(String fileName) {
@@ -669,7 +681,7 @@ public class GetLogs {
         return ret;
     }
 
-    private static void executeRSync(String ap, StringBuilder logsDir, ArrayList<String> fileNameClause) throws IOException, InterruptedException {
+    private static void executeRSync(String ap, String theAppHost, StringBuilder logsDir, ArrayList<String> fileNameClause) throws IOException, InterruptedException {
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
         rsyncParams.add("-avz");
@@ -679,7 +691,7 @@ public class GetLogs {
         rsyncParams.add("-f");
         rsyncParams.add("- **");
         StringBuilder srcSpec = new StringBuilder();
-        srcSpec.append(sshUser).append("@").append(tgtHost).append(":")
+        srcSpec.append(sshUser).append("@").append((lfmtHost != null ? lfmtHost : theAppHost)).append(":")
                 .append(logsDir).append("/").append(ap).append("/").append("");
 
         rsyncParams.add(srcSpec.toString());
