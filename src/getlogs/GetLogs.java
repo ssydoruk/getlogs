@@ -5,28 +5,22 @@
  */
 package getlogs;
 
-import java.io.BufferedReader;
-import java.io.File;
+import Utils.UnixProcess.ExtProcess;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.cli.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.appender.RollingFileAppender;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Filter;
-import org.apache.logging.log4j.core.appender.rolling.RollingFileManager;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
 import org.apache.logging.log4j.core.config.builder.api.ComponentBuilder;
@@ -532,9 +526,10 @@ public class GetLogs {
             tarParams.add("-");
 
             procTar = new ExtProcess(tarParams, procSSH);
-            procTar.readOutputs();
+            procTar.startProcess();
+  
 
-            procSSH.readOutputs();
+            procSSH.startProcess();
             procSSH.waitFor();
             procTar.waitFor();
         }
@@ -551,7 +546,6 @@ public class GetLogs {
         sshParams.add(((lfmtHost != null)) ? lfmtHost : theAppHost);
 
         StringBuilder fileClause = new StringBuilder();
-        if (listFiles) {
             fileClause.append("\\( -type f ");
 
             if (fileNameClause.length() > 0) {
@@ -560,7 +554,6 @@ public class GetLogs {
             }
 
             fileClause.append(" \\) ");
-        }
         StringBuilder sshCmd = new StringBuilder();
 
         sshCmd.append("cd ").append(logsDir).append("; ");
@@ -575,7 +568,7 @@ public class GetLogs {
         sshParams.add(sshCmd.toString());
         ExtProcess procSSH = new ExtProcess(sshParams);
 
-        procSSH.readOutputs();
+        procSSH.startProcess();
 
         procSSH.waitFor();
 
@@ -640,16 +633,15 @@ public class GetLogs {
         grepCmd.append(sshCmd)
                 .append(" -iname ").append(ext)
                 .append(" | xargs bash -c '")
-                .append("echo bash is here; echo params: $*; ")
+//                .append("echo bash is here; echo params: $*; ")
                 .append("for f in $*; do if ")
                 .append(unp)
-                .append("| egrep -q \"").append(sGrep).append("\"; then echo ").append(filePrefix).append("${f}; fi; done' -s" + "");
+                .append("| egrep -q \"").append(sGrep).append("\"; then echo ").append(filePrefix).append("${f}; fi; done'" + "");
         ArrayList<String> paramsRun = new ArrayList<>(sshParams);
         paramsRun.add(grepCmd.toString());
         ExtProcess procSSH = new ExtProcess(paramsRun);
 
-        procSSH.readOutputs(true, true);
-        procSSH.waitFor();
+        procSSH.startProcess(true, true);
         return procSSH.getSTDOut();
 
     }
@@ -702,7 +694,7 @@ public class GetLogs {
         rsyncParams.add(dstSpec.toString());
 
         ExtProcess procRSync = new ExtProcess(rsyncParams);
-        procRSync.readOutputs();
+        procRSync.startProcess();
         procRSync.waitFor();
     }
 

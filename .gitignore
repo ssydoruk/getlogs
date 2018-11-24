@@ -10,3 +10,18 @@
 *.tgz
 
 aa.txt
+/dist/
+build/classes/.netbeans_automatic_build
+build
+confserv
+dist
+nbproject
+test
+test1
+us_config_proxy_1_p
+aa.txt
+build.xml
+logging.log
+manifest.mf
+rolling.log
+ssh.log
