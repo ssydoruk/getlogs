@@ -25,3 +25,5 @@ logging.log
 manifest.mf
 rolling.log
 ssh.log
+
+foundation.txt

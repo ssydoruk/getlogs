@@ -5,13 +5,27 @@
  */
 package getlogs;
 
+import Utils.ScreenInfo;
 import Utils.UnixProcess.ExtProcess;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+import com.jidesoft.dialog.StandardDialog;
+import static com.jidesoft.dialog.StandardDialog.RESULT_CANCELLED;
+import getlogs.LogFiles.LogFile;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,9 +70,17 @@ public class GetLogs {
      */
     private static String sLogDirectory;
     private static String appHost;
+
+    public static Hosts getHosts() {
+        return hosts;
+    }
     private static Hosts hosts;
     private static GetCommand execCommand;
     private static String sGrep = null;
+    private static String sArchives;
+    private static LogFiles logFiles = null;
+    private static boolean bIsCloud = false;
+    private static String sGUIProfile;
 
     public static void main(String[] args) throws Exception {
 
@@ -87,6 +109,23 @@ public class GetLogs {
                 .longOpt("lfmt-host")
                 .build();
         options.addOption(optIsLFMT);
+
+        Option optGUIProfile = Option.builder("f")
+                .hasArg(true)
+                .required(false)
+                .desc("Path to GUI configured storage (JSON)."
+                        + "If specified, GUI configurator will be called")
+                .longOpt("gui-profile")
+                .build();
+        options.addOption(optGUIProfile);
+
+        Option optIsCloud = Option.builder()
+                .hasArg(false)
+                .required(false)
+                .desc("if mentioned, format of file name is cloud like instead of standard Genesys log file naming")
+                .longOpt("is-cloud")
+                .build();
+        options.addOption(optIsCloud);
 
         Option optLFMTInstance = Option.builder()
                 .hasArg(true)
@@ -168,6 +207,15 @@ public class GetLogs {
                 .build();
         options.addOption(optDay);
 
+        Option optArchives = Option.builder()
+                .hasArg(true)
+                .required(false)
+                .desc("file containing list of log files on LFMT hosts (one file per line)\n"
+                        + "If specified, downloader is forced to get those files")
+                .longOpt("log-files")
+                .build();
+        options.addOption(optArchives);
+
         Option optTime = Option.builder("t")
                 .hasArg(true)
                 .required(false)
@@ -241,7 +289,7 @@ public class GetLogs {
         //--------------------------------------
         if (logger.isDebugEnabled()) {
             logger.debug("Current directory:" + getWD());
-            Runtime.getRuntime().exec("ls -l");
+//            Runtime.getRuntime().exec("ls -l");
         }
         hosts = new Hosts(hostAppFile);
 
@@ -250,17 +298,25 @@ public class GetLogs {
         for (String string : split) {
             apps.add(string);
         }
+
+        sArchives = (String) cmd.getParsedOptionValue(optArchives.getLongOpt());
+        if (sArchives != null && !sArchives.isEmpty()) {
+            logFiles = new LogFiles(sArchives);
+        }
+
+        bIsCloud = cmd.hasOption(optIsCloud.getLongOpt());
+
         appHost = (String) cmd.getParsedOptionValue(optForceHost.getLongOpt());
         dateSpec = (String) cmd.getParsedOptionValue(optDay.getOpt());
         timeSpec = (String) cmd.getParsedOptionValue(optTime.getOpt());
 
-        //--------------------------------------
-        for (String app : apps) {
-            processApp(app, options);
-        }
+        sGUIProfile = (String) cmd.getParsedOptionValue(optGUIProfile.getLongOpt());
 
-        System.out.println(
-                "allDone");
+        if (sGUIProfile != null && !sGUIProfile.isEmpty()) {
+            processGUI(options);
+        } else {
+            processCMDLine(options);
+        }
 
     }
 
@@ -299,39 +355,7 @@ public class GetLogs {
             showHelpExit("Time is specified but the format is incorrect", options);
         }
 
-        StringBuilder fileNameClause = new StringBuilder();
-        String backSlash = "";
-        if (!useRSync) {
-            backSlash = "\\";
-        }
-        fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
-        if (dateSpec != null && !dateSpec.isEmpty()) {
-            if (!regDateTimeSpec.matcher(dateSpec).matches()) {
-                showHelpExit("Date is specified but the format is incorrect", options);
-            } else {
-                fileNameClause.append(expandPattern(dateSpec, 8));
-            }
-        } else {
-            fileNameClause.append(StringUtils.repeat("[0-9]", 8));
-        }
-        fileNameClause.append("_");
-
-        if (timeSpec != null && !timeSpec.isEmpty()) {
-
-            if (!regDateTimeSpec.matcher(timeSpec).matches()) {
-                showHelpExit("Time is specified but the format is incorrect", options);
-            } else {
-                fileNameClause.append(expandPattern(timeSpec, 6));
-            }
-        } else {
-            fileNameClause.append(StringUtils.repeat("[0-9]", 6));
-        }
-        fileNameClause.append("_");
-
-        fileNameClause.append(StringUtils.repeat("[0-9]", 3))
-                .append("").append(backSlash).append(".").append(backSlash).append("*");
-
-        logger.debug("fileName clause: [" + fileNameClause + "]");
+        StringBuilder fileNameClause = getFileNameClause(options);
 
         switch (execCommand) {
             case GREP:
@@ -455,15 +479,19 @@ public class GetLogs {
 
     }
 
-    private static final Pattern regCountDigitsCovered = Pattern.compile("(\\d|\\[\\d+\\])");
+    private static final Pattern regCountDigitsCovered = Pattern.compile("(\\d|\\[[\\d\\-]+\\])");
 
-    private static int countDigits(String dateSpec) {
-        int ret = 0;
-        Matcher matcher = regCountDigitsCovered.matcher(dateSpec);
-        while (matcher.find()) {
-            ret++;
+    private static int countDigits(String dateSpec1) {
+
+        int pos = 0;
+        int datePos = 0;
+        Matcher m;
+        while ((m = regRegDigits.matcher(dateSpec1)).find(pos)) {
+            datePos++;
+            pos = m.end();
         }
-        return ret;
+
+        return datePos;
     }
 
     static void doLog(String s) {
@@ -527,7 +555,6 @@ public class GetLogs {
 
             procTar = new ExtProcess(tarParams, procSSH);
             procTar.startProcess();
-  
 
             procSSH.startProcess();
             procSSH.waitFor();
@@ -546,14 +573,14 @@ public class GetLogs {
         sshParams.add(((lfmtHost != null)) ? lfmtHost : theAppHost);
 
         StringBuilder fileClause = new StringBuilder();
-            fileClause.append("\\( -type f ");
+        fileClause.append("\\( -type f ");
 
-            if (fileNameClause.length() > 0) {
-                fileClause.append("-a -name ")
-                        .append(fileNameClause);
-            }
+        if (fileNameClause.length() > 0) {
+            fileClause.append("-a -name ")
+                    .append(fileNameClause);
+        }
 
-            fileClause.append(" \\) ");
+        fileClause.append(" \\) ");
         StringBuilder sshCmd = new StringBuilder();
 
         sshCmd.append("cd ").append(logsDir).append("; ");
@@ -633,7 +660,7 @@ public class GetLogs {
         grepCmd.append(sshCmd)
                 .append(" -iname ").append(ext)
                 .append(" | xargs bash -c '")
-//                .append("echo bash is here; echo params: $*; ")
+                //                .append("echo bash is here; echo params: $*; ")
                 .append("for f in $*; do if ")
                 .append(unp)
                 .append("| egrep -q \"").append(sGrep).append("\"; then echo ").append(filePrefix).append("${f}; fi; done'" + "");
@@ -696,6 +723,204 @@ public class GetLogs {
         ExtProcess procRSync = new ExtProcess(rsyncParams);
         procRSync.startProcess();
         procRSync.waitFor();
+    }
+
+    private static void processLogFiles(String app, ArrayList<LogFile> listLogFiles) throws IOException, InterruptedException {
+        if (!listLogFiles.isEmpty()) {
+            ArrayList<String> rsyncParams = new ArrayList<>();
+            rsyncParams.add("/usr/local/bin/rsync");
+//            rsyncParams.add("--dry-run");
+            rsyncParams.add("-avz");
+            rsyncParams.add("-e");
+            rsyncParams.add("ssh");
+//        rsyncParams.add("--files-from");
+//        rsyncParams.add(sArchives);
+//        rsyncParams.add("-f");
+//        rsyncParams.add("- **");
+            StringBuilder buf = new StringBuilder();
+            buf.append(sshUser).append("@").append((lfmtHost != null ? lfmtHost : "")).append(":")
+                    .append(listLogFiles.get(0).getLfmtName()) //                .append(" :").append(logFiles.get(1));
+                    //                .append("/*")
+                    ;
+            rsyncParams.add(buf.toString());
+
+            for (int i = 1; i < listLogFiles.size(); i++) {
+                buf = new StringBuilder();
+                buf.append(":").append(listLogFiles.get(i).getLfmtName());
+                rsyncParams.add(buf.toString());
+            }
+
+            buf = new StringBuilder();
+            buf.append(sLogDirectory).append(File.separator).append(app);
+
+            rsyncParams.add(buf.toString());
+
+            ExtProcess procRSync = new ExtProcess(rsyncParams);
+            procRSync.startProcess();
+            procRSync.waitFor();
+        }
+    }
+
+    private static StringBuilder getFileNameClause(Options options) {
+        StringBuilder fileNameClause = new StringBuilder();
+
+        if (bIsCloud) {
+            String backSlash = "";
+            if (!useRSync) {
+                backSlash = "\\";
+                fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
+            } else {
+                fileNameClause.append("*_cloud*").append("-");
+            }
+            if (!regDateTimeSpec.matcher(dateSpec).matches()) {
+                showHelpExit("Date is specified but the format is incorrect", options);
+            } else {
+                fileNameClause.append(cloudDatePattern(dateSpec, timeSpec));
+            }
+
+        } else {
+            String backSlash = "";
+            if (!useRSync) {
+                backSlash = "\\";
+            }
+            fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
+            if (dateSpec != null && !dateSpec.isEmpty()) {
+                if (!regDateTimeSpec.matcher(dateSpec).matches()) {
+                    showHelpExit("Date is specified but the format is incorrect", options);
+                } else {
+                    fileNameClause.append(expandPattern(dateSpec, 8));
+                }
+            } else {
+                fileNameClause.append(StringUtils.repeat("[0-9]", 8));
+            }
+            fileNameClause.append("_");
+
+            if (timeSpec != null && !timeSpec.isEmpty()) {
+
+                if (!regDateTimeSpec.matcher(timeSpec).matches()) {
+                    showHelpExit("Time is specified but the format is incorrect", options);
+                } else {
+                    fileNameClause.append(expandPattern(timeSpec, 6));
+                }
+            } else {
+                fileNameClause.append(StringUtils.repeat("[0-9]", 6));
+            }
+            fileNameClause.append("_");
+
+            fileNameClause.append(StringUtils.repeat("[0-9]", 3))
+                    .append("").append(backSlash).append(".").append(backSlash).append("*");
+
+        }
+        logger.debug("fileName clause: [" + fileNameClause + "]");
+        return fileNameClause;
+    }
+
+    private static final Pattern regRegDigits = Pattern.compile("(\\d|\\[[\\-\\d]*\\])");
+
+    private static String cloudDatePattern(String dateSpec1, String timeSpec1) {
+        StringBuilder ret = new StringBuilder();
+        Matcher m;
+//        int digitsSpecified = countDigits(dateSpec);
+        int pos = 0;
+        int datePos = 0;
+        if (dateSpec1 != null && !dateSpec1.isEmpty()) {
+            while ((m = regRegDigits.matcher(dateSpec1)).find(pos)) {
+                if (shouldAddDash(datePos)) {
+                    ret.append("-");
+                }
+                ret.append(m.group(1));
+                datePos++;
+                pos = m.end();
+            }
+        }
+        while (datePos < 8) {
+            if (shouldAddDash(datePos)) {
+                ret.append("-");
+            }
+            ret.append("[0-9]");
+            datePos++;
+        }
+        if (timeSpec1 != null && !timeSpec1.isEmpty()) {
+            ret.append("-");
+            pos = 0;
+            datePos = 0;
+            while ((m = regRegDigits.matcher(timeSpec1)).find(pos)) {
+                ret.append(m.group(1));
+                pos = m.end();
+                datePos++;
+                if (pos > 1) {
+                    break;
+                }
+            }
+            if (datePos == 1) {
+                ret.append("[0-9]");
+            }
+        } else {
+            ret.append("-");
+        }
+        ret.append("*.log");
+        logger.debug(ret);
+//        System.exit(0);
+        return ret.toString();
+
+    }
+
+    private static boolean shouldAddDash(int datePos) {
+        return (datePos == 4 || datePos == 6);
+    }
+
+    private static void processGUI(Options options) {
+        File f = new File(sGUIProfile);
+        DownloadSettings ds = null;
+        if (f.exists()) {
+//                Gson gson = new Gson();
+
+            Gson gson = new GsonBuilder()
+                    .enableComplexMapKeySerialization()
+                    .serializeNulls()
+                    .setDateFormat(DateFormat.LONG)
+                    .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+                    .setPrettyPrinting()
+                    .setVersion(1.0)
+                    .create();
+
+            try {
+                InputStreamReader reader = new InputStreamReader(new FileInputStream(f));
+                ds = gson.fromJson(reader, DownloadSettings.class);
+                reader.close();
+            } catch (JsonSyntaxException | JsonIOException | IOException ex) {
+                java.util.logging.Logger.getLogger(SettingsDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
+        } else {
+            ds = new DownloadSettings();
+            HashSet<DownloadSettings.App> apps = ds.addProfile("SIP").getApps();
+            apps.add(new DownloadSettings.App("sip1", new DownloadSettings.AppSettings()));
+            apps.add(new DownloadSettings.App("sip2", new DownloadSettings.AppSettings()));
+
+            apps = ds.addProfile("Routing").getApps();
+            apps.add(new DownloadSettings.App("URS1", new DownloadSettings.AppSettings()));
+            apps.add(new DownloadSettings.App("ORS2", new DownloadSettings.AppSettings()));
+        }
+        ds.setSettingsFile(sGUIProfile);
+        if (ds.showGui() == StandardDialog.RESULT_AFFIRMED) {
+
+        }
+    }
+
+    private static void processCMDLine(Options options) throws IOException, InterruptedException {
+        //---------------------parameters processing done-----------------
+        if (logFiles != null) {
+            for (Map.Entry<String, ArrayList<LogFiles.LogFile>> object : logFiles.entrySet()) {
+                processLogFiles(object.getKey(), object.getValue());
+            }
+        } else {
+            for (String app : apps) {
+                processApp(app, options);
+            }
+        }
+
+        System.out.println(
+                "allDone");
     }
 
 }

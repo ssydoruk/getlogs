@@ -16,7 +16,7 @@ import java.util.HashMap;
  *
  * @author stepansydoruk
  */
-class Hosts extends HashMap {
+class Hosts extends HashMap<String, String> {
 
     Hosts(String fileName) throws FileNotFoundException, IOException {
         File file = new File(fileName);
