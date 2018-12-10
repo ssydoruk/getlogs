@@ -38,16 +38,20 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
@@ -70,6 +74,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private TDateRange dtRange;
     private DownloadSettings ds;
     private InfoPanel p = null;
+    private InfoPanel lfmtPanes = null;
 
     public DownloadSettings getDs() {
         return ds;
@@ -80,8 +85,8 @@ public class SettingsPanel extends javax.swing.JPanel {
      */
     public SettingsPanel() {
         initComponents();
-        dtRange = new TDateRange(false);
-        jpRange.add(dtRange);
+//        dtRange = new TDateRange(false);
+//        jpRange.add(dtRange);
 //        dtTo = new TDateRange();
 //        jpTo.add(dtTo);
 
@@ -216,6 +221,25 @@ public class SettingsPanel extends javax.swing.JPanel {
         } else {
             rbCloudLogs.setSelected(true);
         }
+        DownloadSettings.LFMTHostInstance lfmtHostInstance = ap.getSettings().getLfmtHostInstance();
+        int sel = -1;
+        if (lfmtHostInstance != null) {
+            DefaultComboBoxModel<DownloadSettings.LFMTHostInstance> mod = (DefaultComboBoxModel<DownloadSettings.LFMTHostInstance>) cbLFMTs.getModel();
+            for (int i = 0; i < mod.getSize(); i++) {
+                DownloadSettings.LFMTHostInstance inst = mod.getElementAt(i);
+                if (inst.getKey() == lfmtHostInstance.getKey()
+                        && inst.getValue() == lfmtHostInstance.getValue()) {
+                    sel = i;
+                    break;
+                }
+            }
+        }
+        if (sel >= 0) {
+            cbLFMTs.setSelectedIndex(sel);
+        } else {
+            cbLFMTs.setSelectedIndex(0);
+            ap.getSettings().setLfmtHostInstance((DownloadSettings.LFMTHostInstance) cbLFMTs.getSelectedItem());
+        }
     }
 
     private void clbAppsCheckedChanged(ListSelectionEvent evt) {
@@ -241,6 +265,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         jpAppProperties.setEnabled(singleSelection);
         rbCloudLogs.setEnabled(singleSelection);
         rbGenesysLogs.setEnabled(singleSelection);
+        cbLFMTs.setEnabled(singleSelection);
+        btEditLFMTs.setEnabled(singleSelection);
     }
 
     private void profileSelected(boolean singleSelection) {
@@ -302,8 +328,13 @@ public class SettingsPanel extends javax.swing.JPanel {
         jbAppAdd = new javax.swing.JButton();
         jbAppDelete = new javax.swing.JButton();
         jpAppProperties = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
         rbGenesysLogs = new javax.swing.JRadioButton();
         rbCloudLogs = new javax.swing.JRadioButton();
+        jPanel6 = new javax.swing.JPanel();
+        jPanel13 = new javax.swing.JPanel();
+        cbLFMTs = new javax.swing.JComboBox();
+        btEditLFMTs = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         cbLfmtLog = new javax.swing.JCheckBox();
@@ -319,6 +350,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbTimeProfile = new javax.swing.JComboBox<>();
         jPanel12 = new javax.swing.JPanel();
         jpRange = new javax.swing.JPanel();
+        jPanel15 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        tfDateRegex = new javax.swing.JTextField();
+        jPanel14 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        tfTimeRegex = new javax.swing.JTextField();
 
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
 
@@ -398,6 +435,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel1.add(jpAppsBase);
 
         jpAppProperties.setBorder(javax.swing.BorderFactory.createTitledBorder("app properties"));
+        jpAppProperties.setLayout(new javax.swing.BoxLayout(jpAppProperties, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         bgFileNaming.add(rbGenesysLogs);
         rbGenesysLogs.setText("Genesys file naming");
@@ -420,26 +460,64 @@ public class SettingsPanel extends javax.swing.JPanel {
         bgFileNaming.add(rbCloudLogs);
         rbCloudLogs.setText("Cloud file name");
 
-        javax.swing.GroupLayout jpAppPropertiesLayout = new javax.swing.GroupLayout(jpAppProperties);
-        jpAppProperties.setLayout(jpAppPropertiesLayout);
-        jpAppPropertiesLayout.setHorizontalGroup(
-            jpAppPropertiesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jpAppPropertiesLayout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jpAppPropertiesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(rbGenesysLogs)
                     .addComponent(rbCloudLogs))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
-        jpAppPropertiesLayout.setVerticalGroup(
-            jpAppPropertiesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jpAppPropertiesLayout.createSequentialGroup()
-                .addGap(18, 18, 18)
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
                 .addComponent(rbGenesysLogs)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(rbCloudLogs)
-                .addContainerGap(76, Short.MAX_VALUE))
+                .addContainerGap())
         );
+
+        jpAppProperties.add(jPanel5);
+
+        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder("LFMT"));
+
+        jPanel13.setLayout(new javax.swing.BoxLayout(jPanel13, javax.swing.BoxLayout.LINE_AXIS));
+
+        cbLFMTs.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbLFMTsItemStateChanged(evt);
+            }
+        });
+        jPanel13.add(cbLFMTs);
+
+        btEditLFMTs.setText("...");
+        btEditLFMTs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btEditLFMTsActionPerformed(evt);
+            }
+        });
+        jPanel13.add(btEditLFMTs);
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        jpAppProperties.add(jPanel6);
 
         jPanel1.add(jpAppProperties);
 
@@ -447,6 +525,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
 
+        jPanel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jPanel7.setLayout(new javax.swing.BoxLayout(jPanel7, javax.swing.BoxLayout.PAGE_AXIS));
 
         cbLfmtLog.setText("Logs from LFMT");
@@ -504,7 +583,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addComponent(ftHours, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lHours)
-                .addContainerGap())
+                .addContainerGap(47, Short.MAX_VALUE))
         );
         jPanel11Layout.setVerticalGroup(
             jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -521,7 +600,24 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel12.setLayout(new javax.swing.BoxLayout(jPanel12, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jpRange.setLayout(new java.awt.BorderLayout());
+        jpRange.setLayout(new javax.swing.BoxLayout(jpRange, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jPanel15.setLayout(new javax.swing.BoxLayout(jPanel15, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabel1.setText("Date regex(digits, [-])");
+        jPanel15.add(jLabel1);
+        jPanel15.add(tfDateRegex);
+
+        jpRange.add(jPanel15);
+
+        jPanel14.setLayout(new javax.swing.BoxLayout(jPanel14, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabel3.setText("Time regex(digits, [-])");
+        jPanel14.add(jLabel3);
+        jPanel14.add(tfTimeRegex);
+
+        jpRange.add(jPanel14);
+
         jPanel12.add(jpRange);
 
         jPanel3.add(jPanel12);
@@ -533,7 +629,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         String name = getProfileName("Enter new profile name", null);
 
         if (name != null) {
-            addProfile(name, null);
+            addProfile(name);
         }
     }//GEN-LAST:event_jbProfileAddActionPerformed
 
@@ -662,21 +758,80 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_jbAppDeleteActionPerformed
 
+    private void btEditLFMTsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btEditLFMTsActionPerformed
+        if (lfmtPanes == null) {
+            tabLFMT = getJTablePopup();
+            lfmtPanes = new InfoPanel((Window) this.getRootPane().getParent(), "List of LFMTs", tabLFMT);
+        }
+        DefaultTableModel infoTableModel = new DefaultTableModel();
+        infoTableModel.addColumn("LFMT host");
+        infoTableModel.addColumn("LFMT instance");
+        for (DownloadSettings.LFMTHostInstance hi : ds.getLfmtHostInstances()) {
+            infoTableModel.addRow(new Object[]{hi.getKey(), hi.getValue()});
+        }
+        tabLFMT.setModel(infoTableModel);
+        JButton bt;
+        bt = new JButton(new AbstractAction("add") {
+            private EditLFMTDialog dlg = null;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (dlg == null) {
+                    dlg = new EditLFMTDialog();
+                }
+                if (dlg.doShow()) {
+                    newLFMTInstance(dlg.getLfmt().tbValue.getText(), dlg.getLfmtInstance().tbValue.getText());
+                }
+            }
+
+            private void newLFMTInstance(String text, String text0) {
+                DownloadSettings.LFMTHostInstance lfmt = ds.addLFMTPair(text, text0);
+                DefaultTableModel mod = (DefaultTableModel) tabLFMT.getModel();
+                mod.addRow(new Object[]{lfmt.getKey(), lfmt.getValue()});
+            }
+        });
+        lfmtPanes.addButton(bt);
+
+        lfmtPanes.doShow();
+        updateLFMTs();
+
+    }//GEN-LAST:event_btEditLFMTsActionPerformed
+
+    private void cbLFMTsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbLFMTsItemStateChanged
+
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            Object item = evt.getItem();
+            DownloadSettings.App app = (DownloadSettings.App) clbApps.getSelectedValue();
+            if (app != null) {
+                app.getSettings().setLfmtHostInstance((DownloadSettings.LFMTHostInstance) item);
+            }
+        }
+    }//GEN-LAST:event_cbLFMTsItemStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;
+    private javax.swing.JButton btEditLFMTs;
+    private javax.swing.JComboBox cbLFMTs;
     private javax.swing.JCheckBox cbLfmtLog;
     private javax.swing.JCheckBox cbProdLog;
     private javax.swing.JComboBox<String> cbTimeProfile;
     private javax.swing.JFormattedTextField ftHours;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
+    private javax.swing.JPanel jPanel14;
+    private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
@@ -696,6 +851,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lHours;
     private javax.swing.JRadioButton rbCloudLogs;
     private javax.swing.JRadioButton rbGenesysLogs;
+    private javax.swing.JTextField tfDateRegex;
+    private javax.swing.JTextField tfTimeRegex;
     // End of variables declaration//GEN-END:variables
 
     private void loadProfiles() {
@@ -713,8 +870,16 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbTimeProfile.setModel(mod);
         cbTimeProfile.setSelectedItem(ds.getTimeProfile());
         ftHours.setText(ds.getHours());
-        dtRange.setTimeRange(ds.getTimeRange());
+//        dtRange.setTimeRange(ds.getTimeRange());
         timeProfileChanged((TimeProfile) cbTimeProfile.getSelectedItem());
+        tfDateRegex.setText(ds.getDateSpec());
+        tfTimeRegex.setText(ds.getTimeSpec());
+        updateLFMTs();
+    }
+
+    private void addProfile(String showInputDialog) {
+        DownloadSettings.AppProfile addProfile = ds.addProfile(showInputDialog); //To change body of generated methods, choose Tools | Templates.
+        lmProfile.addElement(addProfile);
     }
 
     private void addProfile(String showInputDialog, DownloadSettings.AppProfile appPr) {
@@ -728,7 +893,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         ds.setProd(cbProdLog.isSelected());
         ds.setTimeProfile((TimeProfile) cbTimeProfile.getSelectedItem());
         ds.setHours(ftHours.getText());
-        ds.setTimeRange(dtRange.getTimeRangeAlways());
+//        ds.setTimeRange(dtRange.getTimeRangeAlways());
+        ds.setCMDDate(tfDateRegex.getText());
+        ds.setCMDTime(tfTimeRegex.getText());
         Gson gson = new GsonBuilder()
                 .enableComplexMapKeySerialization()
                 .serializeNulls()
@@ -754,8 +921,14 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void timeProfileChanged(TimeProfile timeProfile) {
         ftHours.setEnabled(timeProfile == TimeProfile.VALUE);
         lHours.setEnabled(timeProfile == TimeProfile.VALUE);
-        dtRange.enableFrom(timeProfile == TimeProfile.FROM || timeProfile == TimeProfile.FROM_TO);
-        dtRange.enableTo(timeProfile == TimeProfile.FROM_TO);
+//        dtRange.enableFrom(timeProfile == TimeProfile.FROM || timeProfile == TimeProfile.FROM_TO);
+//        dtRange.enableTo(timeProfile == TimeProfile.FROM_TO);
+    }
+
+    private void updateLFMTs() {
+        DefaultComboBoxModel<DownloadSettings.LFMTHostInstance> cb
+                = new DefaultComboBoxModel(ds.getLfmtHostInstances().toArray());
+        cbLFMTs.setModel(cb);
     }
 
     public enum TimeProfile {
@@ -787,6 +960,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         private int closeCause = JOptionPane.CANCEL_OPTION;
         private JTable tab;
+        private ArrayList<JButton> addButtons;
 
         public int getCloseCause() {
             return closeCause;
@@ -806,6 +980,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         InfoPanel(Window parent, String title, JTable tab) {
             super(parent, title);
+            this.addButtons = new ArrayList<>();
             this.tab = tab;
 
         }
@@ -855,10 +1030,14 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
 
         JButton jbFilter;
+        ButtonPanel buttonPanel;
 
         @Override
         public ButtonPanel createButtonPanel() {
-            ButtonPanel buttonPanel = new ButtonPanel();
+            buttonPanel = new ButtonPanel();
+            for (JButton addButton : addButtons) {
+                buttonPanel.add(addButton);
+            }
             JButton cancelButton = new JButton();
             buttonPanel.addButton(cancelButton);
 
@@ -909,6 +1088,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         private void doShow(String theTitle) {
             this.setTitle(theTitle);
             doShow();
+        }
+
+        private void addButton(JButton jButton) {
+            addButtons.add(jButton);
         }
     }
 
@@ -1107,4 +1290,116 @@ public class SettingsPanel extends javax.swing.JPanel {
     }
 
     JTablePopup tab;
+    JTablePopup tabLFMT;
+
+    class EditLFMTDialog extends StandardDialog {
+
+        public EditLFMTDialog() {
+            super();
+            setTitle("Edit LFMT host");
+        }
+
+        class EnterPanel {
+
+            public JPanel getEnterPanel() {
+                return enterPanel;
+            }
+
+            private final JTextField tbValue;
+            private JPanel enterPanel;
+
+            public String getText() {
+                return tbValue.getText();
+            }
+
+            public void setText(String txt) {
+                tbValue.setText(txt);
+            }
+
+            EnterPanel(String title) {
+                enterPanel = new JPanel();
+                enterPanel.setLayout(new BoxLayout(enterPanel, BoxLayout.LINE_AXIS));
+                enterPanel.add(new JLabel(title));
+                tbValue = new JTextField();
+                enterPanel.add(tbValue);
+            }
+        }
+
+        EnterPanel lfmt;
+        EnterPanel lfmtInstance;
+
+        public EnterPanel getLfmt() {
+            return lfmt;
+        }
+
+        public EnterPanel getLfmtInstance() {
+            return lfmtInstance;
+        }
+
+        @Override
+        public JComponent createBannerPanel() {
+            return null;
+        }
+
+        @Override
+        public JComponent createContentPanel() {
+            JPanel content = new JPanel();
+            content.setLayout(new BoxLayout(content, BoxLayout.PAGE_AXIS));
+            lfmt = new EnterPanel("LFMT host");
+            content.add(lfmt.getEnterPanel());
+            lfmtInstance = new EnterPanel("LFMT instance");
+            content.add(lfmtInstance.getEnterPanel());
+            return content;
+        }
+
+        @Override
+        public ButtonPanel createButtonPanel() {
+            ButtonPanel buttonPanel = new ButtonPanel();
+            JButton cancelButton = new JButton();
+            buttonPanel.addButton(cancelButton);
+
+            cancelButton.setAction(new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    setDialogResult(RESULT_CANCELLED);
+                    setVisible(false);
+                    dispose();
+                }
+            });
+            cancelButton.setText("Close");
+
+            JButton jbOK = new JButton("OK");
+            buttonPanel.addButton(jbOK);
+
+//            listPane.add(jbFilter);
+            jbOK.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setDialogResult(RESULT_AFFIRMED);
+                    dispose();
+                }
+            });
+
+            String act = "OK";
+
+            setDefaultCancelAction(cancelButton.getAction());
+            setDefaultAction(jbOK.getAction());
+            getRootPane().setDefaultButton(jbOK);
+
+            buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            buttonPanel.setSizeConstraint(ButtonPanel.NO_LESS_THAN); // since the checkbox is quite wide, we don't want all of them have the same size.
+            return buttonPanel;
+        }
+
+        public boolean doShow() {
+
+            setModal(true);
+
+            pack();
+
+//            ScreenInfo.CenterWindow(this);
+            setLocationRelativeTo(getParent());
+            setVisible(true);
+            return getDialogResult() == StandardDialog.RESULT_AFFIRMED;
+        }
+    }
 }

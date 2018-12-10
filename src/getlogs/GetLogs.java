@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -55,36 +56,37 @@ public class GetLogs {
     private static String hostAppFile = null;
     private static String execCmd = null;
     private static String appsOpt = null;
-    private static String sshUser = null;
+    public static String sshUser = null;
     private static boolean listFiles = false;
 
-    private static final Pattern regDateTimeSpec = Pattern.compile("^[0-9\\[\\]]+$");
+    public static final Pattern regDateTimeSpec = Pattern.compile("^[0-9\\[\\]]+$");
     private static final Pattern regDirectoryStripSlash = Pattern.compile("^(.+)/+$");
     private static String dateSpec;
     private static String timeSpec;
     private static String lfmtInstance;
-    private static boolean useRSync = false;
+    public static boolean useRSync = false;
 
     /**
      * @param args the command line arguments
      */
     private static String sLogDirectory;
-    private static String appHost;
+    public static String appHost;
 
     public static Hosts getHosts() {
         return hosts;
     }
     private static Hosts hosts;
-    private static GetCommand execCommand;
+    public static GetCommand execCommand;
     private static String sGrep = null;
     private static String sArchives;
     private static LogFiles logFiles = null;
     private static boolean bIsCloud = false;
     private static String sGUIProfile;
+    private static Options options;
 
     public static void main(String[] args) throws Exception {
 
-        Options options = new Options();
+        options = new Options();
         Option optHosts;
 
         optHosts = new Option("l", "hosts", true, "file containing binding host to genesysApplication. "
@@ -473,7 +475,7 @@ public class GetLogs {
         return ret; // never reached
     }
 
-    private static String expandPattern(String dateSpec, int max) {
+    public static String expandPattern(String dateSpec, int max) {
         int i = countDigits(dateSpec);
         return dateSpec + StringUtils.repeat("[0-9]", max - i);
 
@@ -693,7 +695,7 @@ public class GetLogs {
         executeRSync(ap, theAppHost, logsDir, rSyncFiles);
     }
 
-    private static ArrayList<String> rSyncAddClause(String fileName) {
+    public static ArrayList<String> rSyncAddClause(String fileName) {
         ArrayList<String> ret = new ArrayList<String>();
         ret.add("-f");//--filter
         ret.add("+ /*" + fileName);
@@ -817,7 +819,7 @@ public class GetLogs {
 
     private static final Pattern regRegDigits = Pattern.compile("(\\d|\\[[\\-\\d]*\\])");
 
-    private static String cloudDatePattern(String dateSpec1, String timeSpec1) {
+    public static String cloudDatePattern(String dateSpec1, String timeSpec1) {
         StringBuilder ret = new StringBuilder();
         Matcher m;
 //        int digitsSpecified = countDigits(dateSpec);
@@ -869,7 +871,7 @@ public class GetLogs {
         return (datePos == 4 || datePos == 6);
     }
 
-    private static void processGUI(Options options) {
+    private static void processGUI(Options options) throws IOException, InterruptedException, InvocationTargetException {
         File f = new File(sGUIProfile);
         DownloadSettings ds = null;
         if (f.exists()) {
@@ -903,6 +905,7 @@ public class GetLogs {
         }
         ds.setSettingsFile(sGUIProfile);
         if (ds.showGui() == StandardDialog.RESULT_AFFIRMED) {
+            ds.executeCmd();
 
         }
     }
@@ -914,13 +917,32 @@ public class GetLogs {
                 processLogFiles(object.getKey(), object.getValue());
             }
         } else {
+            DownloadSettings ds = new DownloadSettings();
+            DownloadSettings.AppProfile addProfile = ds.addProfile("default");
+            DownloadSettings.LFMTHostInstance theLFMT = new DownloadSettings.LFMTHostInstance(lfmtHost, lfmtInstance);
+            ds.setOutputDir(sLogDirectory);
+            ds.setProd((lfmtHost == null));
+            ds.setLfmt((lfmtHost != null));
+            ds.setCMDDate(dateSpec);
+            ds.setCMDTime(timeSpec);
+
             for (String app : apps) {
+                DownloadSettings.App theApp = addProfile.addApp(app);
+                theApp.setChecked(true);
+                DownloadSettings.AppSettings settings = theApp.getSettings();
+                settings.setIsGenesys(!bIsCloud);
+                settings.setLfmtHostInstance(theLFMT);
                 processApp(app, options);
             }
+            ds.executeCmd();
         }
 
         System.out.println(
                 "allDone");
+    }
+
+    static void exitHelp(String string) {
+        showHelpExit(string, options);
     }
 
 }
