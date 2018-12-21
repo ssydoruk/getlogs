@@ -10,17 +10,15 @@ import Utils.ScreenInfo;
 import Utils.TDateRange;
 import Utils.UTCTimeRange;
 import Utils.UnixProcess.ExtProcess;
+import static Utils.Util.stripDir;
 import com.jidesoft.dialog.StandardDialog;
-import static getlogs.GetLogs.logger;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.apache.commons.cli.Options;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 
@@ -35,18 +33,57 @@ public class DownloadSettings {
     private String settingsFile;
     private String dateSpec;
     private String timeSpec;
+    private GetCommand actionCommand;
+    private String grepText;
+    private boolean useRSync;
+
+    public boolean isUseRSync() {
+        return useRSync;
+    }
+
+    public void setUseRSync(boolean useRSync) {
+        this.useRSync = useRSync;
+    }
+
+    private boolean listFiles;
+
+    public boolean isListFiles() {
+        return listFiles;
+    }
+
+    public void setListFiles(boolean listFiles) {
+        this.listFiles = listFiles;
+    }
+
+    public String getGrepText() {
+        return grepText;
+    }
+
+    public void setGrepText(String grepText) {
+        this.grepText = grepText;
+    }
+
+    public GetCommand getActionCommand() {
+        return actionCommand;
+    }
+
+    public void setActionCommand(GetCommand actionCommand) {
+        this.actionCommand = actionCommand;
+    }
 
     public ArrayList<LFMTHostInstance> getLfmtHostInstances() {
         return lfmtHostInstances;
     }
 
     public DownloadSettings() {
+        this.actionCommand = GetCommand.LS;
         this.lfmtHostInstances = new ArrayList();
         this.appProfiles = new HashSet<>();
         lfmt = true;
         prod = true;
         rangeStart = 0;
         rangeEnd = 0;
+        settingsFile = "foundation.txt";
     }
 
     ArrayList<LFMTHostInstance> lfmtHostInstances;
@@ -59,12 +96,17 @@ public class DownloadSettings {
 
     public void executeCmd() throws IOException, InterruptedException {
         for (AppProfile appProfile : appProfiles) {
-            for (App app : appProfile.getApps()) {
-                if (isProd()) {
-                    processApp(app, false);
-                }
-                if (isLfmt()) {
-                    processApp(app, true);
+            if (appProfile.isSelected()) {
+                GetLogs.logger.debug("processing command for profile " + appProfile);
+                for (App app : appProfile.getApps()) {
+                    if (app.isChecked()) {
+                        if (isProd()) {
+                            processApp(app, false);
+                        }
+                        if (isLfmt()) {
+                            processApp(app, true);
+                        }
+                    }
                 }
             }
         }
@@ -100,32 +142,150 @@ public class DownloadSettings {
 
         }
 
-        logger.debug("logsDir clause: [" + logsDir + "]");
+        GetLogs.logger.debug("app: " + ap + " logsDir clause: [" + logsDir + "], action: " + getActionCommand() + " lfmt:" + isLFMT);
 
         StringBuilder fileNameClause = getFileNameClause(ap);
 
-        switch (GetLogs.execCommand) {
-            case GREP:
-//                executeGrep(ap, theAppHost, logsDir, fileNameClause);
-                break;
+        try {
+            switch (getActionCommand()) {
+                case GREP:
+                    executeGrep(ap, theAppHost, logsDir, fileNameClause, isLFMT);
+                    break;
 
-            case GET:
-                executeGet(ap, theAppHost, logsDir, fileNameClause, GetLogs.useRSync);
-                break;
+                case GET:
+                    executeGet(ap, theAppHost, logsDir, fileNameClause, isUseRSync(), isLFMT);
+                    break;
 
-            case LS:
-//                executeLS(ap, theAppHost, logsDir, fileNameClause);
-                break;
+                case LS:
+                    executeLS(ap, theAppHost, logsDir, fileNameClause, isLFMT);
+                    break;
 
-            case GREPGET:
-//                executeGrepGet(ap, theAppHost, logsDir, fileNameClause);
-                break;
+                case GREPGET:
+                    executeGrepGet(ap, theAppHost, logsDir, fileNameClause, isLFMT);
+                    break;
 
+            }
+        } catch (IOException e) {
+            LogManager.getLogger().error(e.getMessage());
+        } catch (InterruptedException e) {
+            LogManager.getLogger().error(e.getMessage());
         }
+    }
+
+    private void executeLS(App ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause,
+            boolean isLFMT) throws IOException, InterruptedException {
+        ArrayList<String> sshParams = new ArrayList<>();
+        sshParams.add("ssh");
+        if (GetLogs.sshUser != null) {
+            sshParams.addAll(Arrays.asList(new String[]{"-l", GetLogs.sshUser}));
+        }
+
+        if (isLFMT) {
+            sshParams.add(ap.getSettings().getLfmtHostInstance().getHost());
+        } else {
+            sshParams.add(theAppHost);
+        }
+
+        StringBuilder fileClause = new StringBuilder();
+        fileClause.append("\\( -type f ");
+
+        if (fileNameClause.length() > 0) {
+            fileClause.append("-a -name ")
+                    .append(fileNameClause);
+        }
+
+        fileClause.append(" \\) ");
+        StringBuilder sshCmd = new StringBuilder();
+
+        sshCmd.append("cd ").append(logsDir).append("; ");
+        sshCmd.append("find ")
+                .append(ap)
+                .append(" ")
+                .append(fileClause);
+        if (!listFiles) {
+            sshCmd.append(" -o -type d ");
+        }
+        sshCmd.append("-print | sort");
+        sshParams.add(sshCmd.toString());
+        ExtProcess procSSH = new ExtProcess(sshParams);
+
+        procSSH.startProcess();
+
+        procSSH.waitFor();
 
     }
 
-    private void executeRSync(App ap, String theAppHost, StringBuilder logsDir, ArrayList<String> fileNameClause) throws IOException, InterruptedException {
+    private void executeGrepGet(App ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause,
+            boolean isLFMT) throws IOException, InterruptedException {
+        ArrayList<String> executeGrep = executeGrep(ap, theAppHost, logsDir, fileNameClause, isLFMT);
+        ArrayList<String> rSyncFiles = new ArrayList<>();
+        for (String fileName : executeGrep) {
+            rSyncFiles.addAll(GetLogs.rSyncAddClause(stripDir(fileName)));
+        }
+
+        executeRSync(ap, theAppHost, logsDir, rSyncFiles, isLFMT);
+    }
+
+    private ArrayList<String> executeGrep(App ap, String appHost1, StringBuilder logsDir, StringBuilder fileNameClause,
+            boolean isLFMT) throws IOException, InterruptedException {
+        ArrayList<String> sshParams = new ArrayList<>();
+        sshParams.add("ssh");
+        if (GetLogs.sshUser != null) {
+            sshParams.addAll(Arrays.asList(new String[]{"-l", GetLogs.sshUser}));
+        }
+        if (isLFMT) {
+            LFMTHostInstance lfmt1 = ap.getLFMT();
+            if (lfmt1 == null) {
+                return null;
+            }
+            sshParams.add(lfmt1.getHost());
+        } else {
+            sshParams.add(appHost1);
+        }
+
+        StringBuilder fileClause = new StringBuilder();
+//        fileClause.append("\\("); 
+
+        if (fileNameClause.length() > 0) {
+            fileClause.append(" -name ")
+                    .append(fileNameClause);
+        }
+
+//        fileClause.append(" \\) ");
+        StringBuilder sshCmd = new StringBuilder();
+
+        sshCmd.append("cd ").append(logsDir).append("; ");
+        sshCmd.append("find ")
+                .append(ap)
+                .append(" ")
+                .append(fileClause);
+        sshCmd.append(" ");
+//        sshCmd.append("\\( ")
+//                .append(" -iname *.log -execdir grep Trc {} \\; -true ");
+//        sshCmd.append("\\)");
+//        sshCmd.append(" -o ");
+        ArrayList<String> matchedFiles = new ArrayList<>();
+        for (Map.Entry<String, String> extUnp : GetLogs.extUnpacker.entrySet()) {
+            try {
+                for (String matchedFile : GetLogs.execGrep(extUnp.getKey(), extUnp.getValue(), sshParams, sshCmd, getGrepText())) {
+                    if (matchedFile.startsWith(GetLogs.filePrefix)) {
+                        matchedFiles.add(matchedFile.substring(GetLogs.filePrefix.length()));
+                    } else {
+                        GetLogs.logger.error("Not file name: [" + matchedFile + "]Ï");
+                    }
+                }
+            } catch (IOException e) {
+                LogManager.getLogger().error(e.getMessage());
+            } catch (InterruptedException e) {
+                LogManager.getLogger().error(e.getMessage());
+            }
+
+        }
+        return matchedFiles;
+    }
+
+    private void executeRSync(App ap, String theAppHost, StringBuilder logsDir, ArrayList<String> fileNameClause,
+            boolean isLFMT) throws IOException, InterruptedException {
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
         rsyncParams.add("-avz");
@@ -136,22 +296,23 @@ public class DownloadSettings {
         rsyncParams.add("- **");
         StringBuilder srcSpec = new StringBuilder();
         String lfmtHost = null;
-        if (isLfmt()) {
-            AppSettings settings = ap.getSettings();
-            LFMTHostInstance lfmtHostInstance = null;
-            if (settings != null) {
-                lfmtHostInstance = settings.getLfmtHostInstance();
-            }
-            if (lfmtHostInstance != null) {
-                lfmtHost = lfmtHostInstance.getHost();
-            }
-            if( lfmtHost==null){
-                LogManager.getLogger().error(ap+": - lfmt is selected but LFMT host not configured. cannot run");
+
+        if (GetLogs.sshUser != null) {
+            srcSpec.append(GetLogs.sshUser).append("@");
+        }
+        if (isLFMT) {
+            LFMTHostInstance lfmtHostInstance = ap.getLFMT();
+            if (lfmtHostInstance == null) {
                 return;
             }
+            srcSpec.append(lfmtHostInstance.getHost()).append(":")
+                    .append(logsDir).append("/").append(ap).append("/").append("");
+
+        } else {
+            srcSpec.append(theAppHost).append(":")
+                    .append(logsDir).append("/").append(ap).append("/").append("");
+
         }
-        srcSpec.append(GetLogs.sshUser).append("@").append((isLfmt() ? lfmtHost : theAppHost)).append(":")
-                .append(logsDir).append("/").append(ap).append("/").append("");
 
         rsyncParams.add(srcSpec.toString());
 
@@ -160,15 +321,15 @@ public class DownloadSettings {
 
         rsyncParams.add(dstSpec.toString());
         LogManager.getLogger().info("executing: " + rsyncParams);
-        return;
-//        ExtProcess procRSync = new ExtProcess(rsyncParams);
-//        procRSync.startProcess();
-//        procRSync.waitFor();
+        ExtProcess procRSync = new ExtProcess(rsyncParams);
+        procRSync.startProcess();
+        procRSync.waitFor();
     }
 
-    private void executeGet(App ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause, boolean useRSync1) throws IOException, InterruptedException {
+    private void executeGet(App ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause, boolean useRSync1,
+            boolean isLFMT) throws IOException, InterruptedException {
         if (useRSync1) {
-            executeRSync(ap, theAppHost, logsDir, GetLogs.rSyncAddClause(fileNameClause.toString()));
+            executeRSync(ap, theAppHost, logsDir, GetLogs.rSyncAddClause(fileNameClause.toString()), isLFMT);
         } else {
             ArrayList<String> sshParams = new ArrayList<>();
             sshParams.add("ssh");
@@ -176,8 +337,14 @@ public class DownloadSettings {
                 sshParams.addAll(Arrays.asList(new String[]{"-l", GetLogs.sshUser}));
             }
 
-            if (isLfmt()) {
-                sshParams.add(ap.getSettings().getLfmtHostInstance().getHost());
+            if (isLFMT) {
+                LFMTHostInstance lfmtHostInstance = ap.getLFMT();
+                if (lfmtHostInstance == null) {
+                    return;
+
+                }
+                sshParams.add(lfmtHostInstance.getHost());
+
             } else {
                 sshParams.add(theAppHost);
 
@@ -231,7 +398,7 @@ public class DownloadSettings {
 
         if (!ap.getSettings().isIsGenesys()) {
             String backSlash = "";
-            if (!GetLogs.useRSync) {
+            if (!isUseRSync()) {
                 backSlash = "\\";
                 fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
             } else {
@@ -241,7 +408,7 @@ public class DownloadSettings {
 
         } else {
             String backSlash = "";
-            if (!GetLogs.useRSync) {
+            if (!isUseRSync()) {
                 backSlash = "\\";
             }
             fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
@@ -263,7 +430,7 @@ public class DownloadSettings {
                     .append("").append(backSlash).append(".").append(backSlash).append("*");
 
         }
-        logger.debug("fileName clause: [" + fileNameClause + "]");
+        GetLogs.logger.debug("fileName clause: [" + fileNameClause + "]");
         return fileNameClause;
     }
 
@@ -384,7 +551,11 @@ public class DownloadSettings {
     }
 
     public SettingsPanel.TimeProfile getTimeProfile() {
-        return timeProfile;
+        SettingsPanel.TimeProfile ret1 = timeProfile;
+        if (ret1 == null) {
+            ret1 = SettingsPanel.TimeProfile.VALUE;
+        }
+        return ret1;
     }
 
     private long rangeStart;
@@ -542,6 +713,22 @@ public class DownloadSettings {
             return name; //To change body of generated methods, choose Tools | Templates.
         }
 
+        private LFMTHostInstance getLFMT() {
+            AppSettings settings = getSettings();
+            LFMTHostInstance lfmtHostInstance = null;
+            if (settings != null) {
+                lfmtHostInstance = settings.getLfmtHostInstance();
+                if (lfmtHostInstance != null) {
+                    if (lfmtHostInstance.getHost() == null || lfmtHostInstance.getInstance() == null) {
+                        lfmtHostInstance = null;
+                    }
+                }
+                if (lfmtHostInstance == null) {
+                    LogManager.getLogger().error(this + ": - lfmt is selected but LFMT host not configured.");
+                }
+            }
+            return lfmtHostInstance;
+        }
     }
 
     static public class AppSettings implements Serializable {
@@ -561,7 +748,7 @@ public class DownloadSettings {
             this.lfmtHostInstance = lfmtHostInstance;
         }
 
-        private AppSettings(AppSettings settings1) {
+        public AppSettings(AppSettings settings1) {
             this.isGenesys = settings1.isIsGenesys();
         }
 
@@ -575,18 +762,4 @@ public class DownloadSettings {
 
     }
 
-//    private void writeObject(java.io.ObjectOutputStream out)
-//            throws IOException {
-//
-//    }
-//
-//    private void readObject(java.io.ObjectInputStream in)
-//            throws IOException, ClassNotFoundException {
-//
-//    }
-//
-//    private void readObjectNoData()
-//            throws ObjectStreamException {
-//
-//    }
 }

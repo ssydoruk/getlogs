@@ -71,6 +71,26 @@ public class GetLogs {
      */
     private static String sLogDirectory;
     public static String appHost;
+    private static String sLoaderLog;
+    private static Option optHosts;
+    private static Option optCmd;
+    private static Option optApp;
+    private static Option optIsLFMT;
+    private static Option optLogLevel;
+    private static Option optLFMTInstance;
+    private static Option optSSHUser;
+    private static Option optLogDirectory;
+    private static Option optLoaderLog;
+    private static Option optGrep;
+    private static Option optForceHost;
+    private static Option optHelp;
+    private static Option optDay;
+    private static Option optArchives;
+    private static Option optGUIProfile;
+    private static Option optIsCloud;
+    private static Option optListFiles;
+    private static Option optUseRSync;
+    private static Option optTime;
 
     public static Hosts getHosts() {
         return hosts;
@@ -87,24 +107,23 @@ public class GetLogs {
     public static void main(String[] args) throws Exception {
 
         options = new Options();
-        Option optHosts;
 
         optHosts = new Option("l", "hosts", true, "file containing binding host to genesysApplication. "
                 + "\n\tSingle line contains entry <hostname>,<Genesys_application_name>");
         optHosts.setRequired(true);
         options.addOption(optHosts);
 
-        Option optCmd = new Option("c", "command", true, "command to run.\nAccepted values are " + GetCommand.showAll());
-        optCmd.setRequired(true);
+        optCmd = new Option("c", "command", true, "command to run.\nAccepted values are " + GetCommand.showAll());
+        optCmd.setRequired(false);
         optCmd.setType(String.class);
         options.addOption(optCmd);
 
-        Option optApp = new Option("a", "app", true, "Genesys application name. Multiple can be specified"
+        optApp = new Option("a", "app", true, "Genesys application name. Multiple can be specified"
                 + " separated by coma (no spaces)");
-        optApp.setRequired(true);
+        optApp.setRequired(false);
         options.addOption(optApp);
 
-        Option optIsLFMT = Option.builder("f")
+        optIsLFMT = Option.builder("f")
                 .hasArg(true)
                 .required(false)
                 .desc("go to LFMT host for the logs\nBy default go to the server")
@@ -112,7 +131,7 @@ public class GetLogs {
                 .build();
         options.addOption(optIsLFMT);
 
-        Option optGUIProfile = Option.builder("f")
+        optGUIProfile = Option.builder("f")
                 .hasArg(true)
                 .required(false)
                 .desc("Path to GUI configured storage (JSON)."
@@ -121,7 +140,7 @@ public class GetLogs {
                 .build();
         options.addOption(optGUIProfile);
 
-        Option optIsCloud = Option.builder()
+        optIsCloud = Option.builder()
                 .hasArg(false)
                 .required(false)
                 .desc("if mentioned, format of file name is cloud like instead of standard Genesys log file naming")
@@ -129,7 +148,7 @@ public class GetLogs {
                 .build();
         options.addOption(optIsCloud);
 
-        Option optLFMTInstance = Option.builder()
+        optLFMTInstance = Option.builder()
                 .hasArg(true)
                 .required(false)
                 .desc("name of the LFMT instance (e.g. us_lfmt)")
@@ -137,7 +156,7 @@ public class GetLogs {
                 .build();
         options.addOption(optLFMTInstance);
 
-        Option optLogLevel = Option.builder("d")
+        optLogLevel = Option.builder("d")
                 .hasArg(true)
                 .required(false)
                 .desc("Debug level (OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE,ALL)")
@@ -145,7 +164,7 @@ public class GetLogs {
                 .build();
         options.addOption(optLogLevel);
 
-        Option optSSHUser = Option.builder("u")
+        optSSHUser = Option.builder("u")
                 .hasArg(true)
                 .required(false)
                 .desc("user to be passed to ssh")
@@ -153,7 +172,7 @@ public class GetLogs {
                 .build();
         options.addOption(optSSHUser);
 
-        Option optLogDirectory = Option.builder("b")
+        optLogDirectory = Option.builder("b")
                 .hasArg(true)
                 .required(false)
                 .desc("base directory to which logs should be put")
@@ -161,7 +180,15 @@ public class GetLogs {
                 .build();
         options.addOption(optLogDirectory);
 
-        Option optListFiles = Option.builder()
+        optLoaderLog = Option.builder()
+                .hasArg(true)
+                .required(false)
+                .desc("Path to utility log directory and/or file")
+                .longOpt("log-file")
+                .build();
+        options.addOption(optLoaderLog);
+
+        optListFiles = Option.builder()
                 .hasArg(false)
                 .required(false)
                 .desc("show files")
@@ -169,7 +196,7 @@ public class GetLogs {
                 .build();
         options.addOption(optListFiles);
 
-        Option optUseRSync = Option.builder()
+        optUseRSync = Option.builder()
                 .hasArg(false)
                 .required(false)
                 .desc("use rsync for file transfer")
@@ -177,7 +204,7 @@ public class GetLogs {
                 .build();
         options.addOption(optUseRSync);
 
-        Option optForceHost = Option.builder()
+        optForceHost = Option.builder()
                 .hasArg(true)
                 .required(false)
                 .desc("force host <arg> instead of looking up the file")
@@ -185,7 +212,7 @@ public class GetLogs {
                 .build();
         options.addOption(optForceHost);
 
-        Option optGrep = Option.builder("g")
+        optGrep = Option.builder("g")
                 .hasArg(true)
                 .required(false)
                 .desc("grep expression to search for <arg>")
@@ -193,7 +220,7 @@ public class GetLogs {
                 .build();
         options.addOption(optGrep);
 
-        Option optHelp = Option.builder("h")
+        optHelp = Option.builder("h")
                 .hasArg(false)
                 .required(false)
                 .desc("Show help and exit")
@@ -201,7 +228,7 @@ public class GetLogs {
                 .build();
         options.addOption(optHelp);
 
-        Option optDay = Option.builder("y")
+        optDay = Option.builder("y")
                 .hasArg(true)
                 .required(false)
                 .desc("Specify date for logs")
@@ -209,7 +236,7 @@ public class GetLogs {
                 .build();
         options.addOption(optDay);
 
-        Option optArchives = Option.builder()
+        optArchives = Option.builder()
                 .hasArg(true)
                 .required(false)
                 .desc("file containing list of log files on LFMT hosts (one file per line)\n"
@@ -218,7 +245,7 @@ public class GetLogs {
                 .build();
         options.addOption(optArchives);
 
-        Option optTime = Option.builder("t")
+        optTime = Option.builder("t")
                 .hasArg(true)
                 .required(false)
                 .desc("Specify time")
@@ -232,15 +259,16 @@ public class GetLogs {
         try {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            showHelpExit(options);
+            showHelpExit(e.getMessage(), options);
         }
 
+//<editor-fold defaultstate="collapsed" desc="common options">
         if (cmd.hasOption(optHelp.getLongOpt())) {
             showHelpExit(options);
         }
 
-        initLogger((String) cmd.getParsedOptionValue(optLogLevel.getOpt()));
+        sLoaderLog = (String) cmd.getParsedOptionValue(optLoaderLog.getLongOpt());
+        initLogger((String) cmd.getParsedOptionValue(optLogLevel.getOpt()), sLoaderLog);
         if (logger.isDebugEnabled()) {
             StringBuilder s = new StringBuilder();
             for (String arg : args) {
@@ -253,30 +281,11 @@ public class GetLogs {
         }
 
         hostAppFile = (String) cmd.getParsedOptionValue(optHosts.getOpt());
-        execCmd = (String) cmd.getParsedOptionValue(optCmd.getOpt());
-
-        execCommand = checkCmdCommand(execCmd, options);
-
-        appsOpt = (String) cmd.getParsedOptionValue(optApp.getOpt());
-
-        sshUser = (String) cmd.getParsedOptionValue(optSSHUser.getOpt());
-
-        listFiles = cmd.hasOption(optListFiles.getLongOpt());
-        useRSync = cmd.hasOption(optUseRSync.getLongOpt());
-
-        lfmtInstance = (String) cmd.getParsedOptionValue(optLFMTInstance.getLongOpt());
-        lfmtHost = (String) cmd.getParsedOptionValue(optIsLFMT.getOpt());
-
-        if ((lfmtInstance != null && !lfmtInstance.isEmpty()
-                && (lfmtHost == null || lfmtHost.isEmpty()))
-                || ((lfmtHost != null && !lfmtHost.isEmpty())
-                && (lfmtInstance == null || lfmtInstance.isEmpty()))) {
-            logger.error("If LFMT to be used, then both options " + optLFMTInstance.getLongOpt() + " and " + optIsLFMT.getLongOpt()
-                    + " are to be specified");
-            System.exit(1);
+        if (hostAppFile == null || hostAppFile.trim().isEmpty()) {
+            showHelpExit("Option " + optHosts.getOpt() + " (" + optHosts.getLongOpt() + ") is mandatory", options);
         }
 
-        sGrep = (String) cmd.getParsedOptionValue(optGrep.getLongOpt());
+        hosts = new Hosts(hostAppFile);
 
         sLogDirectory = (String) cmd.getParsedOptionValue(optLogDirectory.getLongOpt());
         if (sLogDirectory == null || sLogDirectory.isEmpty()) {
@@ -287,38 +296,24 @@ public class GetLogs {
                 sLogDirectory = m.group(1);
             }
         }
+        sshUser = (String) cmd.getParsedOptionValue(optSSHUser.getOpt());
 
+//</editor-fold>
         //--------------------------------------
         if (logger.isDebugEnabled()) {
             logger.debug("Current directory:" + getWD());
 //            Runtime.getRuntime().exec("ls -l");
         }
-        hosts = new Hosts(hostAppFile);
-
-        apps = new ArrayList<>();
-        String[] split = appsOpt.split(",");
-        for (String string : split) {
-            apps.add(string);
-        }
-
-        sArchives = (String) cmd.getParsedOptionValue(optArchives.getLongOpt());
-        if (sArchives != null && !sArchives.isEmpty()) {
-            logFiles = new LogFiles(sArchives);
-        }
-
-        bIsCloud = cmd.hasOption(optIsCloud.getLongOpt());
-
-        appHost = (String) cmd.getParsedOptionValue(optForceHost.getLongOpt());
-        dateSpec = (String) cmd.getParsedOptionValue(optDay.getOpt());
-        timeSpec = (String) cmd.getParsedOptionValue(optTime.getOpt());
 
         sGUIProfile = (String) cmd.getParsedOptionValue(optGUIProfile.getLongOpt());
 
         if (sGUIProfile != null && !sGUIProfile.isEmpty()) {
             processGUI(options);
         } else {
-            processCMDLine(options);
+            processCMDLine(options, cmd);
         }
+
+        logger.info("allDone");
 
     }
 
@@ -383,63 +378,62 @@ public class GetLogs {
     static ArrayList<String> apps = null;
     static Logger logger;
 
-    public static void initLogger(String par) {
+    public static void initLogger(String par, String sLoaderLog1) {
 
         Level level = Level.INFO;
         if (par != null) {
             level = Level.toLevel(par, Level.INFO);
         }
+        if (sLoaderLog1 == null || sLoaderLog1.isEmpty()) {
+            sLoaderLog1 = "./applog";
+        }
 
         ConfigurationBuilder<BuiltConfiguration> builder
                 = ConfigurationBuilderFactory.newConfigurationBuilder();
 
+        builder.addProperty("LogFileName", sLoaderLog1);
+
         AppenderComponentBuilder console
                 = builder.newAppender("stdout", "Console");
 
-        builder.add(console);
-
-        AppenderComponentBuilder file
-                = builder.newAppender("log", "File");
-        file.addAttribute("fileName", "logging.log");
-
-        builder.add(file);
-
         ComponentBuilder triggeringPolicies = builder.newComponent("Policies")
-                .addComponent(builder.newComponent("CronTriggeringPolicy")
-                        .addAttribute("schedule", "0 0 0 * * ?"))
+                .addComponent(builder.newComponent("OnStartupTriggeringPolicy"))
                 .addComponent(builder.newComponent("SizeBasedTriggeringPolicy")
-                        .addAttribute("size", "100M"));
+                        .addAttribute("size", "20M"));
 
         AppenderComponentBuilder rollingFile
                 = builder.newAppender("rolling", "RollingFile");
-        rollingFile.addAttribute("fileName", "rolling.log");
-        rollingFile.addAttribute("filePattern", "rolling-%d{MM-dd-yy}.log.gz");
+        rollingFile.addAttribute("fileName", "${LogFileName}.log");
+        rollingFile.addAttribute("filePattern", "${LogFileName}-%d{yyyyMMdd-HHmmss_SSS}.log");
         rollingFile.addComponent(triggeringPolicies);
-        builder.add(rollingFile);
 
-        FilterComponentBuilder flow = builder.newFilter(
-                "MarkerFilter",
-                Filter.Result.ACCEPT,
-                Filter.Result.DENY);
-        flow.addAttribute("marker", "FLOW");
-        console.add(flow);
-
+//        FilterComponentBuilder flow = builder.newFilter(
+//                "MarkerFilter",
+//                Filter.Result.ACCEPT,
+//                Filter.Result.DENY);
+//        flow.addAttribute("marker", "FLOW");
+//        console.add(flow);
         LayoutComponentBuilder standard
                 = builder.newLayout("PatternLayout");
-        standard.addAttribute("pattern", "%d [%t] %-5level: %msg%n%throwable");
+        standard.addAttribute("pattern", "%d %5.5p %30.30C [%t] %m%n");
 
         console.add(standard);
-        file.add(standard);
         rollingFile.add(standard);
+
+        builder.add(console);
+        builder.add(rollingFile);
 
         RootLoggerComponentBuilder rootLogger
                 = builder.newRootLogger(level);
         rootLogger.add(builder.newAppenderRef("stdout"));
+        rootLogger.add(builder.newAppenderRef("rolling"));
 
         builder.add(rootLogger);
 
         Configurator.initialize(builder.build());
+//        System.out.println(builder.toXmlConfiguration());
         logger = LogManager.getLogger();
+        logger.info("log initialized");
 
     }
 
@@ -451,7 +445,13 @@ public class GetLogs {
     }
 
     private static void showHelpExit(String msg, Options options) {
-        logger.error(msg);
+        if (msg != null && msg.isEmpty()) {
+            if (logger != null) {
+                logger.error(msg);
+            } else {
+                System.out.println(msg);
+            }
+        }
         showHelpExit(options);
     }
 
@@ -634,7 +634,7 @@ public class GetLogs {
 //        sshCmd.append(" -o ");
         ArrayList<String> matchedFiles = new ArrayList<>();
         for (Map.Entry<String, String> extUnp : extUnpacker.entrySet()) {
-            for (String matchedFile : execGrep(extUnp.getKey(), extUnp.getValue(), sshParams, sshCmd)) {
+            for (String matchedFile : execGrep(extUnp.getKey(), extUnp.getValue(), sshParams, sshCmd, sGrep)) {
                 if (matchedFile.startsWith(filePrefix)) {
                     matchedFiles.add(matchedFile.substring(filePrefix.length()));
                 } else {
@@ -655,9 +655,10 @@ public class GetLogs {
         return ret;
     }
 
-    final static private String filePrefix = "!file!";
+    final static public String filePrefix = "!file!";
 
-    private static ArrayList<String> execGrep(String ext, String unp, ArrayList<String> sshParams, StringBuilder sshCmd) throws IOException, InterruptedException {
+    public static ArrayList<String> execGrep(String ext, String unp, ArrayList<String> sshParams, StringBuilder sshCmd,
+            String regex) throws IOException, InterruptedException {
         StringBuilder grepCmd = new StringBuilder();
         grepCmd.append(sshCmd)
                 .append(" -iname ").append(ext)
@@ -665,7 +666,7 @@ public class GetLogs {
                 //                .append("echo bash is here; echo params: $*; ")
                 .append("for f in $*; do if ")
                 .append(unp)
-                .append("| egrep -q \"").append(sGrep).append("\"; then echo ").append(filePrefix).append("${f}; fi; done'" + "");
+                .append("| egrep -q \"").append(regex).append("\"; then echo ").append(filePrefix).append("${f}; fi; done'" + "");
         ArrayList<String> paramsRun = new ArrayList<>(sshParams);
         paramsRun.add(grepCmd.toString());
         ExtProcess procSSH = new ExtProcess(paramsRun);
@@ -675,21 +676,13 @@ public class GetLogs {
 
     }
 
-    private static final Pattern fileBaseName = Pattern.compile("([^\\/]+)$");
 
-    static private String stripDir(String fileName) {
-        Matcher m;
-        if ((m = fileBaseName.matcher(fileName)).find()) {
-            return m.group(0);
-        }
-        return fileName;
-    }
 
     private static void executeGrepGet(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
         ArrayList<String> executeGrep = executeGrep(ap, theAppHost, logsDir, fileNameClause);
         ArrayList<String> rSyncFiles = new ArrayList<>();
         for (String fileName : executeGrep) {
-            rSyncFiles.addAll(rSyncAddClause(stripDir(fileName)));
+            rSyncFiles.addAll(rSyncAddClause(Utils.Util.stripDir(fileName)));
         }
 
         executeRSync(ap, theAppHost, logsDir, rSyncFiles);
@@ -883,7 +876,6 @@ public class GetLogs {
                     .setDateFormat(DateFormat.LONG)
                     .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
                     .setPrettyPrinting()
-                    .setVersion(1.0)
                     .create();
 
             try {
@@ -910,7 +902,47 @@ public class GetLogs {
         }
     }
 
-    private static void processCMDLine(Options options) throws IOException, InterruptedException {
+    private static void processCMDLine(Options options, CommandLine cmd) throws IOException, InterruptedException, ParseException {
+        sArchives = (String) cmd.getParsedOptionValue(optArchives.getLongOpt());
+        if (sArchives != null && !sArchives.isEmpty()) {
+            logFiles = new LogFiles(sArchives);
+        }
+        apps = new ArrayList<>();
+        String[] split = appsOpt.split(",");
+        for (String string : split) {
+            apps.add(string);
+        }
+        
+
+        bIsCloud = cmd.hasOption(optIsCloud.getLongOpt());
+
+        appHost = (String) cmd.getParsedOptionValue(optForceHost.getLongOpt());
+        dateSpec = (String) cmd.getParsedOptionValue(optDay.getOpt());
+        timeSpec = (String) cmd.getParsedOptionValue(optTime.getOpt());
+
+        execCmd = (String) cmd.getParsedOptionValue(optCmd.getOpt());
+
+        execCommand = checkCmdCommand(execCmd, options);
+
+        appsOpt = (String) cmd.getParsedOptionValue(optApp.getOpt());
+
+        listFiles = cmd.hasOption(optListFiles.getLongOpt());
+        useRSync = cmd.hasOption(optUseRSync.getLongOpt());
+
+        lfmtInstance = (String) cmd.getParsedOptionValue(optLFMTInstance.getLongOpt());
+        lfmtHost = (String) cmd.getParsedOptionValue(optIsLFMT.getOpt());
+
+        if ((lfmtInstance != null && !lfmtInstance.isEmpty()
+                && (lfmtHost == null || lfmtHost.isEmpty()))
+                || ((lfmtHost != null && !lfmtHost.isEmpty())
+                && (lfmtInstance == null || lfmtInstance.isEmpty()))) {
+            logger.error("If LFMT to be used, then both options " + optLFMTInstance.getLongOpt() + " and " + optIsLFMT.getLongOpt()
+                    + " are to be specified");
+            System.exit(1);
+        }
+
+        sGrep = (String) cmd.getParsedOptionValue(optGrep.getLongOpt());
+
         //---------------------parameters processing done-----------------
         if (logFiles != null) {
             for (Map.Entry<String, ArrayList<LogFiles.LogFile>> object : logFiles.entrySet()) {
@@ -937,8 +969,6 @@ public class GetLogs {
             ds.executeCmd();
         }
 
-        System.out.println(
-                "allDone");
     }
 
     static void exitHelp(String string) {

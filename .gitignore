@@ -15,7 +15,6 @@ build/classes/.netbeans_automatic_build
 build
 confserv
 dist
-nbproject
 test
 test1
 us_config_proxy_1_p
@@ -27,3 +26,4 @@ rolling.log
 ssh.log
 
 foundation.txt
+/nbproject/private/
