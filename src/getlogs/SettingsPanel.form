@@ -388,7 +388,7 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="lbDateRegex">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Date regex(digits, [-])"/>
+                            <Property name="text" type="java.lang.String" value="Date shell regex(YYYYMMDD digits, [-])"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="tfDateRegex">
@@ -401,7 +401,7 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="lbTimeRegex">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Time regex(digits, [-])"/>
+                            <Property name="text" type="java.lang.String" value="Time shell regex(HHMMSS digits, [-])"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="tfTimeRegex">

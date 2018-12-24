@@ -143,12 +143,13 @@ public class SettingsPanel extends javax.swing.JPanel {
                 public void run() {
                     int maxSelectionIndex = lsm.getMaxSelectionIndex();
                     int minSelectionIndex = lsm.getMinSelectionIndex();
-                    System.out.println("-1-" + evt
-                            + " f: " + evt.getFirstIndex()
-                            + " l: " + evt.getLastIndex()
-                            + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
-                    );
+//                    System.out.println("-1-" + evt
+//                            + " f: " + evt.getFirstIndex()
+//                            + " l: " + evt.getLastIndex()
+//                            + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
+//                    );
                     for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
+                        if(i<lmProfile.getSize())
                         ((DownloadSettings.AppProfile) lmProfile.getElementAt(i))
                                 .setSelected(lsm.isSelectedIndex(i));
 
@@ -165,7 +166,7 @@ public class SettingsPanel extends javax.swing.JPanel {
      */
     private void clbProfileSelectionChanged(ListSelectionEvent evt) {
         if (!evt.getValueIsAdjusting()) {
-            System.out.println("clbProfileSelectionChanged List item changed - " + evt);
+//            System.out.println("clbProfileSelectionChanged List item changed - " + evt);
             ListSelectionModel lsm = (ListSelectionModel) evt.getSource();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -280,12 +281,13 @@ public class SettingsPanel extends javax.swing.JPanel {
                 public void run() {
                     int maxSelectionIndex = lsm.getMaxSelectionIndex();
                     int minSelectionIndex = lsm.getMinSelectionIndex();
-                    System.out.println("-1-" + evt
-                            + " f: " + evt.getFirstIndex()
-                            + " l: " + evt.getLastIndex()
-                            + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
-                    );
+//                    System.out.println("-1-" + evt
+//                            + " f: " + evt.getFirstIndex()
+//                            + " l: " + evt.getLastIndex()
+//                            + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
+//                    );
                     for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
+                        if(!lmApps.isEmpty() && i<lmApps.getSize())
                         ((DownloadSettings.App) lmApps.getElementAt(i))
                                 .setChecked(lsm.isSelectedIndex(i));
 
@@ -634,7 +636,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel15.setLayout(new javax.swing.BoxLayout(jPanel15, javax.swing.BoxLayout.LINE_AXIS));
 
-        lbDateRegex.setText("Date regex(digits, [-])");
+        lbDateRegex.setText("Date shell regex(YYYYMMDD digits, [-])");
         jPanel15.add(lbDateRegex);
         jPanel15.add(tfDateRegex);
 
@@ -642,7 +644,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel14.setLayout(new javax.swing.BoxLayout(jPanel14, javax.swing.BoxLayout.LINE_AXIS));
 
-        lbTimeRegex.setText("Time regex(digits, [-])");
+        lbTimeRegex.setText("Time shell regex(HHMMSS digits, [-])");
         jPanel14.add(lbTimeRegex);
         jPanel14.add(tfTimeRegex);
 
@@ -1157,15 +1159,15 @@ public class SettingsPanel extends javax.swing.JPanel {
             setModal(true);
 
             pack();
-            if (LogManager.getLogger().isDebugEnabled()) {
-                LogManager.getLogger().debug("Show info PanelDialog; title=" + getTitle() + "; tab cols:" + tab.getColumnCount() + " rows: " + tab.getRowCount());
+            if (LogManager.getLogger().isTraceEnabled()) {
+                LogManager.getLogger().trace("Show info PanelDialog; title=" + getTitle() + "; tab cols:" + tab.getColumnCount() + " rows: " + tab.getRowCount());
                 StringBuilder s = new StringBuilder(512);
                 for (int i = 0; i < tab.getRowCount(); i++) {
                     s.setLength(0);
                     for (int j = 0; j < tab.getColumnCount(); j++) {
                         s.append("[" + tab.getValueAt(i, j) + "],");
                     }
-                    LogManager.getLogger().debug(s);
+                    LogManager.getLogger().trace(s);
                 }
 
             }

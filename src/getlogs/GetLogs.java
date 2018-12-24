@@ -259,6 +259,7 @@ public class GetLogs {
         try {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
+            LogManager.getLogger().error(e);
             showHelpExit(e.getMessage(), options);
         }
 
@@ -446,11 +447,7 @@ public class GetLogs {
 
     private static void showHelpExit(String msg, Options options) {
         if (msg != null && msg.isEmpty()) {
-            if (logger != null) {
-                logger.error(msg);
-            } else {
-                System.out.println(msg);
-            }
+            LogManager.getLogger().error(msg);
         }
         showHelpExit(options);
     }
@@ -883,7 +880,7 @@ public class GetLogs {
                 ds = gson.fromJson(reader, DownloadSettings.class);
                 reader.close();
             } catch (JsonSyntaxException | JsonIOException | IOException ex) {
-                java.util.logging.Logger.getLogger(SettingsDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                LogManager.getLogger().error(ex);
             }
         } else {
             ds = new DownloadSettings();
