@@ -320,7 +320,7 @@ public class DownloadSettings {
         dstSpec.append(getOutputDir()).append("/").append(ap);
 
         rsyncParams.add(dstSpec.toString());
-        LogManager.getLogger().info("executing: " + rsyncParams);
+//        LogManager.getLogger().trace("executing: " + rsyncParams);
         ExtProcess procRSync = new ExtProcess(rsyncParams);
         procRSync.startProcess();
         procRSync.waitFor();
@@ -430,7 +430,7 @@ public class DownloadSettings {
                     .append("").append(backSlash).append(".").append(backSlash).append("*");
 
         }
-        GetLogs.logger.debug("fileName clause: [" + fileNameClause + "]");
+        GetLogs.logger.trace("fileName clause: [" + fileNameClause + "]");
         return fileNameClause;
     }
 
