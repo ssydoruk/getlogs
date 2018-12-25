@@ -34,8 +34,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 import javax.swing.BorderFactory;
@@ -149,9 +147,10 @@ public class SettingsPanel extends javax.swing.JPanel {
 //                            + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
 //                    );
                     for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
-                        if(i<lmProfile.getSize())
-                        ((DownloadSettings.AppProfile) lmProfile.getElementAt(i))
-                                .setSelected(lsm.isSelectedIndex(i));
+                        if (i < lmProfile.getSize()) {
+                            ((DownloadSettings.AppProfile) lmProfile.getElementAt(i))
+                                    .setSelected(lsm.isSelectedIndex(i));
+                        }
 
                     }
                 }
@@ -287,9 +286,10 @@ public class SettingsPanel extends javax.swing.JPanel {
 //                            + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
 //                    );
                     for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
-                        if(!lmApps.isEmpty() && i<lmApps.getSize())
-                        ((DownloadSettings.App) lmApps.getElementAt(i))
-                                .setChecked(lsm.isSelectedIndex(i));
+                        if (!lmApps.isEmpty() && i < lmApps.getSize()) {
+                            ((DownloadSettings.App) lmApps.getElementAt(i))
+                                    .setChecked(lsm.isSelectedIndex(i));
+                        }
 
                     }
                 }
@@ -1046,9 +1046,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 
             writer.close();
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
         } catch (IOException ex) {
-            Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
         }
 
     }
