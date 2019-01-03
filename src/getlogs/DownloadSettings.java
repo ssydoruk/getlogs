@@ -12,6 +12,7 @@ import Utils.UTCTimeRange;
 import Utils.UnixProcess.ExtProcess;
 import static Utils.Util.stripDir;
 import com.jidesoft.dialog.StandardDialog;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 
@@ -328,6 +330,8 @@ public class DownloadSettings {
 
     private void executeGet(App ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause, boolean useRSync1,
             boolean isLFMT) throws IOException, InterruptedException {
+        FileUtils.forceMkdir(new File (getOutputDir()));
+        Utils.FileUtils.setCurrentDirectory(getOutputDir());
         if (useRSync1) {
             executeRSync(ap, theAppHost, logsDir, GetLogs.rSyncAddClause(fileNameClause.toString()), isLFMT);
         } else {
