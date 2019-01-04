@@ -27,3 +27,5 @@ ssh.log
 
 foundation.txt
 /nbproject/private/
+
+.DS_Store
