@@ -879,6 +879,7 @@ public class GetLogs {
                 InputStreamReader reader = new InputStreamReader(new FileInputStream(f));
                 ds = gson.fromJson(reader, DownloadSettings.class);
                 reader.close();
+                ds.checkLFMT();
             } catch (JsonSyntaxException | JsonIOException | IOException ex) {
                 LogManager.getLogger().error(ex);
             }
