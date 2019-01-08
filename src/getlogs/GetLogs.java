@@ -19,9 +19,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.DriverManager;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
@@ -45,6 +49,8 @@ import org.apache.logging.log4j.core.config.builder.api.FilterComponentBuilder;
 import org.apache.logging.log4j.core.config.builder.api.LayoutComponentBuilder;
 import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
+import org.apache.logging.log4j.io.IoBuilder;
+
 
 /**
  *
@@ -423,19 +429,23 @@ public class GetLogs {
 
         builder.add(console);
         builder.add(rollingFile);
-
+//        Appender appe = MyCustomAppenderImpl.createAppender("appe1", null, null, null);
+//        AppenderComponentBuilder newAppender = builder.newAppender("appe", "appe1");
+//        builder.add(appe);
+        
         RootLoggerComponentBuilder rootLogger
                 = builder.newRootLogger(level);
         rootLogger.add(builder.newAppenderRef("stdout"));
         rootLogger.add(builder.newAppenderRef("rolling"));
-
+//        rootLogger.add(builder.newAppenderRef("appe"));
         builder.add(rootLogger);
 
         Configurator.initialize(builder.build());
 //        System.out.println(builder.toXmlConfiguration());
         logger = LogManager.getLogger();
         logger.info("log initialized");
-
+        
+        
     }
 
     private static void showHelpExit(Options options) {
@@ -673,8 +683,6 @@ public class GetLogs {
 
     }
 
-
-
     private static void executeGrepGet(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
         ArrayList<String> executeGrep = executeGrep(ap, theAppHost, logsDir, fileNameClause);
         ArrayList<String> rSyncFiles = new ArrayList<>();
@@ -893,11 +901,22 @@ public class GetLogs {
             apps.add(new DownloadSettings.App("URS1", new DownloadSettings.AppSettings()));
             apps.add(new DownloadSettings.App("ORS2", new DownloadSettings.AppSettings()));
         }
-        ds.setSettingsFile(sGUIProfile);
-        if (ds.showGui() == StandardDialog.RESULT_AFFIRMED) {
-            ds.executeCmd();
+        showGui(ds);
+    }
 
-        }
+    static void showGui(DownloadSettings ds) throws InterruptedException, InvocationTargetException {
+
+        java.awt.EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+
+                SettingsDialog dlg = new SettingsDialog(ds);
+                dlg.getCe().setSettingsFile(sGUIProfile);
+                dlg.pack();
+                dlg.invalidate();
+                ScreenInfo.CenterWindow(dlg);
+                dlg.setVisible(true);
+            }
+        });
     }
 
     private static void processCMDLine(Options options, CommandLine cmd) throws IOException, InterruptedException, ParseException {
@@ -910,7 +929,6 @@ public class GetLogs {
         for (String string : split) {
             apps.add(string);
         }
-        
 
         bIsCloud = cmd.hasOption(optIsCloud.getLongOpt());
 
@@ -964,7 +982,9 @@ public class GetLogs {
                 settings.setLfmtHostInstance(theLFMT);
                 processApp(app, options);
             }
-            ds.executeCmd();
+            CommandExecutor ce = new CommandExecutor(false, ds);
+
+            ce.executeCmd();
         }
 
     }
