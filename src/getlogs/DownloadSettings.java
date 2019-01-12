@@ -21,7 +21,6 @@ public class DownloadSettings {
 
     private String outputDir;
     private SettingsPanel.TimeProfile timeProfile;
-    private String settingsFile;
     private String dateSpec;
     private String timeSpec;
     private GetCommand actionCommand;
@@ -94,19 +93,15 @@ public class DownloadSettings {
         prod = true;
         rangeStart = 0;
         rangeEnd = 0;
-        settingsFile = "foundation.txt";
     }
 
     ArrayList<LFMTHostInstance> lfmtHostInstances;
 
-    LFMTHostInstance addLFMTPair(String text, String text0) {
-        LFMTHostInstance ret1 = new LFMTHostInstance(text, text0);
+    LFMTHostInstance addLFMTInstance(String host, String instance, String baseDir) {
+        LFMTHostInstance ret1 = new LFMTHostInstance(host, instance, baseDir);
         lfmtHostInstances.add(ret1);
         return ret1;
     }
-    
-    
-
 
     void setCMDDate(String dateSpec) {
         if (dateSpec != null && !dateSpec.isEmpty() && !GetLogs.regDateTimeSpec.matcher(dateSpec).matches()) {
@@ -126,7 +121,7 @@ public class DownloadSettings {
 
     void setCMDTime(String timeSpec) {
         if (timeSpec != null && !timeSpec.isEmpty() && !GetLogs.regDateTimeSpec.matcher(timeSpec).matches()) {
-            GetLogs.exitHelp("Time is specified but the format is incorrect");
+            LogManager.getLogger().error("Time is specified [" + timeSpec + "] but the format is incorrect");
         } else {
             this.timeSpec = timeSpec;
         }
@@ -144,24 +139,41 @@ public class DownloadSettings {
 
     }
 
+    public static class LFMTHostInstance {
 
-    public static class LFMTHostInstance extends Pair<String, String> {
+        private String host;
+        private String instance;
+        private String baseDir;
+
+        public LFMTHostInstance(String host, String instance, String baseDir) {
+            this.host = host;
+            this.instance = instance;
+            this.baseDir = baseDir;
+        }
+
+        public String getBaseDir() {
+            if (baseDir == null || baseDir.isEmpty()) {
+                return "/Logs/";
+            } else {
+                return baseDir;
+            }
+        }
+
+        public void setBaseDir(String baseDir) {
+            this.baseDir = baseDir;
+        }
 
         public String getHost() {
-            return getKey();
+            return host;
         }
 
         public String getInstance() {
-            return getValue();
-        }
-
-        public LFMTHostInstance(String key, String value) {
-            super(key, value);
+            return instance;
         }
 
         @Override
         public String toString() {
-            return "Host[" + getKey() + "] instance[" + getValue() + "]";
+            return "Host[" + host + "] instance[" + instance + "]";
         }
 
     }
@@ -247,9 +259,6 @@ public class DownloadSettings {
 
     private long rangeStart;
 
-    public String getSettingsFile() {
-        return settingsFile;
-    }
     private long rangeEnd;
 
     UTCTimeRange getTimeRange() {
@@ -272,12 +281,6 @@ public class DownloadSettings {
         rangeStart = timeRange.getStart();
         rangeEnd = timeRange.getEnd();
     }
-
-    void setSettingsFile(String sGUIProfile) {
-        this.settingsFile = sGUIProfile;
-    }
-
-
 
     static public class AppProfile {
 
@@ -401,7 +404,9 @@ public class DownloadSettings {
             LFMTHostInstance lfmt1 = getLFMT();
             if (lfmt1 != null) {
                 for (LFMTHostInstance lfmtHostInstance : lfmtHostInstances) {
-                    if (lfmtHostInstance.getHost().equalsIgnoreCase(lfmt1.getHost())
+                    if (lfmtHostInstance.getHost() != null && lfmt1.getHost() != null
+                            && lfmtHostInstance.getInstance() != null && lfmt1.getInstance() != null
+                            && lfmtHostInstance.getHost().equalsIgnoreCase(lfmt1.getHost())
                             && lfmtHostInstance.getInstance().equalsIgnoreCase(lfmt1.getInstance())) {
                         return;
                     }

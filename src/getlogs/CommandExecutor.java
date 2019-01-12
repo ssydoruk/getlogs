@@ -126,6 +126,7 @@ public class CommandExecutor {
                 }
             }
         }
+        LogManager.getLogger().info("Command executed");
     }
 
     SettingsPanel.InfoPanel lsOutput;
@@ -149,7 +150,7 @@ public class CommandExecutor {
             if (lfmtHostInstance == null || lfmtHostInstance.getHost() == null) {
                 GetLogs.exitHelp("LFMT not configured properly for app " + ap);
             }
-            logsDir.append("/Logs/")
+            logsDir.append(lfmtHostInstance.getBaseDir())
                     .append(lfmtHostInstance.getInstance()).append("/")
                     .append(lfmtHostInstance.getInstance()).append("_cls/")
                     .append(theAppHost) //                    .append("/")

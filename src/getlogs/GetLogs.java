@@ -108,6 +108,10 @@ public class GetLogs {
     private static LogFiles logFiles = null;
     private static boolean bIsCloud = false;
     private static String sGUIProfile;
+
+    public static String getsGUIProfile() {
+        return sGUIProfile;
+    }
     private static Options options;
 
     public static void main(String[] args) throws Exception {
@@ -456,7 +460,7 @@ public class GetLogs {
     }
 
     private static void showHelpExit(String msg, Options options) {
-        if (msg != null && msg.isEmpty()) {
+        if (msg != null && !msg.isEmpty()) {
             LogManager.getLogger().error(msg);
         }
         showHelpExit(options);
@@ -967,7 +971,7 @@ public class GetLogs {
         } else {
             DownloadSettings ds = new DownloadSettings();
             DownloadSettings.AppProfile addProfile = ds.addProfile("default");
-            DownloadSettings.LFMTHostInstance theLFMT = new DownloadSettings.LFMTHostInstance(lfmtHost, lfmtInstance);
+            DownloadSettings.LFMTHostInstance theLFMT = new DownloadSettings.LFMTHostInstance(lfmtHost, lfmtInstance, "/Logs");
             ds.setOutputDir(sLogDirectory);
             ds.setProd((lfmtHost == null));
             ds.setLfmt((lfmtHost != null));

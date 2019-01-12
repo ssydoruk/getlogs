@@ -257,8 +257,9 @@ public class SettingsPanel extends javax.swing.JPanel {
             DefaultComboBoxModel<DownloadSettings.LFMTHostInstance> mod = (DefaultComboBoxModel<DownloadSettings.LFMTHostInstance>) cbLFMTs.getModel();
             for (int i = 0; i < mod.getSize(); i++) {
                 DownloadSettings.LFMTHostInstance inst = mod.getElementAt(i);
-                if (inst.getKey() == lfmtHostInstance.getKey()
-                        && inst.getValue() == lfmtHostInstance.getValue()) {
+                if (inst.getHost() == lfmtHostInstance.getHost()
+                        && inst.getInstance() == lfmtHostInstance.getInstance()
+                        && inst.getBaseDir() == lfmtHostInstance.getBaseDir()) {
                     sel = i;
                     break;
                 }
@@ -874,8 +875,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         DefaultTableModel infoTableModel = new DefaultTableModel();
         infoTableModel.addColumn("LFMT host");
         infoTableModel.addColumn("LFMT instance");
+        infoTableModel.addColumn("Base directory");
         for (DownloadSettings.LFMTHostInstance hi : ds.getLfmtHostInstances()) {
-            infoTableModel.addRow(new Object[]{hi.getKey(), hi.getValue()});
+            infoTableModel.addRow(new Object[]{hi.getHost(), hi.getInstance(), hi.getBaseDir()});
         }
         tabLFMT.setModel(infoTableModel);
         JButton bt;
@@ -888,14 +890,14 @@ public class SettingsPanel extends javax.swing.JPanel {
                     dlg = new EditLFMTDialog();
                 }
                 if (dlg.doShow()) {
-                    newLFMTInstance(dlg.getLfmt().tbValue.getText(), dlg.getLfmtInstance().tbValue.getText());
+                    newLFMTInstance(dlg.getLfmt().tbValue.getText(), dlg.getLfmtInstance().tbValue.getText(), dlg.getBaseDir().tbValue.getText());
                 }
             }
 
-            private void newLFMTInstance(String text, String text0) {
-                DownloadSettings.LFMTHostInstance lfmt = ds.addLFMTPair(text, text0);
+            private void newLFMTInstance(String host, String instance, String baseDir) {
+                DownloadSettings.LFMTHostInstance lfmt = ds.addLFMTInstance(host, instance, baseDir);
                 DefaultTableModel mod = (DefaultTableModel) tabLFMT.getModel();
-                mod.addRow(new Object[]{lfmt.getKey(), lfmt.getValue()});
+                mod.addRow(new Object[]{lfmt.getHost(), lfmt.getInstance(), lfmt.getBaseDir()});
             }
         });
         lfmtPanes.addButton(bt);
@@ -1069,7 +1071,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .create();
 
         try {
-            OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(ds.getSettingsFile()));
+            OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(GetLogs.getsGUIProfile()));
             gson.toJson(ds, writer);
 
             writer.close();
@@ -1494,6 +1496,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     class EditLFMTDialog extends StandardDialog {
 
+        private EnterPanel lfmtBaseDir;
+
         public EditLFMTDialog() {
             super();
             setTitle("Edit LFMT host");
@@ -1535,6 +1539,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         public EnterPanel getLfmtInstance() {
             return lfmtInstance;
         }
+        
+                public EnterPanel getBaseDir() {
+            return lfmtBaseDir;
+        }
 
         @Override
         public JComponent createBannerPanel() {
@@ -1549,6 +1557,8 @@ public class SettingsPanel extends javax.swing.JPanel {
             content.add(lfmt.getEnterPanel());
             lfmtInstance = new EnterPanel("LFMT instance");
             content.add(lfmtInstance.getEnterPanel());
+            lfmtBaseDir = new EnterPanel("Log base dir");
+            content.add(lfmtBaseDir.getEnterPanel());
             return content;
         }
 

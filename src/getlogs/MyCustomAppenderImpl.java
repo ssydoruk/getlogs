@@ -12,6 +12,7 @@ package getlogs;
 
 import java.io.Serializable;
 import java.util.concurrent.locks.*;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
@@ -48,6 +49,7 @@ public final class MyCustomAppenderImpl extends AbstractAppender {
             final byte[] bytes = getLayout().toByteArray(event);
             System.out.write(bytes);
         } catch (Exception ex) {
+            LogManager.getLogger().error(ex);
             if (!ignoreExceptions()) {
                 throw new AppenderLoggingException(ex);
             }

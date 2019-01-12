@@ -16,6 +16,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import org.apache.logging.log4j.LogManager;
 
 /**
  *
@@ -63,15 +64,27 @@ private LogWindow lw;
 
         });
         buttonPanel.addButton(cancelButton);
+        
+                JButton lastLSButton = new JButton(new AbstractAction("recent list") {
+            public void actionPerformed(ActionEvent e) {
+                settingsPanel.saveConfig();
+
+                closeDialog(RESULT_CANCELLED);
+
+//                    cancelButtonAction(e);
+            }
+
+        });
+        buttonPanel.addButton(lastLSButton);
 
         JButton jbRun = new JButton(new AbstractAction("Start!") {
             public void actionPerformed(ActionEvent e) {
                 try {
                     executeCommand(e);
                 } catch (IOException ex) {
-                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                     LogManager.getLogger().error( "", ex);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                    LogManager.getLogger().error( "", ex);
                 }
             }
 
@@ -98,6 +111,7 @@ private LogWindow lw;
         setDialogResult(dialogResult);
         setVisible(false);
         dispose();
+        System.exit(0);
     }
 
 }
