@@ -90,40 +90,7 @@ public class CommandExecutor {
         }
         if (!isText) {
             if (ds.getActionCommand() == GetCommand.LS) {
-                if (lsOutput == null) {
-                    lsOutput = new SettingsPanel.InfoPanel(parent, "List of files", lsTab,
-                            "Download %d files");
-                }
-
-                lsOutput.doShow();
-
-                if (lsOutput.getCloseCause() == JOptionPane.OK_OPTION) {
-                    ArrayList<JTableFileEntry> selectedRows = lsTab.getSelectedFiles();
-                    if (selectedRows == null || selectedRows.size() == 0) {
-                        LogManager.getLogger().info("No rows selected");
-                    } else {
-                        HashMap<SavedSearchStorage, ArrayList<String>> r = new HashMap<>();
-
-                        for (JTableFileEntry row : selectedRows) {
-                            SavedSearchStorage storage = row.storage;
-                            ArrayList<String> rSyncFiles = r.get(storage);
-                            if (rSyncFiles == null) {
-                                rSyncFiles = new ArrayList<>();
-                                r.put(storage, rSyncFiles);
-                            }
-
-                            rSyncFiles.addAll(GetLogs.rSyncAddClause(stripDir(row.fileName)));
-                        }
-                        for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
-                            SavedSearchStorage key = entry.getKey();
-                            ArrayList<String> value = entry.getValue();
-                            executeRSync(key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
-
-                        }
-
-                    }
-
-                }
+                showRecent();
             }
         }
         LogManager.getLogger().info("Command executed");
@@ -146,7 +113,7 @@ public class CommandExecutor {
         StringBuilder logsDir = new StringBuilder();
 
         if (isLFMT) {
-            DownloadSettings.LFMTHostInstance lfmtHostInstance = ap.getSettings().lfmtHostInstance;
+            DownloadSettings.LFMTHostInstance lfmtHostInstance = appProfile.getLFMT();
             if (lfmtHostInstance == null || lfmtHostInstance.getHost() == null) {
                 GetLogs.exitHelp("LFMT not configured properly for app " + ap);
             }
@@ -161,7 +128,7 @@ public class CommandExecutor {
 
         }
 
-        StringBuilder fileNameClause = getFileNameClause(ap);
+        StringBuilder fileNameClause = getFileNameClause(appProfile, ap);
         GetLogs.logger.debug("app: " + ap + " logsDir clause: [" + logsDir + "], action: " + ds.getActionCommand() + " lfmt:" + isLFMT
                 + "fileName: [" + fileNameClause + "]");
 
@@ -182,7 +149,7 @@ public class CommandExecutor {
         }
 
         if (isLFMT) {
-            sshParams.add(ap.getSettings().getLfmtHostInstance().getHost());
+            sshParams.add(appProfile.getLFMT().getHost());
         } else {
             sshParams.add(theAppHost);
         }
@@ -194,7 +161,7 @@ public class CommandExecutor {
             fileClause.append("-a -name ")
                     .append(fileNameClause);
         }
-
+fileClause.append(" -a ! \\( -name \\*snapshot.log \\) ");
         fileClause.append(" \\) ");
         StringBuilder sshCmd = new StringBuilder();
 
@@ -243,7 +210,7 @@ public class CommandExecutor {
             rSyncFiles.addAll(GetLogs.rSyncAddClause(stripDir(fileName)));
         }
 
-        executeRSync(ap, theAppHost, logsDir, rSyncFiles, isLFMT, lcaLog);
+        executeRSync(appProfile, ap, theAppHost, logsDir, rSyncFiles, isLFMT, lcaLog);
     }
 
     private ArrayList<String> executeGrep(AppProfile appProfile, DownloadSettings.App ap, String appHost1, String logsDir, StringBuilder fileNameClause,
@@ -254,7 +221,7 @@ public class CommandExecutor {
             sshParams.addAll(Arrays.asList(new String[]{"-l", GetLogs.sshUser}));
         }
         if (isLFMT) {
-            DownloadSettings.LFMTHostInstance lfmt1 = ap.getLFMT();
+            DownloadSettings.LFMTHostInstance lfmt1 = appProfile.getLFMT();
             if (lfmt1 == null) {
                 return null;
             }
@@ -298,7 +265,7 @@ public class CommandExecutor {
         return matchedFiles;
     }
 
-    private void executeRSync(DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+    private void executeRSync(AppProfile appProfile,DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
         rsyncParams.add("-avz");
@@ -314,7 +281,7 @@ public class CommandExecutor {
             srcSpec.append(GetLogs.sshUser).append("@");
         }
         if (isLFMT) {
-            DownloadSettings.LFMTHostInstance lfmtHostInstance = ap.getLFMT();
+            DownloadSettings.LFMTHostInstance lfmtHostInstance = appProfile.getLFMT();
             if (lfmtHostInstance == null) {
                 return;
             }
@@ -347,7 +314,7 @@ public class CommandExecutor {
 
     private void executeGet(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, StringBuilder fileNameClause, boolean useRSync1, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         if (useRSync1) {
-            executeRSync(ap, theAppHost, logsDir, GetLogs.rSyncAddClause(fileNameClause.toString()), isLFMT, lcaLog);
+            executeRSync(appProfile, ap, theAppHost, logsDir, GetLogs.rSyncAddClause(fileNameClause.toString()), isLFMT, lcaLog);
         } else {
             FileUtils.forceMkdir(new File(ds.getOutputDir()));
             Utils.FileUtils.setCurrentDirectory(ds.getOutputDir());
@@ -358,7 +325,7 @@ public class CommandExecutor {
             }
 
             if (isLFMT) {
-                DownloadSettings.LFMTHostInstance lfmtHostInstance = ap.getLFMT();
+                DownloadSettings.LFMTHostInstance lfmtHostInstance = appProfile.getLFMT();
                 if (lfmtHostInstance == null) {
                     return;
 
@@ -413,10 +380,10 @@ public class CommandExecutor {
 
     }
 
-    private StringBuilder getFileNameClause(DownloadSettings.App ap) {
+    private StringBuilder getFileNameClause(AppProfile appProfile, App ap) {
         StringBuilder fileNameClause = new StringBuilder();
 
-        if (!ap.getSettings().isIsGenesys()) {
+        if (!appProfile.isIsGenesysName()) {
             String backSlash = "";
             if (!ds.isUseRSync()) {
                 backSlash = "\\";
@@ -483,6 +450,44 @@ public class CommandExecutor {
 
     void setSettingsFile(String sGUIProfile) {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    void showRecent() throws IOException, InterruptedException {
+        if (lsTab!=null && !lsTab.isEmpty()) {
+            if (lsOutput == null) {
+                lsOutput = new SettingsPanel.InfoPanel(parent, "List of files", lsTab,
+                        "Download %d files");
+            }
+            lsOutput.doShow();
+
+            if (lsOutput.getCloseCause() == JOptionPane.OK_OPTION) {
+                ArrayList<JTableFileEntry> selectedRows = lsTab.getSelectedFiles();
+                if (selectedRows == null || selectedRows.size() == 0) {
+                    LogManager.getLogger().info("No rows selected");
+                } else {
+                    HashMap<SavedSearchStorage, ArrayList<String>> r = new HashMap<>();
+
+                    for (JTableFileEntry row : selectedRows) {
+                        SavedSearchStorage storage = row.storage;
+                        ArrayList<String> rSyncFiles = r.get(storage);
+                        if (rSyncFiles == null) {
+                            rSyncFiles = new ArrayList<>();
+                            r.put(storage, rSyncFiles);
+                        }
+
+                        rSyncFiles.addAll(GetLogs.rSyncAddClause(stripDir(row.fileName)));
+                    }
+                    for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
+                        SavedSearchStorage key = entry.getKey();
+                        ArrayList<String> value = entry.getValue();
+//                        executeRSync(key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
+
+                    }
+
+                }
+
+            }
+        }
     }
 
     class JTableFileEntry {
@@ -679,6 +684,10 @@ public class CommandExecutor {
     class JTableFileList extends JTablePopup {
 
         private JTableFileModel mod;
+
+        public boolean isEmpty() {
+            return mod.getRowCount() == 0;
+        }
 
         public JTableFileList() {
             super();

@@ -9,6 +9,9 @@ import com.jidesoft.dialog.ButtonPanel;
 import com.jidesoft.dialog.StandardDialog;
 import static com.jidesoft.dialog.StandardDialog.RESULT_CANCELLED;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,14 +29,24 @@ public class SettingsDialog extends StandardDialog {
 
     private final SettingsPanel settingsPanel;
     private final CommandExecutor ce;
-private LogWindow lw;
+    private LogWindow lw;
 
     public SettingsDialog(DownloadSettings ds) {
         super();
         settingsPanel = new SettingsPanel(ds);
         ce = new CommandExecutor(this);
-        lw=new LogWindow();
+        lw = new LogWindow();
         lw.doShow();
+
+        addWindowListener(new WindowAdapter() {
+            public void windowClosed(WindowEvent e) {
+                closeDialog(RESULT_CANCELLED);
+            }
+
+            public void windowClosing(WindowEvent e) {
+
+            }
+        });
     }
 
     public CommandExecutor getCe() {
@@ -64,14 +77,17 @@ private LogWindow lw;
 
         });
         buttonPanel.addButton(cancelButton);
-        
-                JButton lastLSButton = new JButton(new AbstractAction("recent list") {
+
+        JButton lastLSButton = new JButton(new AbstractAction("recent list") {
             public void actionPerformed(ActionEvent e) {
-                settingsPanel.saveConfig();
-
-                closeDialog(RESULT_CANCELLED);
-
+                try {
+                    showRecent();
 //                    cancelButtonAction(e);
+                } catch (IOException ex) {
+                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
 
         });
@@ -82,9 +98,9 @@ private LogWindow lw;
                 try {
                     executeCommand(e);
                 } catch (IOException ex) {
-                     LogManager.getLogger().error( "", ex);
+                    LogManager.getLogger().error("", ex);
                 } catch (InterruptedException ex) {
-                    LogManager.getLogger().error( "", ex);
+                    LogManager.getLogger().error("", ex);
                 }
             }
 
@@ -104,6 +120,10 @@ private LogWindow lw;
         settingsPanel.saveConfig();
         ce.setDs(settingsPanel.getDs());
         ce.executeCmd();
+    }
+
+    private void showRecent() throws IOException, InterruptedException {
+        ce.showRecent();
     }
 
     private void closeDialog(int dialogResult) {

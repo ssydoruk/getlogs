@@ -131,12 +131,19 @@ public class DownloadSettings {
         for (AppProfile appProfile : appProfiles) {
             if (appProfile.isSelected()) {
                 GetLogs.logger.debug("checking LFMT settings for profile [" + appProfile + "]");
-                for (App app : appProfile.getApps()) {
-                    app.checkLFMT(lfmtHostInstances);
-                }
+                appProfile.checkLFMT(lfmtHostInstances);
+
             }
         }
 
+    }
+
+    void loadLFMTs(ArrayList<Object[]> data) {
+        lfmtHostInstances = new ArrayList<>();
+        for (Object[] objects : data) {
+            lfmtHostInstances.add(new LFMTHostInstance(objects));
+        }
+        
     }
 
     public static class LFMTHostInstance {
@@ -149,6 +156,11 @@ public class DownloadSettings {
             this.host = host;
             this.instance = instance;
             this.baseDir = baseDir;
+        }
+
+        private LFMTHostInstance(Object[] objects) {
+            this((String)objects[0], (String)objects[1], (String)objects[2]);
+            
         }
 
         public String getBaseDir() {
@@ -252,7 +264,7 @@ public class DownloadSettings {
     public SettingsPanel.TimeProfile getTimeProfile() {
         SettingsPanel.TimeProfile ret1 = timeProfile;
         if (ret1 == null) {
-            ret1 = SettingsPanel.TimeProfile.VALUE;
+            ret1 = SettingsPanel.TimeProfile.VALUE_HOURS;
         }
         return ret1;
     }
@@ -286,6 +298,33 @@ public class DownloadSettings {
 
         private String Name;
         private boolean selected;
+        private LFMTHostInstance lftm;
+        private boolean isGenesysName;
+        private String nameSuffixes;
+
+        public LFMTHostInstance getLFMT() {
+            return lftm;
+        }
+
+        public void setLFMT(LFMTHostInstance lftm) {
+            this.lftm = lftm;
+        }
+
+        public boolean isIsGenesysName() {
+            return isGenesysName;
+        }
+
+        public void setIsGenesysName(boolean isGenesysName) {
+            this.isGenesysName = isGenesysName;
+        }
+
+        public String getNameSuffixes() {
+            return nameSuffixes;
+        }
+
+        public void setNameSuffixes(String nameSuffixes) {
+            this.nameSuffixes = nameSuffixes;
+        }
 
         public boolean isSelected() {
             return selected;
@@ -327,7 +366,7 @@ public class DownloadSettings {
         }
 
         App addApp(String string) {
-            App ret = new App(string, new AppSettings());
+            App ret = new App(string);
             apps.add(ret);
             return ret;
         }
@@ -338,66 +377,6 @@ public class DownloadSettings {
                 System.out.println("not removed: " + app);
             }
 
-        }
-    }
-
-    static public class App {
-
-        private String name;
-        private AppSettings settings;
-        private boolean checked;
-
-        public boolean isChecked() {
-            return checked;
-        }
-
-        public void setChecked(boolean checked) {
-            this.checked = checked;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        private App(App app) {
-            this(app.getName(), app.getSettings());
-        }
-
-        public AppSettings getSettings() {
-            return settings;
-        }
-
-        App(String sip1, AppSettings object) {
-            name = sip1;
-            if (object != null) {
-                settings = object;
-            } else {
-                settings = new AppSettings();
-            }
-            checked = true;
-        }
-
-        @Override
-        public String toString() {
-//            System.out.println("--"+name);
-            return name; //To change body of generated methods, choose Tools | Templates.
-        }
-
-        public LFMTHostInstance getLFMT() {
-            AppSettings settings = getSettings();
-            LFMTHostInstance lfmtHostInstance = null;
-            if (settings != null) {
-                lfmtHostInstance = settings.getLfmtHostInstance();
-                if (lfmtHostInstance != null) {
-                    if (lfmtHostInstance.getHost() == null || lfmtHostInstance.getInstance() == null) {
-                        lfmtHostInstance = null;
-                    }
-                }
-                if (lfmtHostInstance == null) {
-                    LogManager.getLogger().error(this + ": - lfmt is selected but LFMT host not configured.");
-                }
-            }
-            return lfmtHostInstance;
         }
 
         private void checkLFMT(ArrayList<LFMTHostInstance> lfmtHostInstances) {
@@ -413,39 +392,49 @@ public class DownloadSettings {
                 }
 
             }
-            LogManager.getLogger().error("Incorrect LFMT setting for " + this.toString() + "; was: " + ((lfmt1 == null) ? "null" : lfmt1) + " changed to " + lfmtHostInstances.get(0));
-            getSettings().setLfmtHostInstance(lfmtHostInstances.get(0));
+            LFMTHostInstance newLFMT = null;
+            if (lfmtHostInstances != null && !lfmtHostInstances.isEmpty()) {
+                newLFMT = lfmtHostInstances.get(0);
+            }
+            LogManager.getLogger().error("Incorrect LFMT setting for " + this.toString() + "; was: " + ((lfmt1 == null) ? "null" : lfmt1) + " changed to "
+                    + ((newLFMT == null) ? "null" : newLFMT));
+            setLFMT(newLFMT);
 
         }
+
     }
 
-    static public class AppSettings implements Serializable {
+    static public class App {
 
-        public AppSettings() {
-            isGenesys = true;
+        private String name;
+        private boolean checked;
+
+        public boolean isChecked() {
+            return checked;
         }
 
-        private boolean isGenesys;
-        LFMTHostInstance lfmtHostInstance;
-
-        public LFMTHostInstance getLfmtHostInstance() {
-            return lfmtHostInstance;
+        public void setChecked(boolean checked) {
+            this.checked = checked;
         }
 
-        public void setLfmtHostInstance(LFMTHostInstance lfmtHostInstance) {
-            this.lfmtHostInstance = lfmtHostInstance;
+        public String getName() {
+            return name;
         }
 
-        public AppSettings(AppSettings settings1) {
-            this.isGenesys = settings1.isIsGenesys();
+        public App(App app) {
+            this(app.getName());
+
         }
 
-        public boolean isIsGenesys() {
-            return isGenesys;
+        public App(String n) {
+            name = n;
+
         }
 
-        public void setIsGenesys(boolean isGenesys) {
-            this.isGenesys = isGenesys;
+        @Override
+        public String toString() {
+//            System.out.println("--"+name);
+            return name; //To change body of generated methods, choose Tools | Templates.
         }
 
     }

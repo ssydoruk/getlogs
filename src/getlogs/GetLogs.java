@@ -441,7 +441,7 @@ public class GetLogs {
                 = builder.newRootLogger(level);
         rootLogger.add(builder.newAppenderRef("stdout"));
         rootLogger.add(builder.newAppenderRef("rolling"));
-//        rootLogger.add(builder.newAppenderRef("appe"));
+        rootLogger.add(builder.newAppenderRef("appe"));
         builder.add(rootLogger);
 
         Configurator.initialize(builder.build());
@@ -898,12 +898,12 @@ public class GetLogs {
         } else {
             ds = new DownloadSettings();
             HashSet<DownloadSettings.App> apps = ds.addProfile("SIP").getApps();
-            apps.add(new DownloadSettings.App("sip1", new DownloadSettings.AppSettings()));
-            apps.add(new DownloadSettings.App("sip2", new DownloadSettings.AppSettings()));
+            apps.add(new DownloadSettings.App("sip1"));
+            apps.add(new DownloadSettings.App("sip2"));
 
             apps = ds.addProfile("Routing").getApps();
-            apps.add(new DownloadSettings.App("URS1", new DownloadSettings.AppSettings()));
-            apps.add(new DownloadSettings.App("ORS2", new DownloadSettings.AppSettings()));
+            apps.add(new DownloadSettings.App("URS1"));
+            apps.add(new DownloadSettings.App("ORS2"));
         }
         showGui(ds);
     }
@@ -978,12 +978,11 @@ public class GetLogs {
             ds.setCMDDate(dateSpec);
             ds.setCMDTime(timeSpec);
 
+            addProfile.setIsGenesysName(!bIsCloud);
+            addProfile.setLFMT(theLFMT);
             for (String app : apps) {
                 DownloadSettings.App theApp = addProfile.addApp(app);
                 theApp.setChecked(true);
-                DownloadSettings.AppSettings settings = theApp.getSettings();
-                settings.setIsGenesys(!bIsCloud);
-                settings.setLfmtHostInstance(theLFMT);
                 processApp(app, options);
             }
             CommandExecutor ce = new CommandExecutor(false, ds);
