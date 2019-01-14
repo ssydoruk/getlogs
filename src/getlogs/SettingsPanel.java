@@ -33,6 +33,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import javax.swing.AbstractAction;
@@ -79,6 +80,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private InfoPanel p = null;
     private InfoPanel lfmtPanes = null;
     private ValuesEditor lfmtEditor = null;
+    private final StringListEdit ext;
 
     public DownloadSettings getDs() {
         return ds;
@@ -135,6 +137,17 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
 
         });
+        ext = new StringListEdit("Extention");
+        ext.setUpdatedFun(new StringListEdit.IDataChangedFun() {
+            @Override
+            public void dataChanged(HashMap<String, Boolean> newData) {
+                DownloadSettings.AppProfile sel = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
+                if (sel != null) {
+                    sel.setNameSuffixes(newData);
+                }
+            }
+        });
+        pExtensions.add(ext);
 
 //        tfFilenameSuffixes.getDocument().addDocumentListener(new DocumentListener() {
 //            @Override
@@ -152,7 +165,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 //                tfFilenameSuffixesChanged();
 //            }
 //        });
-
     }
 
     private void tfFilenameSuffixesChanged() {
@@ -208,6 +220,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         DefaultListModel lm = (DefaultListModel) clbApps.getModel();
                         lm.removeAllElements();
                         clbApps.setValueIsAdjusting(false);
+                        ext.noSelection();
                     }
                     profileSelected(singleSelection);
                     clbApps.setValueIsAdjusting(false);
@@ -244,6 +257,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         rbGenesysLogs.setSelected(pr.isIsGenesysName());
         rbCloudLogs.setSelected(!pr.isIsGenesysName());
+        ext.setData(pr.getNameSuffixes());
 //        tfFilenameSuffixes.setText(pr.getNameSuffixes());
 
         DownloadSettings.LFMTHostInstance lfmtHostInstance = pr.getLFMT();
@@ -340,6 +354,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         rbGenesysLogs.setEnabled(singleSelection);
         cbLFMTs.setEnabled(singleSelection);
         btEditLFMTs.setEnabled(singleSelection);
+        ext.setEnabled(singleSelection);
 
         int[] selectedIndices = clbApps.getSelectedIndices();
         appSelected(selectedIndices != null && selectedIndices.length == 1);
@@ -395,11 +410,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel13 = new javax.swing.JPanel();
         cbLFMTs = new javax.swing.JComboBox();
         btEditLFMTs = new javax.swing.JButton();
-        jPanel24 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jPanel25 = new javax.swing.JPanel();
-        cbLFMTs1 = new javax.swing.JComboBox();
-        btEditLFMTs1 = new javax.swing.JButton();
+        pExtensions = new javax.swing.JPanel();
         jpAppsBase = new javax.swing.JPanel();
         jpApps = new javax.swing.JPanel();
         jPanel10 = new javax.swing.JPanel();
@@ -564,31 +575,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpAppProperties.add(jPanel6);
 
-        jPanel24.setLayout(new javax.swing.BoxLayout(jPanel24, javax.swing.BoxLayout.LINE_AXIS));
-
-        jLabel1.setText("name suffixes");
-        jPanel24.add(jLabel1);
-
-        jPanel25.setLayout(new javax.swing.BoxLayout(jPanel25, javax.swing.BoxLayout.LINE_AXIS));
-
-        cbLFMTs1.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbLFMTs1ItemStateChanged(evt);
-            }
-        });
-        jPanel25.add(cbLFMTs1);
-
-        btEditLFMTs1.setText("...");
-        btEditLFMTs1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btEditLFMTs1ActionPerformed(evt);
-            }
-        });
-        jPanel25.add(btEditLFMTs1);
-
-        jPanel24.add(jPanel25);
-
-        jpAppProperties.add(jPanel24);
+        pExtensions.setBorder(javax.swing.BorderFactory.createTitledBorder("Name suffixes (.=empty)"));
+        pExtensions.setLayout(new java.awt.BorderLayout());
+        jpAppProperties.add(pExtensions);
 
         jPanel1.add(jpAppProperties);
 
@@ -911,7 +900,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void btEditLFMTsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btEditLFMTsActionPerformed
 
         if (lfmtEditor == null) {
-            lfmtEditor = new ValuesEditor((Window) this.getRootPane().getParent(), "List of LFMTs", 
+            lfmtEditor = new ValuesEditor((Window) this.getRootPane().getParent(), "List of LFMTs",
                     "Select %d LFMTs");
 
         }
@@ -922,10 +911,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         lfmtEditor.setData(new Object[]{"LFMT host", "LFMT instance", "Base directory"},
                 values
         );
-        if(lfmtEditor.doShow()){
+        if (lfmtEditor.doShow()) {
             ds.loadLFMTs(lfmtEditor.getData());
         }
-        
 
 //        if (lfmtPanes == null) {
 //            tabLFMT = getJTablePopup();
@@ -987,31 +975,20 @@ public class SettingsPanel extends javax.swing.JPanel {
 //            timeProfileChanged((TimeProfile) evt.getSource());
     }//GEN-LAST:event_cbTimeProfileActionPerformed
 
-    private void cbLFMTs1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbLFMTs1ItemStateChanged
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cbLFMTs1ItemStateChanged
-
-    private void btEditLFMTs1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btEditLFMTs1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btEditLFMTs1ActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;
     private javax.swing.JButton btEditLFMTs;
-    private javax.swing.JButton btEditLFMTs1;
     private javax.swing.JCheckBox cbAppLogs;
     private javax.swing.JComboBox cbCommand;
     private javax.swing.JCheckBox cbLCALogs;
     private javax.swing.JComboBox cbLFMTs;
-    private javax.swing.JComboBox cbLFMTs1;
     private javax.swing.JCheckBox cbLfmtLog;
     private javax.swing.JCheckBox cbListFiles;
     private javax.swing.JCheckBox cbProdLog;
     private javax.swing.JComboBox<String> cbTimeProfile;
     private javax.swing.JCheckBox cbUseRSync;
     private javax.swing.JFormattedTextField ftHours;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
@@ -1030,8 +1007,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel21;
     private javax.swing.JPanel jPanel22;
     private javax.swing.JPanel jPanel23;
-    private javax.swing.JPanel jPanel24;
-    private javax.swing.JPanel jPanel25;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
@@ -1057,6 +1032,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lHours;
     private javax.swing.JLabel lbDateRegex;
     private javax.swing.JLabel lbTimeRegex;
+    private javax.swing.JPanel pExtensions;
     private javax.swing.JRadioButton rbCloudLogs;
     private javax.swing.JRadioButton rbGenesysLogs;
     private javax.swing.JTextField tfDateRegex;

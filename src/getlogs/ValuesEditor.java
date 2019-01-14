@@ -393,15 +393,23 @@ public class ValuesEditor extends StandardDialog {
 
         public ArrayList<String> doShow() {
 
-            setModal(true);
-
+//            setModal(true);
             pack();
 
 //            ScreenInfo.CenterWindow(this);
             setLocationRelativeTo(getParent());
-            setVisible(true);
+//            setVisible(true);
             setAlwaysOnTop(true);
-            toFront();
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    toFront();
+
+                }
+            });
+//            setVisible(false);
+            setVisible(true);
+
             if (getDialogResult() == StandardDialog.RESULT_AFFIRMED) {
                 ArrayList<String> ret = new ArrayList<>(pan.size());
                 for (EnterPanel enterPanel : pan) {

@@ -10,6 +10,7 @@ import Utils.TDateRange;
 import Utils.UTCTimeRange;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import org.apache.logging.log4j.LogManager;
 
@@ -300,7 +301,7 @@ public class DownloadSettings {
         private boolean selected;
         private LFMTHostInstance lftm;
         private boolean isGenesysName;
-        private String nameSuffixes;
+        private HashMap<String, Boolean> nameSuffixes;
 
         public LFMTHostInstance getLFMT() {
             return lftm;
@@ -318,11 +319,11 @@ public class DownloadSettings {
             this.isGenesysName = isGenesysName;
         }
 
-        public String getNameSuffixes() {
+        public HashMap<String, Boolean>  getNameSuffixes() {
             return nameSuffixes;
         }
 
-        public void setNameSuffixes(String nameSuffixes) {
+        public void setNameSuffixes(HashMap<String, Boolean>  nameSuffixes) {
             this.nameSuffixes = nameSuffixes;
         }
 
