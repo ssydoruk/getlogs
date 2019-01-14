@@ -5,6 +5,7 @@
  */
 package getlogs;
 
+import static Utils.ScreenInfo.CenterWindow;
 import Utils.TDateRange;
 import Utils.TableColumnAdjuster;
 import com.google.gson.FieldNamingPolicy;
@@ -1243,10 +1244,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
 
         public void doShow() {
-            setModal(true);
-
+            this.setLocationRelativeTo(getParent());
             tca.adjustColumns();
             pack();
+            CenterWindow(this);
+            tab.invalidate();
+            
             if (LogManager.getLogger().isTraceEnabled()) {
                 LogManager.getLogger().trace("Show info PanelDialog; title=" + getTitle() + "; tab cols:" + tab.getColumnCount() + " rows: " + tab.getRowCount());
                 StringBuilder s = new StringBuilder(512);
@@ -1261,9 +1264,9 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
 
 //            ScreenInfo.CenterWindow(this);
-            this.setLocationRelativeTo(getParent());
             setVisible(
-                    true);
+                    false);
+            setVisible(true);
         }
 
         @Override
@@ -1281,9 +1284,10 @@ public class SettingsPanel extends javax.swing.JPanel {
             JScrollPane jScrollPane = new JScrollPane(tab);
             tab.getTableHeader().setVisible(true);
 
-            JPanel listPane = new JPanel(new BorderLayout(10, 10));
+            JPanel listPane = new JPanel(new BorderLayout());
 
             listPane.add(new JPanel(new BorderLayout()).add(jScrollPane));
+
             return listPane;
         }
 
