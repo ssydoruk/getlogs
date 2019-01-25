@@ -121,6 +121,7 @@ public class DownloadSettings {
     }
 
     void setCMDTime(String timeSpec) {
+        LogManager.getLogger().trace("Set time: "+timeSpec);
         if (timeSpec != null && !timeSpec.isEmpty() && !GetLogs.regDateTimeSpec.matcher(timeSpec).matches()) {
             LogManager.getLogger().error("Time is specified [" + timeSpec + "] but the format is incorrect");
         } else {

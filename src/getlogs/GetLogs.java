@@ -51,7 +51,6 @@ import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuild
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 import org.apache.logging.log4j.io.IoBuilder;
 
-
 /**
  *
  * @author stepansydoruk
@@ -65,7 +64,7 @@ public class GetLogs {
     public static String sshUser = null;
     private static boolean listFiles = false;
 
-    public static final Pattern regDateTimeSpec = Pattern.compile("^[0-9\\[\\]]+$");
+    public static final Pattern regDateTimeSpec = Pattern.compile("^[0-9\\[\\]\\-]+$");
     private static final Pattern regDirectoryStripSlash = Pattern.compile("^(.+)/+$");
     private static String dateSpec;
     private static String timeSpec;
@@ -436,7 +435,7 @@ public class GetLogs {
 //        Appender appe = MyCustomAppenderImpl.createAppender("appe1", null, null, null);
 //        AppenderComponentBuilder newAppender = builder.newAppender("appe", "appe1");
 //        builder.add(appe);
-        
+
         RootLoggerComponentBuilder rootLogger
                 = builder.newRootLogger(level);
         rootLogger.add(builder.newAppenderRef("stdout"));
@@ -448,8 +447,7 @@ public class GetLogs {
 //        System.out.println(builder.toXmlConfiguration());
         logger = LogManager.getLogger();
         logger.info("log initialized");
-        
-        
+
     }
 
     private static void showHelpExit(Options options) {
@@ -779,7 +777,7 @@ public class GetLogs {
             if (!regDateTimeSpec.matcher(dateSpec).matches()) {
                 showHelpExit("Date is specified but the format is incorrect", options);
             } else {
-                fileNameClause.append(cloudDatePattern(dateSpec, timeSpec));
+                fileNameClause.append(cloudDatePattern(dateSpec, timeSpec, SettingsPanel.TimeProfile.REGEX));
             }
 
         } else {
@@ -819,15 +817,16 @@ public class GetLogs {
         return fileNameClause;
     }
 
-    private static final Pattern regRegDigits = Pattern.compile("(\\d|\\[[\\-\\d]*\\])");
+    public static final Pattern regRegDigits = Pattern.compile("(\\d|\\[[\\-\\d]*\\])");
 
-    public static String cloudDatePattern(String dateSpec1, String timeSpec1) {
+    public static String cloudDatePattern(String dateSpec1, String timeSpec1, SettingsPanel.TimeProfile tp) {
+
         StringBuilder ret = new StringBuilder();
         Matcher m;
 //        int digitsSpecified = countDigits(dateSpec);
         int pos = 0;
         int datePos = 0;
-        if (dateSpec1 != null && !dateSpec1.isEmpty()) {
+        if (tp == SettingsPanel.TimeProfile.REGEX && dateSpec1 != null && !dateSpec1.isEmpty()) {
             while ((m = regRegDigits.matcher(dateSpec1)).find(pos)) {
                 if (shouldAddDash(datePos)) {
                     ret.append("-");
@@ -844,7 +843,7 @@ public class GetLogs {
             ret.append("[0-9]");
             datePos++;
         }
-        if (timeSpec1 != null && !timeSpec1.isEmpty()) {
+        if (tp == SettingsPanel.TimeProfile.REGEX && timeSpec1 != null && !timeSpec1.isEmpty()) {
             ret.append("-");
             pos = 0;
             datePos = 0;
@@ -862,7 +861,7 @@ public class GetLogs {
         } else {
             ret.append("-");
         }
-        ret.append("*.log");
+        ret.append("*.log*");
         logger.debug(ret);
 //        System.exit(0);
         return ret.toString();

@@ -29,8 +29,6 @@ import org.apache.logging.log4j.io.IoBuilder;
  * @author stepan_sydoruk
  */
 public class LogWindow extends StandardDialog {
-     
-    
 
     public LogWindow() {
         setModal(false);
@@ -46,19 +44,19 @@ public class LogWindow extends StandardDialog {
     public JComponent createBannerPanel() {
         return null;
     }
-    
+
     JTextArea jt;
 
     @Override
     public JComponent createContentPanel() {
-        jt=new JTextArea();
-        
-                    JScrollPane jScrollPane = new JScrollPane(jt);
+        jt = new JTextArea();
 
-            JPanel listPane = new JPanel(new BorderLayout(10, 10));
+        JScrollPane jScrollPane = new JScrollPane(jt);
 
-            listPane.add(new JPanel(new BorderLayout()).add(jScrollPane));
-            return listPane;
+        JPanel listPane = new JPanel(new BorderLayout());
+
+        listPane.add(new JPanel(new BorderLayout()).add(jScrollPane));
+        return listPane;
 
     }
 
@@ -66,6 +64,5 @@ public class LogWindow extends StandardDialog {
     public ButtonPanel createButtonPanel() {
         return null;
     }
- 
 
 }

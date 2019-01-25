@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -27,6 +29,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -34,6 +37,85 @@ import org.apache.logging.log4j.LogManager;
  * @author stepan_sydoruk
  */
 public class CommandExecutor {
+
+    public static void main(String[] args) throws Exception {
+        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190", "1"));
+        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "201901", "1"));
+        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "2019012", "1"));
+        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190124", "1"));
+    }
+
+    private static final Pattern regVariable = Pattern.compile("\\{([A-Z]{2,4})\\}");
+
+    private static String cloudPattern(String fileNameRegex, String datePattern, String timePattern) {
+        System.out.println(fileNameRegex + "-" + datePattern + "-" + timePattern);
+        int pos = 0;
+        Matcher m;
+        StringBuilder ret = new StringBuilder();
+        while ((m = regVariable.matcher(fileNameRegex)).find(pos)) {
+            ret.append(fileNameRegex.substring(pos, m.start()));
+            if (m.group(1).equals("YYYY")) {
+                ret.append(fillPattern(datePattern, 0, 4));
+            } else if (m.group(1).equals("MM")) {
+                ret.append(fillPattern(datePattern, 4, 2));
+
+            } else if (m.group(1).equals("DD")) {
+                ret.append(fillPattern(datePattern, 6, 2));
+
+            } else if (m.group(1).equals("HH")) {
+                ret.append(fillPattern(timePattern, 0, 2));
+
+            } else if (m.group(1).equals("MI")) {
+                ret.append(fillPattern(timePattern, 2, 2));
+
+            } else if (m.group(1).equals("SS")) {
+                ret.append(fillPattern(timePattern, 4, 4));
+
+            } else {
+                LogManager.getLogger().error("Incorrect specification [" + m.group(1) + "] "
+                        + "in pattern [" + fileNameRegex + "]. Allowed: YYYY MM DD HH MI SS");
+                return null;
+            }
+
+//            ret.append(StringUtils.repeat("^", m.end() - m.start()));
+            pos = m.end();
+        }
+        if (pos < fileNameRegex.length()) {
+            ret.append(fileNameRegex.substring(pos));
+        }
+        return ret.toString();
+
+    }
+
+    private static StringBuilder fillPattern(String datePattern, int start, int count) {
+        StringBuilder ret1 = new StringBuilder();
+        int pos = 0;
+        int cnt;
+        Matcher m;
+        int filled = 0;
+        if (datePattern != null && !datePattern.isEmpty()) {
+            for (cnt = 0; cnt < start; cnt++) {//skipping to the start
+                if ((m = GetLogs.regRegDigits.matcher(datePattern)).find(pos)) {
+                    pos = m.end();
+                } else {
+                    break;
+                }
+            }
+            //pos is position of first character to fill
+            if (cnt == start) {
+                for (cnt = 0; cnt < count; cnt++) {//skipping to the start
+                    if ((m = GetLogs.regRegDigits.matcher(datePattern)).find(pos)) {
+                        ret1.append(datePattern.substring(m.start(), m.end()));
+                        pos = m.end();
+                        filled++;
+                    }
+                }
+            }
+        }
+        ret1.append(StringUtils.repeat("[0-9]", count - filled));
+
+        return ret1;
+    }
 
     private DownloadSettings ds;
 
@@ -84,7 +166,7 @@ public class CommandExecutor {
                     if (app.isChecked()) {
                         if (ds.isProd()) {
                             lsFiles.clear();
-                            processApp(appProfile, app, false);
+                            executeCmd(appProfile, app, false);
                             if (!lsFiles.isEmpty()) {
                                 lsFilesAll.addAll(lsFiles);
                                 if (ds.getActionCommand() == GetCommand.GET) {
@@ -94,7 +176,7 @@ public class CommandExecutor {
                         }
                         if (ds.isLfmt()) {
                             lsFiles.clear();
-                            processApp(appProfile, app, true);
+                            executeCmd(appProfile, app, true);
                             if (!lsFiles.isEmpty()) {
                                 lsFilesAll.addAll(lsFiles);
                                 if (ds.getActionCommand() == GetCommand.GET) {
@@ -118,7 +200,7 @@ public class CommandExecutor {
 
     SettingsPanel.InfoPanel lsOutput;
 
-    public void processApp(AppProfile appProfile, App ap, boolean isLFMT) throws IOException, InterruptedException {
+    public void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws IOException, InterruptedException {
         String theAppHost;
         if (GetLogs.appHost == null || GetLogs.appHost.isEmpty()) {
             theAppHost = (String) GetLogs.getHosts().get(ap.getName()); // first for one application only
@@ -147,16 +229,14 @@ public class CommandExecutor {
             logsDir.append("/AppLog/GCTI");
 
         }
-        StringBuilder fileNameClause = getFileNameClause(appProfile, ap);
-
-        GetLogs.logger.debug("app: " + ap + " logsDir clause: [" + logsDir + "], action: " + ds.getActionCommand() + " lfmt:" + isLFMT
-                + "fileName: [" + fileNameClause + "]");
 
         if (ds.isAppLogs()) {
-            processApp(appProfile, ap, theAppHost, logsDir.toString(), fileNameClause, isLFMT, false);
+            ArrayList<StringBuilder> fileNameClause = getFileNameClause(appProfile, ap, false);
+            executeCmd(appProfile, ap, theAppHost, logsDir.toString(), fileNameClause, isLFMT, false);
         }
         if (ds.isLcaLogs()) {
-            processApp(appProfile, ap, theAppHost, logsDir.toString(), fileNameClause, isLFMT, true);
+            ArrayList<StringBuilder> fileNameClause = getFileNameClause(appProfile, ap, true);
+            executeCmd(appProfile, ap, theAppHost, logsDir.toString(), fileNameClause, isLFMT, true);
         }
 
     }
@@ -177,12 +257,16 @@ public class CommandExecutor {
 
     ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
 
-    private void executeLS(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, StringBuilder fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+    private void executeLS(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir,
+            ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
+        HashMap<String, Boolean> nameSuffixes = appProfile.getNameSuffixes();
+
         sshParams.add("ssh");
         if (GetLogs.sshUser != null) {
             sshParams.addAll(Arrays.asList(new String[]{"-l", GetLogs.sshUser}));
         }
+        sshParams.addAll(Arrays.asList(new String[]{"-o", "StrictHostKeyChecking no"}));
 
         if (isLFMT) {
             sshParams.add(appProfile.getLFMT().getHost());
@@ -193,10 +277,12 @@ public class CommandExecutor {
         StringBuilder fileClause = new StringBuilder();
         fileClause.append("\\( -type f ");
 
-        if (fileNameClause.length() > 0) {
-            fileClause.append("-a -name ")
-                    .append(fileNameClause);
-        }
+//        if (!lcaLog && nameSuffixes != null && !nameSuffixes.isEmpty()) {
+//            fileClause.append(" -a name ${ext} ");
+//        } else {
+        fileClause.append(sshNameClause(fileNameClause));
+//        }
+
         fileClause.append(" -a ! \\( -name \\*snapshot.log \\) ");
         fileClause.append(" \\) ");
         StringBuilder sshCmd = new StringBuilder();
@@ -205,8 +291,7 @@ public class CommandExecutor {
 
         sshCmd.append("cd ").append(logsDir).append(";");
 //        sshCmd.append(" declare -a arr=( \\\"-001\\\" \\\"-768\\\" ); for ext in \\\"\\${arr[@]}\\\"; do");
-        HashMap<String, Boolean> nameSuffixes = appProfile.getNameSuffixes();
-        if (nameSuffixes != null && !nameSuffixes.isEmpty()) {
+        if (!lcaLog && nameSuffixes != null && !nameSuffixes.isEmpty()) {
             sshCmd.append(" declare -a arr=(");
             for (Map.Entry<String, Boolean> entry : nameSuffixes.entrySet()) {
                 String suffix = entry.getKey();
@@ -214,9 +299,29 @@ public class CommandExecutor {
                 if (isSelected) {
                     sshCmd.append(" \\\"");
                     if (suffix != null && !suffix.trim().isEmpty() && !suffix.equals(".")) {
-                        sshCmd.append(suffix);
+                        if (!appProfile.isIsGenesysName()) {
+                            String datePattern = null;
+                            String timePattern = null;
+                            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX) {
+                                datePattern = ds.getDateSpec();
+                                timePattern = ds.getTimeSpec();
+                            }
+                            sshCmd.append(cloudPattern(suffix, datePattern, timePattern));
+                        } else {
+                            sshCmd.append(suffix);
+                        }
                     } else {
-                        sshCmd.append(ap.getName());
+                        if (appProfile.isIsGenesysName()) {
+                            sshCmd.append(ap.getName());
+                        } else {
+                            for (int i = 0; i < fileNameClause.size(); i++) {
+                                StringBuilder s = fileNameClause.get(i);
+                                if (i > 0) {
+                                    sshCmd.append("\\\" \\\"");
+                                }
+                                sshCmd.append(s);
+                            }
+                        }
                     }
 
                     sshCmd.append("\\\" ");
@@ -241,7 +346,7 @@ public class CommandExecutor {
             sshCmd.append(" | head -").append(ds.getHours());
         }
 
-        if (nameSuffixes != null && !nameSuffixes.isEmpty()) {
+        if (!lcaLog && nameSuffixes != null && !nameSuffixes.isEmpty()) {
             sshCmd.append(" ; done");
         }
         sshCmd.append("\"");
@@ -255,7 +360,8 @@ public class CommandExecutor {
             LogManager.getLogger().error("error code: " + waitFor);
             ArrayList<String> errBuf = procSSH.getErrBuf();
             if (errBuf != null && !errBuf.isEmpty()) {
-                lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, null, logsDir, isLFMT, lcaLog), StringUtils.join(errBuf, " | ")));
+                logMessage(Level.ERROR, StringUtils.join(errBuf, " | "));
+//                lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, null, logsDir, isLFMT, lcaLog), StringUtils.join(errBuf, " | ")));
 //                lsTab.addRow(appProfile, ap, theAppHost, null, logsDir.toString(), isLFMT, lcaLog, StringUtils.join(errBuf, " | "));
 
             }
@@ -277,7 +383,7 @@ public class CommandExecutor {
 
     }
 
-    private void executeGrepGet(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, StringBuilder fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+    private void executeGrepGet(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<String> executeGrep = executeGrep(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         ArrayList<String> rSyncFiles = new ArrayList<>();
         for (String fileName : executeGrep) {
@@ -287,7 +393,8 @@ public class CommandExecutor {
         executeRSync(appProfile, ap, theAppHost, logsDir, rSyncFiles, isLFMT, lcaLog);
     }
 
-    private ArrayList<String> executeGrep(AppProfile appProfile, DownloadSettings.App ap, String appHost1, String logsDir, StringBuilder fileNameClause,
+    private ArrayList<String> executeGrep(AppProfile appProfile, DownloadSettings.App ap,
+            String appHost1, String logsDir, ArrayList<StringBuilder> fileNameClause,
             boolean isLFMT, boolean isLCA) throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
         sshParams.add("ssh");
@@ -307,10 +414,7 @@ public class CommandExecutor {
         StringBuilder fileClause = new StringBuilder();
 //        fileClause.append("\\("); 
 
-        if (fileNameClause.length() > 0) {
-            fileClause.append(" -name ")
-                    .append(fileNameClause);
-        }
+        fileClause.append(sshNameClause(fileNameClause));
 
 //        fileClause.append(" \\) ");
         StringBuilder sshCmd = new StringBuilder();
@@ -398,7 +502,7 @@ public class CommandExecutor {
         procRSync.waitFor();
     }
 
-    private void executeGet(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, StringBuilder fileNameClause, boolean useRSync1, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+    private void executeGet(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean useRSync1, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         if (useRSync1) {
             executeRSync(appProfile, ap, theAppHost, logsDir, GetLogs.rSyncAddClause(fileNameClause.toString()), isLFMT, lcaLog);
         } else {
@@ -424,14 +528,18 @@ public class CommandExecutor {
             }
 
             StringBuilder fileClause = new StringBuilder();
-            if (fileNameClause.length() > 0) {
+            if (fileNameClause != null && fileNameClause.size() > 0) {
                 fileClause.append("\\( -type f ");
 
-                fileClause.append("-a -name ")
-                        .append(fileNameClause);
+//                fileClause.append("-a -name ")
+//                        .append(fileNameClause);
+                fileClause.append("-a ")
+                        .append(sshNameClause(fileNameClause));
 
                 fileClause.append(" \\) ");
+
             }
+
             StringBuilder sshCmd = new StringBuilder();
 
             sshCmd.append("cd ").append(logsDir).append("; ");
@@ -466,18 +574,21 @@ public class CommandExecutor {
 
     }
 
-    private StringBuilder getFileNameClause(AppProfile appProfile, App ap) {
+    private ArrayList<StringBuilder> getFileNameClause(AppProfile appProfile, App ap, boolean isLCA) {
+        ArrayList<StringBuilder> ret1 = new ArrayList<>();
+        HashMap<String, Boolean> nameSuffixes = appProfile.getNameSuffixes();
+
         StringBuilder fileNameClause = new StringBuilder();
 
-        if (!appProfile.isIsGenesysName()) {
+        if (!isLCA && !appProfile.isIsGenesysName()) {
             String backSlash = "";
-            if (!ds.isUseRSync()) {
-                backSlash = "\\";
-                fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
+            if (nameSuffixes != null && !nameSuffixes.isEmpty()) //                    .append(ap.getName())
+            {
+                fileNameClause.append("\\\"\\${ext}\\\"");
+                ret1.add(fileNameClause);
             } else {
-                fileNameClause.append("*_cloud*").append("-");
+                return cloudStandardNames();
             }
-            fileNameClause.append(GetLogs.cloudDatePattern(ds.getDateSpec(), ds.getTimeSpec()));
 
         } else {
             String backSlash;
@@ -489,9 +600,7 @@ public class CommandExecutor {
             fileNameClause.append("")
                     .append(backSlash).append("*");
 
-            HashMap<String, Boolean> nameSuffixes = appProfile.getNameSuffixes();
-
-            if (nameSuffixes != null && !nameSuffixes.isEmpty()) //                    .append(ap.getName())
+            if (!isLCA && nameSuffixes != null && !nameSuffixes.isEmpty()) //                    .append(ap.getName())
             {
                 fileNameClause.append("\\\"\\${ext}\\\"");
             }
@@ -514,12 +623,13 @@ public class CommandExecutor {
             fileNameClause.append(StringUtils.repeat("[0-9]", 3))
                     .append("").append(backSlash).append(".").append(backSlash).append("*");
 
+            ret1.add(fileNameClause);
         }
-        GetLogs.logger.trace("fileName clause: [" + fileNameClause + "]");
-        return fileNameClause;
+        GetLogs.logger.trace("fileName clause: [" + ret1 + "]");
+        return ret1;
     }
 
-    private void processApp(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, StringBuilder fileNameClause, boolean isLFMT, boolean isLCALog) {
+    private void executeCmd(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean isLCALog) {
         try {
             switch (ds.getActionCommand()) {
                 case GREP:
@@ -528,7 +638,7 @@ public class CommandExecutor {
 
                 case GET:
                     HashMap<String, Boolean> suff = appProfile.getNameSuffixes();
-                    if ((suff == null || suff.isEmpty() ) && ds.getTimeProfile()!=SettingsPanel.TimeProfile.VALUE_FILES) {
+                    if (!isLCALog && (suff == null || suff.isEmpty()) && ds.getTimeProfile() != SettingsPanel.TimeProfile.VALUE_FILES) {
                         executeGet(appProfile, ap, theAppHost, logsDir, fileNameClause, ds.isUseRSync(), isLFMT, isLCALog);
                     } else {
                         /*
@@ -536,7 +646,7 @@ public class CommandExecutor {
                         So if there are suffixes, we execute ls instead. Get will be called at very top level after application is processed.
                         this way for suffixes we first get list of files and then execute rsync on files received.
                         This may be ugly, but is effective
-                        */
+                         */
                         executeLS(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, isLCALog);
                     }
                     break;
@@ -616,6 +726,49 @@ public class CommandExecutor {
         } else {
             return null;
         }
+    }
+
+    private StringBuilder sshNameClause(ArrayList<StringBuilder> fileNameClause) {
+        if (fileNameClause != null && !fileNameClause.isEmpty()) {
+            StringBuilder ret1 = new StringBuilder();
+            if (fileNameClause.size() > 1) {
+                ret1.append(("\\( "));
+            }
+            for (int i = 0; i < fileNameClause.size(); i++) {
+                StringBuilder s = fileNameClause.get(i);
+                if (i > 0) {
+                    ret1.append(" -o ");
+                }
+                ret1.append("-name ").append(s);
+
+            }
+            if (fileNameClause.size() > 1) {
+                ret1.append((" \\)"));
+            }
+            return ret1;
+        } else {
+            return null;
+        }
+
+    }
+
+    private void logMessage(Level ERROR, String join) {
+
+    }
+
+    private ArrayList<StringBuilder> cloudStandardNames() {
+        StringBuilder fileNameClause = new StringBuilder();
+        if (!ds.isUseRSync()) {
+            String backSlash = "\\";
+            fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
+        } else {
+            fileNameClause.append("*_cloud*").append("-");
+        }
+        fileNameClause.append(GetLogs.cloudDatePattern(ds.getDateSpec(), ds.getTimeSpec(), ds.getTimeProfile()));
+        ArrayList<StringBuilder> ret1=new ArrayList<>();
+        ret1.add(fileNameClause);
+        ret1.add(new StringBuilder("cloud.log*"));
+        return ret1;
     }
 
     class JTableFileEntry {
@@ -853,7 +1006,6 @@ public class CommandExecutor {
 //        }
         private void setFiles(ArrayList<JTableFileEntry> lsFilesLast) {
             mod.setData(lsFilesLast);
-            
 
         }
     }
