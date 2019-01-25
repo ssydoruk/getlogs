@@ -291,57 +291,30 @@ public class CommandExecutor {
 
         sshCmd.append("cd ").append(logsDir).append(";");
 //        sshCmd.append(" declare -a arr=( \\\"-001\\\" \\\"-768\\\" ); for ext in \\\"\\${arr[@]}\\\"; do");
-        if (!lcaLog && nameSuffixes != null && !nameSuffixes.isEmpty()) {
-            sshCmd.append(" declare -a arr=(");
-            for (Map.Entry<String, Boolean> entry : nameSuffixes.entrySet()) {
-                String suffix = entry.getKey();
-                Boolean isSelected = entry.getValue();
-                if (isSelected) {
-                    sshCmd.append(" \\\"");
-                    if (suffix != null && !suffix.trim().isEmpty() && !suffix.equals(".")) {
-                        if (!appProfile.isIsGenesysName()) {
-                            String datePattern = null;
-                            String timePattern = null;
-                            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX) {
-                                datePattern = ds.getDateSpec();
-                                timePattern = ds.getTimeSpec();
-                            }
-                            sshCmd.append(cloudPattern(suffix, datePattern, timePattern));
-                        } else {
-                            sshCmd.append(suffix);
-                        }
-                    } else {
-                        if (appProfile.isIsGenesysName()) {
-                            sshCmd.append(ap.getName());
-                        } else {
-                            for (int i = 0; i < fileNameClause.size(); i++) {
-                                StringBuilder s = fileNameClause.get(i);
-                                if (i > 0) {
-                                    sshCmd.append("\\\" \\\"");
-                                }
-                                sshCmd.append(s);
-                            }
-                        }
-                    }
-
-                    sshCmd.append("\\\" ");
-                }
-
+        sshCmd.append(" declare -a arr=(");
+        sshCmd.append(" \\\"");
+        for (int i = 0; i < fileNameClause.size(); i++) {
+            StringBuilder s = fileNameClause.get(i);
+            if (i > 0) {
+                sshCmd.append("\\\" \\\"");
             }
-            sshCmd.append(" ); for ext in \\\"\\${arr[@]}\\\"; do");
+            sshCmd.append(s);
         }
 
-//        sshCmd.append(" echo ").append(fileClause).append(" ; ");
+        sshCmd.append("\\\" ");
+
+        sshCmd.append(" ); for ext in \\\"\\${arr[@]}\\\"; do");
+
+//        sshCmd.append(" echo ").append("\\${ext}").append(" ; ");
         //this is used for testing
 //        sshCmd.append(" pwd; echo a\\$ext");
         sshCmd.append(" find ")
                 .append((lcaLog) ? "lca" : ap)
-                .append(" ")
-                .append(fileClause);
+                .append(" -name \\${ext} ");
         if (!ds.isListFiles()) {
             sshCmd.append(" -o -type d ");
         }
-        sshCmd.append("-print | sort -r");
+        sshCmd.append(" -print | sort -r");
         if (ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES) {
             sshCmd.append(" | head -").append(ds.getHours());
         }
@@ -574,6 +547,42 @@ public class CommandExecutor {
 
     }
 
+    private StringBuilder getGenesysNameClause(AppProfile appProfile, App ap, boolean lca, String suffix) {
+        StringBuilder fileNameClause = new StringBuilder();
+        String backSlash;
+        if (!ds.isUseRSync()) {
+            backSlash = "\\";
+        } else {
+            backSlash = "";
+        }
+        fileNameClause.append("")
+                .append(backSlash).append("*");
+
+        if (suffix != null) {
+            fileNameClause.append(suffix);
+        }
+
+        fileNameClause.append(backSlash).append(".");
+        if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX && ds.getDateSpec() != null && !ds.getDateSpec().isEmpty()) {
+            fileNameClause.append(GetLogs.expandPattern(ds.getDateSpec(), 8));
+        } else {
+            fileNameClause.append(StringUtils.repeat("[0-9]", 8));
+        }
+        fileNameClause.append("_");
+
+        if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX && ds.getTimeSpec() != null && !ds.getTimeSpec().isEmpty()) {
+            fileNameClause.append(GetLogs.expandPattern(ds.getTimeSpec(), 6));
+        } else {
+            fileNameClause.append(StringUtils.repeat("[0-9]", 6));
+        }
+        fileNameClause.append("_");
+
+        fileNameClause.append(StringUtils.repeat("[0-9]", 3))
+                .append("").append(backSlash).append(".").append(backSlash).append("*");
+
+        return fileNameClause;
+    }
+
     private ArrayList<StringBuilder> getFileNameClause(AppProfile appProfile, App ap, boolean isLCA) {
         ArrayList<StringBuilder> ret1 = new ArrayList<>();
         HashMap<String, Boolean> nameSuffixes = appProfile.getNameSuffixes();
@@ -581,49 +590,41 @@ public class CommandExecutor {
         StringBuilder fileNameClause = new StringBuilder();
 
         if (!isLCA && !appProfile.isIsGenesysName()) {
-            String backSlash = "";
-            if (nameSuffixes != null && !nameSuffixes.isEmpty()) //                    .append(ap.getName())
-            {
-                fileNameClause.append("\\\"\\${ext}\\\"");
-                ret1.add(fileNameClause);
+            if (nameSuffixes != null && !nameSuffixes.isEmpty()) {
+                for (Map.Entry<String, Boolean> entry : nameSuffixes.entrySet()) {
+                    String suffix = entry.getKey();
+                    Boolean isSelected = entry.getValue();
+                    if (isSelected) {
+                        if (suffix.trim().equals(".")) {
+                            ret1.addAll(cloudStandardNames());
+                        } else {
+                            String datePattern = null;
+                            String timePattern = null;
+                            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX) {
+                                datePattern = ds.getDateSpec();
+                                timePattern = ds.getTimeSpec();
+                            }
+                            ret1.add(new StringBuilder(cloudPattern(suffix, datePattern, timePattern)));
+                        }
+                    }
+                }
             } else {
-                return cloudStandardNames();
+                ret1.addAll(cloudStandardNames());
             }
 
         } else {
-            String backSlash;
-            if (!ds.isUseRSync()) {
-                backSlash = "\\";
+            if (nameSuffixes != null && !nameSuffixes.isEmpty()) {
+                for (Map.Entry<String, Boolean> entry : nameSuffixes.entrySet()) {
+                    String suffix = entry.getKey();
+                    Boolean isSelected = entry.getValue();
+                    if (isSelected) {
+                        ret1.add(getGenesysNameClause(appProfile, ap, isLCA, suffix));
+                    }
+                }
             } else {
-                backSlash = "";
-            }
-            fileNameClause.append("")
-                    .append(backSlash).append("*");
-
-            if (!isLCA && nameSuffixes != null && !nameSuffixes.isEmpty()) //                    .append(ap.getName())
-            {
-                fileNameClause.append("\\\"\\${ext}\\\"");
+                ret1.add(getGenesysNameClause(appProfile, ap, isLCA, null));
             }
 
-            fileNameClause.append(backSlash).append(".");
-            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX && ds.getDateSpec() != null && !ds.getDateSpec().isEmpty()) {
-                fileNameClause.append(GetLogs.expandPattern(ds.getDateSpec(), 8));
-            } else {
-                fileNameClause.append(StringUtils.repeat("[0-9]", 8));
-            }
-            fileNameClause.append("_");
-
-            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX && ds.getTimeSpec() != null && !ds.getTimeSpec().isEmpty()) {
-                fileNameClause.append(GetLogs.expandPattern(ds.getTimeSpec(), 6));
-            } else {
-                fileNameClause.append(StringUtils.repeat("[0-9]", 6));
-            }
-            fileNameClause.append("_");
-
-            fileNameClause.append(StringUtils.repeat("[0-9]", 3))
-                    .append("").append(backSlash).append(".").append(backSlash).append("*");
-
-            ret1.add(fileNameClause);
         }
         GetLogs.logger.trace("fileName clause: [" + ret1 + "]");
         return ret1;
@@ -765,9 +766,9 @@ public class CommandExecutor {
             fileNameClause.append("*_cloud*").append("-");
         }
         fileNameClause.append(GetLogs.cloudDatePattern(ds.getDateSpec(), ds.getTimeSpec(), ds.getTimeProfile()));
-        ArrayList<StringBuilder> ret1=new ArrayList<>();
+        ArrayList<StringBuilder> ret1 = new ArrayList<>();
         ret1.add(fileNameClause);
-        ret1.add(new StringBuilder("cloud.log*"));
+        ret1.add(new StringBuilder("*cloud.log*"));
         return ret1;
     }
 
