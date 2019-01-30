@@ -19,6 +19,7 @@ import com.jidesoft.swing.CheckBoxListSelectionModel;
 import com.jidesoft.swing.SearchableUtils;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -1283,10 +1284,11 @@ public class SettingsPanel extends javax.swing.JPanel {
 //            return panel;
             JScrollPane jScrollPane = new JScrollPane(tab);
             tab.getTableHeader().setVisible(true);
+//            setPreferredSize(new Dimension(450, 110));
 
             JPanel listPane = new JPanel(new BorderLayout());
 
-            listPane.add(new JPanel(new BorderLayout()).add(jScrollPane));
+            listPane.add(jScrollPane, BorderLayout.CENTER);
 
             return listPane;
         }

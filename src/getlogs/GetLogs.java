@@ -986,7 +986,7 @@ public class GetLogs {
             }
             CommandExecutor ce = new CommandExecutor(false, ds);
 
-            ce.executeCmd();
+            ce.executeCmd(null);
         }
 
     }

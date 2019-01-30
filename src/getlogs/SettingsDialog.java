@@ -27,9 +27,20 @@ import org.apache.logging.log4j.LogManager;
  */
 public class SettingsDialog extends StandardDialog {
 
+    static void info(String str) {
+        LogManager.getLogger().info(str);
+        lw.addMsg(str);
+
+    }
+
+    static void error(String str) {
+      LogManager.getLogger().error(str);
+        lw.addMsg(str);
+    }
+
     private final SettingsPanel settingsPanel;
     private final CommandExecutor ce;
-    private LogWindow lw;
+    private static LogWindow lw;
 
     public SettingsDialog(DownloadSettings ds) {
         super();
@@ -119,7 +130,7 @@ public class SettingsDialog extends StandardDialog {
     private void executeCommand(ActionEvent e) throws IOException, InterruptedException {
         settingsPanel.saveConfig();
         ce.setDs(settingsPanel.getDs());
-        ce.executeCmd();
+        ce.executeCmd(this);
     }
 
     private void showRecent() throws IOException, InterruptedException {

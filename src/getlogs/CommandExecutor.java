@@ -8,6 +8,7 @@ package getlogs;
 import Utils.ScreenInfo;
 import Utils.UnixProcess.ExtProcess;
 import static Utils.Util.stripDir;
+import com.jidesoft.dialog.JideOptionPane;
 import com.jidesoft.dialog.StandardDialog;
 import getlogs.DownloadSettings.App;
 import getlogs.DownloadSettings.AppProfile;
@@ -19,10 +20,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import javax.swing.SwingWorker;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
@@ -72,7 +76,7 @@ public class CommandExecutor {
                 ret.append(fillPattern(timePattern, 4, 4));
 
             } else {
-                LogManager.getLogger().error("Incorrect specification [" + m.group(1) + "] "
+                SettingsDialog.error("Incorrect specification [" + m.group(1) + "] "
                         + "in pattern [" + fileNameRegex + "]. Allowed: YYYY MM DD HH MI SS");
                 return null;
             }
@@ -124,6 +128,7 @@ public class CommandExecutor {
     private ArrayList<JTableFileEntry> lsFiles = new ArrayList<>();
     private ArrayList<JTableFileEntry> lsFilesAll = new ArrayList<>();
     private ArrayList<JTableFileEntry> lsFilesLast = new ArrayList<>();
+    private RequestProgress rp;
 
     public CommandExecutor(boolean isText) {
         this.isText = isText;
@@ -149,38 +154,42 @@ public class CommandExecutor {
         this.ds = ds;
     }
 
-    public void executeCmd() throws IOException, InterruptedException {
-        if (!isText) {
-            if (lsTab == null) {
-                lsTab = new JTableFileList();
+    public void executeCmd(java.awt.Window parent) throws IOException, InterruptedException {
+        if (parent != null) {
+            doExecuteCmd(parent, this);
+        } else {
+            if (!isText) {
+                if (lsTab == null) {
+                    lsTab = new JTableFileList();
+                }
+                lsTab.clearTable();
+
             }
-            lsTab.clearTable();
+            lsFilesAll.clear();
 
-        }
-        lsFilesAll.clear();
-
-        for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
-            if (appProfile.isSelected()) {
-                GetLogs.logger.debug("processing command for profile " + appProfile);
-                for (DownloadSettings.App app : appProfile.getApps()) {
-                    if (app.isChecked()) {
-                        if (ds.isProd()) {
-                            lsFiles.clear();
-                            executeCmd(appProfile, app, false);
-                            if (!lsFiles.isEmpty()) {
-                                lsFilesAll.addAll(lsFiles);
-                                if (ds.getActionCommand() == GetCommand.GET) {
-                                    executeRSync(lsFiles);
+            for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
+                if (appProfile.isSelected()) {
+                    GetLogs.logger.debug("processing command for profile " + appProfile);
+                    for (DownloadSettings.App app : appProfile.getApps()) {
+                        if (app.isChecked()) {
+                            if (ds.isProd()) {
+                                lsFiles.clear();
+                                executeCmd(appProfile, app, false);
+                                if (!lsFiles.isEmpty()) {
+                                    lsFilesAll.addAll(lsFiles);
+                                    if (ds.getActionCommand() == GetCommand.GET) {
+                                        executeRSync(lsFiles);
+                                    }
                                 }
                             }
-                        }
-                        if (ds.isLfmt()) {
-                            lsFiles.clear();
-                            executeCmd(appProfile, app, true);
-                            if (!lsFiles.isEmpty()) {
-                                lsFilesAll.addAll(lsFiles);
-                                if (ds.getActionCommand() == GetCommand.GET) {
-                                    executeRSync(lsFiles);
+                            if (ds.isLfmt()) {
+                                lsFiles.clear();
+                                executeCmd(appProfile, app, true);
+                                if (!lsFiles.isEmpty()) {
+                                    lsFilesAll.addAll(lsFiles);
+                                    if (ds.getActionCommand() == GetCommand.GET) {
+                                        executeRSync(lsFiles);
+                                    }
                                 }
                             }
                         }
@@ -188,14 +197,13 @@ public class CommandExecutor {
                 }
             }
         }
-        LogManager.getLogger().info("Command executed");
+        SettingsDialog.info("Command executed");
         if (ds.getActionCommand() == GetCommand.LS || ds.getActionCommand() == GetCommand.GREP) {
             lsFilesLast = saveLS(lsFilesAll);
-            if (!isText) {
+            if (!isText && tsk != null && !tsk.isCancelled()) {
                 showRecent();
             }
         }
-
     }
 
     SettingsPanel.InfoPanel lsOutput;
@@ -319,9 +327,8 @@ public class CommandExecutor {
             sshCmd.append(" | head -").append(ds.getHours());
         }
 
-        if (!lcaLog && nameSuffixes != null && !nameSuffixes.isEmpty()) {
-            sshCmd.append(" ; done");
-        }
+        sshCmd.append(" ; done");
+
         sshCmd.append("\"");
         sshParams.add(sshCmd.toString());
         ExtProcess procSSH = new ExtProcess(sshParams);
@@ -330,7 +337,7 @@ public class CommandExecutor {
 
         int waitFor = procSSH.waitFor();
         if (waitFor != 0) {
-            LogManager.getLogger().error("error code: " + waitFor);
+            SettingsDialog.error("LS failed, error code: " + waitFor);
             ArrayList<String> errBuf = procSSH.getErrBuf();
             if (errBuf != null && !errBuf.isEmpty()) {
                 logMessage(Level.ERROR, StringUtils.join(errBuf, " | "));
@@ -340,7 +347,7 @@ public class CommandExecutor {
             }
 
         } else {
-            LogManager.getLogger().info("ls output: " + procSSH.getSTDOut());
+            SettingsDialog.info("ls succesfull ");
             for (String string : procSSH.getSTDOut()) {
 //                lsTab.addRow(appProfile, ap, theAppHost, string, logsDir.toString(), isLFMT, lcaLog);
                 lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
@@ -555,8 +562,7 @@ public class CommandExecutor {
         } else {
             backSlash = "";
         }
-        fileNameClause.append("")
-                .append(backSlash).append("*");
+        fileNameClause.append(backSlash).append("*");
 
         if (suffix != null) {
             fileNameClause.append(suffix);
@@ -613,12 +619,16 @@ public class CommandExecutor {
             }
 
         } else {
-            if (nameSuffixes != null && !nameSuffixes.isEmpty()) {
+            if (!isLCA && nameSuffixes != null && !nameSuffixes.isEmpty()) {
                 for (Map.Entry<String, Boolean> entry : nameSuffixes.entrySet()) {
                     String suffix = entry.getKey();
                     Boolean isSelected = entry.getValue();
                     if (isSelected) {
-                        ret1.add(getGenesysNameClause(appProfile, ap, isLCA, suffix));
+                        if (suffix.trim().equals(".")) {
+                            ret1.add(getGenesysNameClause(appProfile, ap, isLCA, ap.getName()));
+                        } else {
+                            ret1.add(getGenesysNameClause(appProfile, ap, isLCA, suffix));
+                        }
                     }
                 }
             } else {
@@ -662,9 +672,9 @@ public class CommandExecutor {
 
             }
         } catch (IOException e) {
-            LogManager.getLogger().error(e.getMessage());
+            SettingsDialog.error(e.getMessage());
         } catch (InterruptedException e) {
-            LogManager.getLogger().error(e.getMessage());
+            SettingsDialog.error(e.getMessage());
         }
     }
 
@@ -693,7 +703,7 @@ public class CommandExecutor {
 
     private void executeRSync(ArrayList<JTableFileEntry> selectedRows) throws IOException, InterruptedException {
         if (selectedRows == null || selectedRows.size() == 0) {
-            LogManager.getLogger().info("No rows selected");
+            SettingsDialog.info("No rows selected");
         } else {
             HashMap<SavedSearchStorage, ArrayList<String>> r = new HashMap<>();
 
@@ -770,6 +780,140 @@ public class CommandExecutor {
         ret1.add(fileNameClause);
         ret1.add(new StringBuilder("*cloud.log*"));
         return ret1;
+    }
+
+    public class QueryTask extends SwingWorker<Void, String> {
+
+        private final CommandExecutor ce;
+
+        private QueryTask(CommandExecutor aThis) {
+            super();
+            ce = aThis;
+        }
+
+        boolean myCancel(boolean mayInterruptIfRunning) {
+            cancel(mayInterruptIfRunning);
+            if (isDone()) {
+                return true;
+            }
+
+            try {
+                Thread.sleep(150);
+
+                /*  
+            may consider implementing this
+            
+            from https://stackoverflow.com/questions/671049/how-do-you-kill-a-thread-in-java
+            
+            Thread f = <A thread to be stopped>
+            Method m = Thread.class.getDeclaredMethod( "stop0" , new Class[]{Object.class} );
+            m.setAccessible( true );
+            m.invoke( f , new ThreadDeath() );
+            
+                 */
+                if (!isDone()) {
+                    SettingsDialog.info("Thread not done; killing");
+                    Thread.currentThread().stop();
+                }
+
+            } catch (InterruptedException ex) {
+                LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+            }
+            return true;
+        }
+
+        private String outFile;
+
+        public void setDisplayForm(boolean displayForm) {
+            this.displayForm = displayForm;
+        }
+
+        private boolean displayForm;
+
+        @Override
+        protected void process(List<String> chunks) {
+            rp.addProgress(chunks);
+        }
+
+        private RequestProgress rp = null;
+
+        public void setRp(RequestProgress rp) {
+            this.rp = rp;
+        }
+
+        String theTitle = "";
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            if (!isText) {
+                if (lsTab == null) {
+                    lsTab = new JTableFileList();
+                }
+                lsTab.clearTable();
+
+            }
+            lsFilesAll.clear();
+
+            for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
+                if (appProfile.isSelected()) {
+                    GetLogs.logger.debug("processing command for profile " + appProfile);
+                    for (DownloadSettings.App app : appProfile.getApps()) {
+                        if (app.isChecked()) {
+                            if (ds.isProd()) {
+                                lsFiles.clear();
+                                executeCmd(appProfile, app, false);
+                                if (!lsFiles.isEmpty()) {
+                                    lsFilesAll.addAll(lsFiles);
+                                    if (ds.getActionCommand() == GetCommand.GET) {
+                                        executeRSync(lsFiles);
+                                    }
+                                }
+                            }
+                            if (ds.isLfmt()) {
+                                lsFiles.clear();
+                                executeCmd(appProfile, app, true);
+                                if (!lsFiles.isEmpty()) {
+                                    lsFilesAll.addAll(lsFiles);
+                                    if (ds.getActionCommand() == GetCommand.GET) {
+                                        executeRSync(lsFiles);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            LogManager.getLogger().debug("swingworker done");
+            rp.dispose();
+            if (isCancelled()) {
+                JOptionPane.showMessageDialog(null, "Query was cancelled", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+
+            }
+        }
+
+        private void setOutFile(String outFile) {
+            this.outFile = outFile;
+        }
+
+    };
+
+    QueryTask tsk = null;
+
+    private void doExecuteCmd(java.awt.Window parent1, CommandExecutor aThis) {
+        tsk = new QueryTask(aThis);
+        if (rp == null) {
+            rp = new RequestProgress(parent1, true, tsk);
+        }
+        tsk.setRp(rp);
+        tsk.execute();
+        rp.doShow();
     }
 
     class JTableFileEntry {
