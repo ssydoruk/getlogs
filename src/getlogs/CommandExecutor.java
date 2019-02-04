@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -42,13 +43,12 @@ import org.apache.logging.log4j.LogManager;
  */
 public class CommandExecutor {
 
-    public static void main(String[] args) throws Exception {
-        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190", "1"));
-        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "201901", "1"));
-        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "2019012", "1"));
-        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190124", "1"));
-    }
-
+//    public static void main(String[] args) throws Exception {
+//        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190", "1"));
+//        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "201901", "1"));
+//        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "2019012", "1"));
+//        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190124", "1"));
+//    }
     private static final Pattern regVariable = Pattern.compile("\\{([A-Z]{2,4})\\}");
 
     private static String cloudPattern(String fileNameRegex, String datePattern, String timePattern) {
@@ -129,9 +129,11 @@ public class CommandExecutor {
     private ArrayList<JTableFileEntry> lsFilesAll = new ArrayList<>();
     private ArrayList<JTableFileEntry> lsFilesLast = new ArrayList<>();
     private RequestProgress rp;
+    private final ExtProcessManager extProcessManager;
 
     public CommandExecutor(boolean isText) {
         this.isText = isText;
+        extProcessManager = new ExtProcessManager();
     }
 
     public CommandExecutor(Window p) {
@@ -282,17 +284,6 @@ public class CommandExecutor {
             sshParams.add(theAppHost);
         }
 
-        StringBuilder fileClause = new StringBuilder();
-        fileClause.append("\\( -type f ");
-
-//        if (!lcaLog && nameSuffixes != null && !nameSuffixes.isEmpty()) {
-//            fileClause.append(" -a name ${ext} ");
-//        } else {
-        fileClause.append(sshNameClause(fileNameClause));
-//        }
-
-        fileClause.append(" -a ! \\( -name \\*snapshot.log \\) ");
-        fileClause.append(" \\) ");
         StringBuilder sshCmd = new StringBuilder();
 
         sshCmd.append("bash -c \"");
@@ -318,10 +309,17 @@ public class CommandExecutor {
 //        sshCmd.append(" pwd; echo a\\$ext");
         sshCmd.append(" find ")
                 .append((lcaLog) ? "lca" : ap)
-                .append(" -name \\${ext} ");
+                .append(" \\( -name \\${ext} ");
+        sshCmd.append(" -a -type f ");
+        if (appProfile.isIsGenesysName()) {
+            sshCmd.append(" -a ! \\( -name \\*snapshot.log \\) ");
+        }
+        sshCmd.append(" \\) ");
+
         if (!ds.isListFiles()) {
             sshCmd.append(" -o -type d ");
         }
+
         sshCmd.append(" -print | sort -r");
         if (ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES) {
             sshCmd.append(" | head -").append(ds.getHours());
@@ -331,7 +329,7 @@ public class CommandExecutor {
 
         sshCmd.append("\"");
         sshParams.add(sshCmd.toString());
-        ExtProcess procSSH = new ExtProcess(sshParams);
+        ExtProcess procSSH = extProcessManager.addProcess(new ExtProcess(sshParams));
 
         procSSH.startProcess(true, true);
 
@@ -347,7 +345,7 @@ public class CommandExecutor {
             }
 
         } else {
-            SettingsDialog.info("ls succesfull ");
+            SettingsDialog.info("ls successful ");
             for (String string : procSSH.getSTDOut()) {
 //                lsTab.addRow(appProfile, ap, theAppHost, string, logsDir.toString(), isLFMT, lcaLog);
                 lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
@@ -359,7 +357,36 @@ public class CommandExecutor {
 
             }
         }
+        extProcessManager.doneProcess(procSSH);
         ((AbstractTableModel) lsTab.getModel()).fireTableDataChanged();
+
+    }
+
+    private class ExtProcessManager {
+
+        HashSet<ExtProcess> processes = new HashSet<>(2);
+
+        private ExtProcess addProcess(ExtProcess extProcess) {
+            synchronized (processes) {
+                processes.add(extProcess);
+                return extProcess;
+            }
+        }
+
+        private void doneProcess(ExtProcess procSSH) {
+            synchronized (processes) {
+                processes.remove(procSSH);
+            }
+        }
+
+        private void cancelAll() {
+            synchronized (processes) {
+                for (ExtProcess processe : processes) {
+                    processe.cancel();
+                }
+            }
+
+        }
 
     }
 
@@ -477,9 +504,10 @@ public class CommandExecutor {
 
         rsyncParams.add(dstSpec.toString());
 //        LogManager.getLogger().trace("executing: " + rsyncParams);
-        ExtProcess procRSync = new ExtProcess(rsyncParams);
+        ExtProcess procRSync = extProcessManager.addProcess(new ExtProcess(rsyncParams));
         procRSync.startProcess();
         procRSync.waitFor();
+        extProcessManager.doneProcess(procRSync);
     }
 
     private void executeGet(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean useRSync1, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
@@ -535,7 +563,7 @@ public class CommandExecutor {
             sshCmd.append("cvf - ")
                     .append("{} +");
             sshParams.add(sshCmd.toString());
-            ExtProcess procSSH = new ExtProcess(sshParams);
+            ExtProcess procSSH = extProcessManager.addProcess(new ExtProcess(sshParams));
 
             ExtProcess procTar = null;
             ArrayList<String> tarParams = new ArrayList<>();
@@ -544,12 +572,14 @@ public class CommandExecutor {
             tarParams.add("-f");
             tarParams.add("-");
 
-            procTar = new ExtProcess(tarParams, procSSH);
+            procTar = extProcessManager.addProcess(new ExtProcess(tarParams, procSSH));
             procTar.startProcess();
 
             procSSH.startProcess();
             procSSH.waitFor();
             procTar.waitFor();
+            extProcessManager.doneProcess(procSSH);
+            extProcessManager.doneProcess(procTar);
         }
 
     }
@@ -782,6 +812,11 @@ public class CommandExecutor {
         return ret1;
     }
 
+    private void cancel() {
+
+        extProcessManager.cancelAll();
+    }
+
     public class QueryTask extends SwingWorker<Void, String> {
 
         private final CommandExecutor ce;
@@ -792,6 +827,7 @@ public class CommandExecutor {
         }
 
         boolean myCancel(boolean mayInterruptIfRunning) {
+            ce.cancel();
             cancel(mayInterruptIfRunning);
             if (isDone()) {
                 return true;

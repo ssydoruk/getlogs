@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.cli.*;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -279,6 +280,7 @@ public class GetLogs {
 
         sLoaderLog = (String) cmd.getParsedOptionValue(optLoaderLog.getLongOpt());
         initLogger((String) cmd.getParsedOptionValue(optLogLevel.getOpt()), sLoaderLog);
+        logger.info("logger inited"+" level: "+logger.getLevel());
         if (logger.isDebugEnabled()) {
             StringBuilder s = new StringBuilder();
             for (String arg : args) {
@@ -389,33 +391,41 @@ public class GetLogs {
     static Logger logger;
 
     public static void initLogger(String par, String sLoaderLog1) {
-
         Level level = Level.INFO;
         if (par != null) {
             level = Level.toLevel(par, Level.INFO);
         }
         if (sLoaderLog1 == null || sLoaderLog1.isEmpty()) {
             sLoaderLog1 = "./applog";
+        } else {
+            System.setProperty("logPath", sLoaderLog1);
+
         }
+        System.setProperty("log4j2.saveDirectory", "true");
+        String s = System.getProperty("log4j.configurationFile");
+        if (s != null && !s.isEmpty()) {
+            s = System.getProperty("program.name") + ".xml";
+            logger = LogManager.getLogger("logdownloader");          
+        } else {
 
-        ConfigurationBuilder<BuiltConfiguration> builder
-                = ConfigurationBuilderFactory.newConfigurationBuilder();
+            ConfigurationBuilder<BuiltConfiguration> builder
+                    = ConfigurationBuilderFactory.newConfigurationBuilder();
 
-        builder.addProperty("LogFileName", sLoaderLog1);
+            builder.addProperty("LogFileName", sLoaderLog1);
 
-        AppenderComponentBuilder console
-                = builder.newAppender("stdout", "Console");
+            AppenderComponentBuilder console
+                    = builder.newAppender("stdout", "Console");
 
-        ComponentBuilder triggeringPolicies = builder.newComponent("Policies")
-                .addComponent(builder.newComponent("OnStartupTriggeringPolicy"))
-                .addComponent(builder.newComponent("SizeBasedTriggeringPolicy")
-                        .addAttribute("size", "20M"));
+            ComponentBuilder triggeringPolicies = builder.newComponent("Policies")
+                    .addComponent(builder.newComponent("OnStartupTriggeringPolicy"))
+                    .addComponent(builder.newComponent("SizeBasedTriggeringPolicy")
+                            .addAttribute("size", "20M"));
 
-        AppenderComponentBuilder rollingFile
-                = builder.newAppender("rolling", "RollingFile");
-        rollingFile.addAttribute("fileName", "${LogFileName}.log");
-        rollingFile.addAttribute("filePattern", "${LogFileName}-%d{yyyyMMdd-HHmmss_SSS}.log");
-        rollingFile.addComponent(triggeringPolicies);
+            AppenderComponentBuilder rollingFile
+                    = builder.newAppender("rolling", "RollingFile");
+            rollingFile.addAttribute("fileName", "${LogFileName}.log");
+            rollingFile.addAttribute("filePattern", "${LogFileName}-%d{yyyyMMdd-HHmmss_SSS}.log");
+            rollingFile.addComponent(triggeringPolicies);
 
 //        FilterComponentBuilder flow = builder.newFilter(
 //                "MarkerFilter",
@@ -423,30 +433,31 @@ public class GetLogs {
 //                Filter.Result.DENY);
 //        flow.addAttribute("marker", "FLOW");
 //        console.add(flow);
-        LayoutComponentBuilder standard
-                = builder.newLayout("PatternLayout");
-        standard.addAttribute("pattern", "%d %5.5p %30.30C [%t] %m%n");
+            LayoutComponentBuilder standard
+                    = builder.newLayout("PatternLayout");
+            standard.addAttribute("pattern", "%d %5.5p %30.30C [%t] %m%n");
 
-        console.add(standard);
-        rollingFile.add(standard);
+            console.add(standard);
+            rollingFile.add(standard);
 
-        builder.add(console);
-        builder.add(rollingFile);
+            builder.add(console);
+            builder.add(rollingFile);
 //        Appender appe = MyCustomAppenderImpl.createAppender("appe1", null, null, null);
 //        AppenderComponentBuilder newAppender = builder.newAppender("appe", "appe1");
 //        builder.add(appe);
 
-        RootLoggerComponentBuilder rootLogger
-                = builder.newRootLogger(level);
-        rootLogger.add(builder.newAppenderRef("stdout"));
-        rootLogger.add(builder.newAppenderRef("rolling"));
-        rootLogger.add(builder.newAppenderRef("appe"));
-        builder.add(rootLogger);
+            RootLoggerComponentBuilder rootLogger
+                    = builder.newRootLogger(level);
+            rootLogger.add(builder.newAppenderRef("stdout"));
+            rootLogger.add(builder.newAppenderRef("rolling"));
+            rootLogger.add(builder.newAppenderRef("appe"));
+            builder.add(rootLogger);
 
-        Configurator.initialize(builder.build());
+            Configurator.initialize(builder.build());
 //        System.out.println(builder.toXmlConfiguration());
-        logger = LogManager.getLogger();
-        logger.info("log initialized");
+            logger = LogManager.getLogger();
+            logger.info("log initialized");
+        }
 
     }
 
