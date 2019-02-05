@@ -62,7 +62,7 @@ public class GetLogs {
     private static String hostAppFile = null;
     private static String execCmd = null;
     private static String appsOpt = null;
-    public static String sshUser = null;
+    public static String sshOptions = null;
     private static boolean listFiles = false;
 
     public static final Pattern regDateTimeSpec = Pattern.compile("^[0-9\\[\\]\\-]+$");
@@ -84,7 +84,7 @@ public class GetLogs {
     private static Option optIsLFMT;
     private static Option optLogLevel;
     private static Option optLFMTInstance;
-    private static Option optSSHUser;
+    private static Option optSSHOptions;
     private static Option optLogDirectory;
     private static Option optLoaderLog;
     private static Option optGrep;
@@ -97,6 +97,10 @@ public class GetLogs {
     private static Option optListFiles;
     private static Option optUseRSync;
     private static Option optTime;
+    private static Option optProdBaseDir;
+    private static String prodBaseDir;
+    private static Option optUserName;
+    private static String sUserName;
 
     public static Hosts getHosts() {
         return hosts;
@@ -174,13 +178,29 @@ public class GetLogs {
                 .build();
         options.addOption(optLogLevel);
 
-        optSSHUser = Option.builder("u")
+        optProdBaseDir = Option.builder()
                 .hasArg(true)
                 .required(false)
-                .desc("user to be passed to ssh")
-                .longOpt("user")
+                .desc("basic directory for prod logs (e.g. /AppLogs/GCTI)Ï")
+                .longOpt("prod-base-dir")
                 .build();
-        options.addOption(optSSHUser);
+        options.addOption(optProdBaseDir);
+
+        optSSHOptions = Option.builder()
+                .hasArg(true)
+                .required(false)
+                .desc("options to ssh")
+                .longOpt("ssh-opt")
+                .build();
+        options.addOption(optSSHOptions);
+
+        optUserName = Option.builder("u")
+                .hasArg(true)
+                .required(false)
+                .desc("remote user name")
+                .longOpt("username")
+                .build();
+        options.addOption(optUserName);
 
         optLogDirectory = Option.builder("b")
                 .hasArg(true)
@@ -280,7 +300,7 @@ public class GetLogs {
 
         sLoaderLog = (String) cmd.getParsedOptionValue(optLoaderLog.getLongOpt());
         initLogger((String) cmd.getParsedOptionValue(optLogLevel.getOpt()), sLoaderLog);
-        logger.info("logger inited"+" level: "+logger.getLevel());
+        logger.info("logger inited" + " level: " + logger.getLevel());
         if (logger.isDebugEnabled()) {
             StringBuilder s = new StringBuilder();
             for (String arg : args) {
@@ -308,7 +328,10 @@ public class GetLogs {
                 sLogDirectory = m.group(1);
             }
         }
-        sshUser = (String) cmd.getParsedOptionValue(optSSHUser.getOpt());
+        sshOptions = (String) cmd.getParsedOptionValue(optSSHOptions.getLongOpt());
+        sUserName = (String) cmd.getParsedOptionValue(optUserName.getLongOpt());
+
+        prodBaseDir = (String) cmd.getParsedOptionValue(optProdBaseDir.getLongOpt());
 
 //</editor-fold>
         //--------------------------------------
@@ -327,6 +350,18 @@ public class GetLogs {
 
         logger.info("allDone");
 
+    }
+
+    public static String getSshOptions() {
+        if (sshOptions != null && !sshOptions.isEmpty()) {
+            return sshOptions;
+        } else {
+            return "";
+        }
+    }
+
+    public static String getsUserName() {
+        return sUserName;
     }
 
     public static void processApp(String ap, Options options) throws IOException, InterruptedException {
@@ -405,7 +440,7 @@ public class GetLogs {
         String s = System.getProperty("log4j.configurationFile");
         if (s != null && !s.isEmpty()) {
             s = System.getProperty("program.name") + ".xml";
-            logger = LogManager.getLogger("logdownloader");          
+            logger = LogManager.getLogger("logdownloader");
         } else {
 
             ConfigurationBuilder<BuiltConfiguration> builder
@@ -531,8 +566,8 @@ public class GetLogs {
         } else {
             ArrayList<String> sshParams = new ArrayList<>();
             sshParams.add("ssh");
-            if (sshUser != null) {
-                sshParams.addAll(Arrays.asList(new String[]{"-l", sshUser}));
+            if (sshOptions != null) {
+                sshParams.addAll(Arrays.asList(new String[]{"-l", sshOptions}));
             }
 
             if (lfmtHost != null) {
@@ -588,8 +623,8 @@ public class GetLogs {
     private static void executeLS(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
         sshParams.add("ssh");
-        if (sshUser != null) {
-            sshParams.addAll(Arrays.asList(new String[]{"-l", sshUser}));
+        if (sshOptions != null) {
+            sshParams.addAll(Arrays.asList(new String[]{"-l", sshOptions}));
         }
 
         sshParams.add(((lfmtHost != null)) ? lfmtHost : theAppHost);
@@ -626,8 +661,8 @@ public class GetLogs {
     private static ArrayList<String> executeGrep(String ap, String appHost1, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
         sshParams.add("ssh");
-        if (sshUser != null) {
-            sshParams.addAll(Arrays.asList(new String[]{"-l", sshUser}));
+        if (sshOptions != null) {
+            sshParams.addAll(Arrays.asList(new String[]{"-l", sshOptions}));
         }
         sshParams.add(((lfmtHost != null)) ? lfmtHost : appHost1);
 
@@ -723,7 +758,7 @@ public class GetLogs {
         rsyncParams.add("-f");
         rsyncParams.add("- **");
         StringBuilder srcSpec = new StringBuilder();
-        srcSpec.append(sshUser).append("@").append((lfmtHost != null ? lfmtHost : theAppHost)).append(":")
+        srcSpec.append(sshOptions).append("@").append((lfmtHost != null ? lfmtHost : theAppHost)).append(":")
                 .append(logsDir).append("/").append(ap).append("/").append("");
 
         rsyncParams.add(srcSpec.toString());
@@ -751,7 +786,7 @@ public class GetLogs {
 //        rsyncParams.add("-f");
 //        rsyncParams.add("- **");
             StringBuilder buf = new StringBuilder();
-            buf.append(sshUser).append("@").append((lfmtHost != null ? lfmtHost : "")).append(":")
+            buf.append(sshOptions).append("@").append((lfmtHost != null ? lfmtHost : "")).append(":")
                     .append(listLogFiles.get(0).getLfmtName()) //                .append(" :").append(logFiles.get(1));
                     //                .append("/*")
                     ;
@@ -1004,6 +1039,14 @@ public class GetLogs {
 
     static void exitHelp(String string) {
         showHelpExit(string, options);
+    }
+
+    static String getProdBaseDir() {
+        if (prodBaseDir == null || prodBaseDir.isEmpty()) {
+            return "/AppLog/GCTI";
+        } else {
+            return prodBaseDir;
+        }
     }
 
 }

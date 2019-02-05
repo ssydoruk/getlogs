@@ -236,7 +236,7 @@ public class CommandExecutor {
                     //                    .append(ap)
                     ;
         } else {
-            logsDir.append("/AppLog/GCTI");
+            logsDir.append(GetLogs.getProdBaseDir());
 
         }
 
@@ -273,8 +273,10 @@ public class CommandExecutor {
         HashMap<String, Boolean> nameSuffixes = appProfile.getNameSuffixes();
 
         sshParams.add("ssh");
-        if (GetLogs.sshUser != null) {
-            sshParams.addAll(Arrays.asList(new String[]{"-l", GetLogs.sshUser}));
+        if (GetLogs.sshOptions != null) {
+            sshParams.addAll(
+                    Arrays.asList(StringUtils.split(GetLogs.sshOptions))
+            );
         }
         sshParams.addAll(Arrays.asList(new String[]{"-o", "StrictHostKeyChecking no"}));
 
@@ -306,15 +308,15 @@ public class CommandExecutor {
 
 //        sshCmd.append(" echo ").append("\\${ext}").append(" ; ");
         //this is used for testing
-//        sshCmd.append(" pwd; echo a\\$ext");
+//        sshCmd.append(" pwd; echo \\$ext; echo \\${ext}; ");
         sshCmd.append(" find ")
                 .append((lcaLog) ? "lca" : ap)
-                .append(" \\( -name \\${ext} ");
-        sshCmd.append(" -a -type f ");
+                .append(" -name \\${ext} ");
+//        sshCmd.append(" -a -type f ");
         if (appProfile.isIsGenesysName()) {
             sshCmd.append(" -a ! \\( -name \\*snapshot.log \\) ");
         }
-        sshCmd.append(" \\) ");
+        sshCmd.append(" ");
 
         if (!ds.isListFiles()) {
             sshCmd.append(" -o -type d ");
@@ -405,8 +407,8 @@ public class CommandExecutor {
             boolean isLFMT, boolean isLCA) throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
         sshParams.add("ssh");
-        if (GetLogs.sshUser != null) {
-            sshParams.addAll(Arrays.asList(new String[]{"-l", GetLogs.sshUser}));
+        if (GetLogs.getsUserName() != null) {
+            sshParams.addAll(Arrays.asList(new String[]{"-l", GetLogs.getsUserName()}));
         }
         if (isLFMT) {
             DownloadSettings.LFMTHostInstance lfmt1 = appProfile.getLFMT();
@@ -466,16 +468,20 @@ public class CommandExecutor {
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
         rsyncParams.add("-avz");
+//        rsyncParams.add("--compress-level=8");
         rsyncParams.add("-e");
-        rsyncParams.add("ssh");
+        rsyncParams.add("ssh " + GetLogs.getSshOptions());
+//        rsyncParams.add(GetLogs.getSshOptions());
+
         rsyncParams.addAll(fileNameClause);
         rsyncParams.add("-f");
         rsyncParams.add("- **");
         StringBuilder srcSpec = new StringBuilder();
         String lfmtHost = null;
 
-        if (GetLogs.sshUser != null) {
-            srcSpec.append(GetLogs.sshUser).append("@");
+        String u = GetLogs.getsUserName();
+        if (u != null && !u.isEmpty()) {
+            srcSpec.append(u).append("@");
         }
         if (isLFMT) {
             DownloadSettings.LFMTHostInstance lfmtHostInstance = appProfile.getLFMT();
@@ -518,8 +524,10 @@ public class CommandExecutor {
             Utils.FileUtils.setCurrentDirectory(ds.getOutputDir());
             ArrayList<String> sshParams = new ArrayList<>();
             sshParams.add("ssh");
-            if (GetLogs.sshUser != null) {
-                sshParams.addAll(Arrays.asList(new String[]{"-l", GetLogs.sshUser}));
+            if (GetLogs.sshOptions != null) {
+                sshParams.addAll(
+                        Arrays.asList(StringUtils.split(GetLogs.sshOptions))
+                );
             }
 
             if (isLFMT) {
@@ -588,7 +596,7 @@ public class CommandExecutor {
         StringBuilder fileNameClause = new StringBuilder();
         String backSlash;
         if (!ds.isUseRSync()) {
-            backSlash = "\\";
+            backSlash = "";
         } else {
             backSlash = "";
         }
