@@ -487,7 +487,6 @@ System.setProperty("com.apple.mrj.application.apple.menu.about.name", "WikiTeX")
                     = builder.newRootLogger(level);
             rootLogger.add(builder.newAppenderRef("stdout"));
             rootLogger.add(builder.newAppenderRef("rolling"));
-            rootLogger.add(builder.newAppenderRef("appe"));
             builder.add(rootLogger);
 
             Configurator.initialize(builder.build());
@@ -495,6 +494,7 @@ System.setProperty("com.apple.mrj.application.apple.menu.about.name", "WikiTeX")
             logger = LogManager.getLogger();
             logger.info("log initialized");
         }
+//        LogWindow.initCustomLogger();
 
     }
 

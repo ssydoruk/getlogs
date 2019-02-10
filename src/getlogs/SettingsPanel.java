@@ -93,7 +93,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     /**
      * Creates new form SettingsPanel
      */
-    public SettingsPanel() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
+    public SettingsPanel() {
         initComponents();
 //        dtRange = new TDateRange(false);
 //        jpRange.add(dtRange);
@@ -169,9 +169,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 //                tfFilenameSuffixesChanged();
 //            }
 //        });
-
-UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
+//        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     }
 
     private void tfFilenameSuffixesChanged() {
@@ -384,7 +382,7 @@ UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         return null;
     }
 
-    SettingsPanel(DownloadSettings ds) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
+    SettingsPanel(DownloadSettings ds) {
         this();
         this.ds = ds;
         loadConfig();
@@ -1219,7 +1217,7 @@ UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     public static class InfoPanel extends StandardDialog {
 
         private int closeCause = JOptionPane.CANCEL_OPTION;
-        private JTable tab;
+        private JTable theTab;
         private ArrayList<JButton> addButtons;
         private final String selectedFormat;
         private TableColumnAdjuster tca;
@@ -1243,35 +1241,41 @@ UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         InfoPanel(Window parent, String title, JTable tab, String selectedFormat) {
             super(parent, title);
             this.addButtons = new ArrayList<>();
-            this.tab = tab;
+            this.theTab = tab;
             this.selectedFormat = selectedFormat;
-            tca = new TableColumnAdjuster(tab);
+            tca = new TableColumnAdjuster(theTab);
+            jScrollPane = new JScrollPane(theTab);
+            theTab.getTableHeader().setVisible(true);
+            theTab.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
 
         }
 
         public void doShow() {
             this.setLocationRelativeTo(getParent());
             tca.adjustColumns();
+
+            Dimension d = theTab.getPreferredSize();
+
+            d.height = 500;
+            d.width += jScrollPane.getVerticalScrollBar().getMaximumSize().width + 4;
+            jScrollPane.setPreferredSize(d);
             pack();
+
             CenterWindow(this);
-            tab.invalidate();
-            
+
             if (LogManager.getLogger().isTraceEnabled()) {
-                LogManager.getLogger().trace("Show info PanelDialog; title=" + getTitle() + "; tab cols:" + tab.getColumnCount() + " rows: " + tab.getRowCount());
+                LogManager.getLogger().trace("Show info PanelDialog; title=" + getTitle() + "; tab cols:" + theTab.getColumnCount() + " rows: " + theTab.getRowCount());
                 StringBuilder s = new StringBuilder(512);
-                for (int i = 0; i < tab.getRowCount(); i++) {
+                for (int i = 0; i < theTab.getRowCount(); i++) {
                     s.setLength(0);
-                    for (int j = 0; j < tab.getColumnCount(); j++) {
-                        s.append("[" + tab.getValueAt(i, j) + "],");
+                    for (int j = 0; j < theTab.getColumnCount(); j++) {
+                        s.append("[" + theTab.getValueAt(i, j) + "],");
                     }
                     LogManager.getLogger().trace(s);
                 }
 
             }
 
-//            ScreenInfo.CenterWindow(this);
-            setVisible(
-                    false);
             setVisible(true);
         }
 
@@ -1279,6 +1283,7 @@ UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         public JComponent createBannerPanel() {
             return null;
         }
+        JScrollPane jScrollPane;
 
         @Override
         public JComponent createContentPanel() {
@@ -1287,9 +1292,6 @@ UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
 //            panel.add(mainPanel, BorderLayout.CENTER);
 //            return panel;
-            JScrollPane jScrollPane = new JScrollPane(tab);
-            tab.getTableHeader().setVisible(true);
-//            setPreferredSize(new Dimension(450, 110));
 
             JPanel listPane = new JPanel(new BorderLayout());
 
@@ -1322,19 +1324,19 @@ UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
             jbFilter = new JButton("Use as filter");
             buttonPanel.addButton(jbFilter);
-            tab.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            theTab.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                 @Override
                 public void valueChanged(ListSelectionEvent e) {
-                    selectionChanged(jbFilter, tab);
+                    selectionChanged(jbFilter, theTab);
                 }
             });
-            selectionChanged(jbFilter, tab);
+            selectionChanged(jbFilter, theTab);
 
 //            listPane.add(jbFilter);
             jbFilter.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    tab.editingCanceled(null);
+                    theTab.editingCanceled(null);
                     setCloseCause(JOptionPane.OK_OPTION);
                     dispose();
                 }
@@ -1342,8 +1344,8 @@ UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
             String act = "ApplyFilter";
 
-            tab.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0), act);
-            tab.getActionMap().put(act, jbFilter.getAction());
+            theTab.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0), act);
+            theTab.getActionMap().put(act, jbFilter.getAction());
 
             setDefaultCancelAction(cancelButton.getAction());
             setDefaultAction(jbFilter.getAction());
