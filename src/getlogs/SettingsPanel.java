@@ -60,6 +60,8 @@ import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -91,7 +93,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     /**
      * Creates new form SettingsPanel
      */
-    public SettingsPanel() {
+    public SettingsPanel() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
         initComponents();
 //        dtRange = new TDateRange(false);
 //        jpRange.add(dtRange);
@@ -167,6 +169,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 //                tfFilenameSuffixesChanged();
 //            }
 //        });
+
+UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
     }
 
     private void tfFilenameSuffixesChanged() {
@@ -379,7 +384,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         return null;
     }
 
-    SettingsPanel(DownloadSettings ds) {
+    SettingsPanel(DownloadSettings ds) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
         this();
         this.ds = ds;
         loadConfig();
