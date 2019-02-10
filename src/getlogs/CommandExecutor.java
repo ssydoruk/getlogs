@@ -157,6 +157,7 @@ public class CommandExecutor {
     }
 
     public void executeCmd(java.awt.Window parent) throws IOException, InterruptedException {
+        SettingsDialog.info("* " + ds.getActionCommand() + " started");
         if (parent != null) {
             doExecuteCmd(parent, this);
         } else {
@@ -211,6 +212,7 @@ public class CommandExecutor {
     SettingsPanel.InfoPanel lsOutput;
 
     public void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws IOException, InterruptedException {
+        SettingsDialog.info("executing for profile ["+appProfile.toString()+"] ap["+ap+"] lfmt:"+isLFMT);
         String theAppHost;
         if (GetLogs.appHost == null || GetLogs.appHost.isEmpty()) {
             theAppHost = (String) GetLogs.getHosts().get(ap.getName()); // first for one application only
@@ -733,7 +735,9 @@ public class CommandExecutor {
             lsOutput.doShow();
 
             if (lsOutput.getCloseCause() == JOptionPane.OK_OPTION) {
+                SettingsDialog.info("About to download "+lsTab.getSelectedFiles().size()+" files");
                 executeRSync(lsTab.getSelectedFiles());
+                SettingsDialog.info("Done downloading "+lsTab.getSelectedFiles().size()+" files");
 
             }
         }
@@ -951,6 +955,7 @@ public class CommandExecutor {
     QueryTask tsk = null;
 
     private void doExecuteCmd(java.awt.Window parent1, CommandExecutor aThis) {
+
         tsk = new QueryTask(aThis);
         if (rp == null) {
             rp = new RequestProgress(parent1, true, tsk);
