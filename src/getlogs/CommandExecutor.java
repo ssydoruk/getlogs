@@ -5,6 +5,7 @@
  */
 package getlogs;
 
+import Utils.Pair;
 import Utils.ScreenInfo;
 import Utils.UnixProcess.ExtProcess;
 import static Utils.Util.stripDir;
@@ -12,7 +13,11 @@ import com.jidesoft.dialog.JideOptionPane;
 import com.jidesoft.dialog.StandardDialog;
 import getlogs.DownloadSettings.App;
 import getlogs.DownloadSettings.AppProfile;
+import getlogs.SettingsPanel.InfoPanel;
+import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
@@ -25,12 +30,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -212,7 +222,7 @@ public class CommandExecutor {
     SettingsPanel.InfoPanel lsOutput;
 
     public void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws IOException, InterruptedException {
-        SettingsDialog.info("executing for profile ["+appProfile.toString()+"] ap["+ap+"] lfmt:"+isLFMT);
+        SettingsDialog.info("executing for profile [" + appProfile.toString() + "] ap[" + ap + "] lfmt:" + isLFMT);
         String theAppHost;
         if (GetLogs.appHost == null || GetLogs.appHost.isEmpty()) {
             theAppHost = (String) GetLogs.getHosts().get(ap.getName()); // first for one application only
@@ -253,7 +263,7 @@ public class CommandExecutor {
 
     }
 
-    private SavedSearchStorage getStorage(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog) {
+    public SavedSearchStorage getStorage(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog) {
         SavedSearchStorage _ret = new SavedSearchStorage(appProfile, ap, theAppHost, logsDir, lfmt, lcaLog);
 
         for (SavedSearchStorage savedSearchStorage : savedSearch) {
@@ -333,7 +343,7 @@ public class CommandExecutor {
 
         sshCmd.append("\"");
         sshParams.add(sshCmd.toString());
-        ExtProcess procSSH = extProcessManager.addProcess(new ExtProcess(sshParams));
+        ExtProcess procSSH = extProcessManager.addProcess(new ExtProcessLogback(sshParams, false, true));
 
         procSSH.startProcess(true, true);
 
@@ -512,10 +522,46 @@ public class CommandExecutor {
 
         rsyncParams.add(dstSpec.toString());
 //        LogManager.getLogger().trace("executing: " + rsyncParams);
-        ExtProcess procRSync = extProcessManager.addProcess(new ExtProcess(rsyncParams));
+        ExtProcessLogback procRSync = (ExtProcessLogback) extProcessManager.addProcess(new ExtProcessLogback(rsyncParams,
+                true, true));
         procRSync.startProcess();
         procRSync.waitFor();
         extProcessManager.doneProcess(procRSync);
+    }
+
+    class ExtProcessLogback extends ExtProcess {
+
+        private void initLogBack(boolean logStdin, boolean logStdout) {
+            if (logStdin) {
+                setStdinReadProc(new IProcessOutputRead() {
+                    @Override
+                    public void lineRead(String s) {
+                        logMessage(Level.INFO, s);
+                    }
+                });
+            }
+
+            if (logStdout) {
+                setStderrReadProc(new IProcessOutputRead() {
+                    @Override
+                    public void lineRead(String s) {
+                        logMessage(Level.ERROR, "! " + s);
+
+                    }
+                });
+            }
+        }
+
+        public ExtProcessLogback(ArrayList<String> tarParams, ExtProcess procSSH) throws IOException {
+            super(tarParams, procSSH);
+            initLogBack(false, false);
+        }
+
+        public ExtProcessLogback(List<String> tarParams, boolean logStdin, boolean logStdout) throws IOException {
+            super(tarParams);
+            initLogBack(logStdin, logStdout);
+        }
+
     }
 
     private void executeGet(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean useRSync1, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
@@ -573,7 +619,7 @@ public class CommandExecutor {
             sshCmd.append("cvf - ")
                     .append("{} +");
             sshParams.add(sshCmd.toString());
-            ExtProcess procSSH = extProcessManager.addProcess(new ExtProcess(sshParams));
+            ExtProcess procSSH = extProcessManager.addProcess(new ExtProcessLogback(sshParams, true, true));
 
             ExtProcess procTar = null;
             ArrayList<String> tarParams = new ArrayList<>();
@@ -582,7 +628,7 @@ public class CommandExecutor {
             tarParams.add("-f");
             tarParams.add("-");
 
-            procTar = extProcessManager.addProcess(new ExtProcess(tarParams, procSSH));
+            procTar = extProcessManager.addProcess(new ExtProcessLogback(tarParams, procSSH));
             procTar.startProcess();
 
             procSSH.startProcess();
@@ -735,9 +781,9 @@ public class CommandExecutor {
             lsOutput.doShow();
 
             if (lsOutput.getCloseCause() == JOptionPane.OK_OPTION) {
-                SettingsDialog.info("About to download "+lsTab.getSelectedFiles().size()+" files");
+                SettingsDialog.info("About to download " + lsTab.getSelectedFiles().size() + " files");
                 executeRSync(lsTab.getSelectedFiles());
-                SettingsDialog.info("Done downloading "+lsTab.getSelectedFiles().size()+" files");
+                SettingsDialog.info("Done downloading " + lsTab.getSelectedFiles().size() + " files");
 
             }
         }
@@ -805,8 +851,12 @@ public class CommandExecutor {
 
     }
 
-    private void logMessage(Level ERROR, String join) {
-
+    private void logMessage(Level lvl, String str) {
+        if (lvl == Level.INFO) {
+            SettingsDialog.info(str);
+        } else if (lvl == Level.ERROR) {
+            SettingsDialog.error(str);
+        }
     }
 
     private ArrayList<StringBuilder> cloudStandardNames() {
@@ -965,7 +1015,7 @@ public class CommandExecutor {
         rp.doShow();
     }
 
-    class JTableFileEntry {
+    static class JTableFileEntry {
 
         private final AppProfile appProfile;
         private final String fileName;
@@ -983,7 +1033,7 @@ public class CommandExecutor {
             errorMsg = errMessage;
         }
 
-        private Object getColumn(int columnIndex) {
+        public Object getColumn(int columnIndex) {
             switch (columnIndex) {
                 case 0:
                     return appProfile.getName();
@@ -1018,82 +1068,7 @@ public class CommandExecutor {
         return ret1;
     }
 
-    private static final HashMap<Integer, String> fileTableColls = initCalls();
-
-    class JTableFileModel extends AbstractTableModel {
-
-        private ArrayList<JTableFileEntry> tabRows = new ArrayList<>();
-
-        public JTableFileModel() {
-
-        }
-
-        @Override
-        public int getRowCount() {
-            return tabRows.size();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return fileTableColls.size();
-        }
-
-        @Override
-        public String getColumnName(int columnIndex) {
-            return fileTableColls.get(columnIndex);
-        }
-
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return String.class;
-        }
-
-        @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return false;
-        }
-
-        @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            JTableFileEntry get = tabRows.get(rowIndex);
-            if (get != null) {
-                return get.getColumn(columnIndex);
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-
-        }
-
-        private ArrayList<JTableFileEntry> getSelectedRows(int[] selectedRows) {
-            ArrayList<JTableFileEntry> ret1 = new ArrayList<>(selectedRows.length);
-            for (int row : selectedRows) {
-                ret1.add(tabRows.get(row));
-            }
-            return ret1;
-        }
-
-        private void addRow(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog) {
-            tabRows.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, searchFile, logsDir, lfmt, lcaLog), searchFile));
-
-        }
-
-        private void addRow(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog,
-                String errorMessage) {
-            tabRows.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, searchFile, logsDir, lfmt, lcaLog), searchFile));
-
-        }
-
-        private void setData(ArrayList<JTableFileEntry> lsFilesLast) {
-
-            tabRows = lsFilesLast;
-            fireTableDataChanged();
-        }
-
-    }
+    public static final HashMap<Integer, String> fileTableColls = initCalls();
 
     class SavedSearchStorage {
 
@@ -1153,56 +1128,6 @@ public class CommandExecutor {
         }
     }
 
-    class JTableFileList extends JTablePopup {
-
-        private JTableFileModel mod;
-
-        public boolean isEmpty() {
-            return mod.getRowCount() == 0;
-        }
-
-        public JTableFileList() {
-            super();
-            mod = new JTableFileModel();
-            setModel(mod);
-        }
-
-        @Override
-        void theMousePressed(MouseEvent e) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        void callingPopup() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        private void clearTable() {
-            mod.tabRows.clear();
-        }
-
-        private ArrayList<JTableFileEntry> getSelectedFiles() {
-            int[] selectedRows = getSelectedRows();
-            if (selectedRows != null && selectedRows.length > 0) {
-                return mod.getSelectedRows(selectedRows);
-            } else {
-                return null;
-            }
-        }
-
-//        private void addRow(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog) {
-//            mod.addRow(appProfile, ap, theAppHost, searchFile, logsDir, lfmt, lcaLog);
-//        }
-//
-//        private void addRow(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog,
-//                String errorMsg) {
-//            mod.addRow(appProfile, ap, theAppHost, searchFile, logsDir, lfmt, lcaLog, errorMsg);
-//        }
-        private void setFiles(ArrayList<JTableFileEntry> lsFilesLast) {
-            mod.setData(lsFilesLast);
-
-        }
-    }
     JTableFileList lsTab = null;
 
 }

@@ -48,6 +48,7 @@ public class SettingsDialog extends StandardDialog {
         ce = new CommandExecutor(this);
         lw = new LogWindow();
         lw.doShow();
+        setModal(false);
 
         addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e) {

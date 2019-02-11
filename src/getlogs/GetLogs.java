@@ -120,7 +120,7 @@ public class GetLogs {
 
     public static void main(String[] args) throws Exception {
 // set the name of the application menu item
-System.setProperty("com.apple.mrj.application.apple.menu.about.name", "WikiTeX");
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "WikiTeX");
 
         options = new Options();
 
