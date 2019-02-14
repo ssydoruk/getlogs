@@ -820,7 +820,7 @@ public class GetLogs {
                 backSlash = "\\";
                 fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
             } else {
-                fileNameClause.append("*_cloud*").append("-");
+                fileNameClause.append("*cloud*").append("-");
             }
             if (!regDateTimeSpec.matcher(dateSpec).matches()) {
                 showHelpExit("Date is specified but the format is incorrect", options);

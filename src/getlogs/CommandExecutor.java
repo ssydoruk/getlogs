@@ -865,7 +865,7 @@ public class CommandExecutor {
             String backSlash = "\\";
             fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
         } else {
-            fileNameClause.append("*_cloud*").append("-");
+            fileNameClause.append("*cloud*").append("-");
         }
         fileNameClause.append(GetLogs.cloudDatePattern(ds.getDateSpec(), ds.getTimeSpec(), ds.getTimeProfile()));
         ArrayList<StringBuilder> ret1 = new ArrayList<>();

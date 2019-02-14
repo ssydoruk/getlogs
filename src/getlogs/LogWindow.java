@@ -110,8 +110,8 @@ public class LogWindow extends StandardDialog {
         JPanel listPane = new JPanel(new BorderLayout());
 
         listPane.add(jScrollPane, BorderLayout.CENTER);
-        jScrollPane.setMinimumSize(new Dimension(300, 200));
-        jScrollPane.setMaximumSize(new Dimension(500, 200));
+//        jScrollPane.setMinimumSize(new Dimension(300, 200));
+//        jScrollPane.setMaximumSize(new Dimension(500, 200));
         jScrollPane.setPreferredSize(new Dimension(500, 200));
         return listPane;
 
@@ -127,7 +127,7 @@ public class LogWindow extends StandardDialog {
             @Override
             public void run() {
                 jt.append(str + "\n");
-                pack();
+                jt.invalidate();
             }
         });
     }
