@@ -16,12 +16,12 @@ import org.apache.logging.log4j.LogManager;
  */
 public class RequestProgress extends javax.swing.JDialog {
 
-    private CommandExecutor.QueryTask wrk;
+    private CommandExecutor.QueryTaskBase wrk;
 
     /**
      * Creates new form RequestProgress
      */
-    public RequestProgress(java.awt.Window parent, boolean modal, CommandExecutor.QueryTask wrk) {
+    public RequestProgress(java.awt.Window parent, boolean modal, CommandExecutor.QueryTaskBase wrk) {
         super(parent);
         setModal(modal);
         initComponents();
@@ -96,7 +96,7 @@ public class RequestProgress extends javax.swing.JDialog {
 
     private void jbCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbCancelActionPerformed
         LogManager.getLogger().info("interrupt process selected");
-        if(wrk.myCancel(true))
+        if (wrk.myCancel(true))
             ;
 
     }//GEN-LAST:event_jbCancelActionPerformed
@@ -104,23 +104,26 @@ public class RequestProgress extends javax.swing.JDialog {
     public static final Object dialogStarted = new Object();
 
     public void doShow() {
-
-//        synchronized (dialogStarted) {
-//            try {
-//                Thread.sleep(300);
-//                if (!wrk.isDone() && !wrk.isCancelled()) {
-        pack();
-        setLocationRelativeTo(getParent());
-        taMessages.setText(null);
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                //        synchronized (dialogStarted) {
+                //            try {
+                //                Thread.sleep(300);
+                //                if (!wrk.isDone() && !wrk.isCancelled()) {
+                pack();
+                setLocationRelativeTo(getParent());
+                taMessages.setText(null);
 //                    ScreenInfo.CenterWindow(this);
-        elapsedTimer = new ElapsedTimer();
-        elapsedTimer.execute();
-        setVisible(true);
+                elapsedTimer = new ElapsedTimer();
+                elapsedTimer.execute();
+                setVisible(true);
 //                    dialogStarted.notifyAll();
 //                }
 //            } catch (InterruptedException interruptedException) {
 //            }
 //        }
+            }
+        });
     }
 
     class ElapsedTimer extends SwingWorker<Void, Integer> {
@@ -182,13 +185,13 @@ public class RequestProgress extends javax.swing.JDialog {
                 }
             }
         } catch (ClassNotFoundException ex) {
-                        LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
         } catch (InstantiationException ex) {
-                        LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
         } catch (IllegalAccessException ex) {
-                        LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-                        LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
         }
         //</editor-fold>
 

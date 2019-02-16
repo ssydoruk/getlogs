@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
@@ -135,7 +137,6 @@ public class CommandExecutor {
 
     private boolean isText;
     private Window parent;
-    private ArrayList<JTableFileEntry> lsFiles = new ArrayList<>();
     private ArrayList<JTableFileEntry> lsFilesAll = new ArrayList<>();
     private ArrayList<JTableFileEntry> lsFilesLast = new ArrayList<>();
     private RequestProgress rp;
@@ -180,42 +181,35 @@ public class CommandExecutor {
             }
             lsFilesAll.clear();
 
-            for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
-                if (appProfile.isSelected()) {
-                    GetLogs.logger.debug("processing command for profile " + appProfile);
-                    for (DownloadSettings.App app : appProfile.getApps()) {
-                        if (app.isChecked()) {
-                            if (ds.isProd()) {
-                                lsFiles.clear();
-                                executeCmd(appProfile, app, false);
-                                if (!lsFiles.isEmpty()) {
-                                    lsFilesAll.addAll(lsFiles);
-                                    if (ds.getActionCommand() == GetCommand.GET) {
-                                        executeRSync(lsFiles);
-                                    }
-                                }
-                            }
-                            if (ds.isLfmt()) {
-                                lsFiles.clear();
-                                executeCmd(appProfile, app, true);
-                                if (!lsFiles.isEmpty()) {
-                                    lsFilesAll.addAll(lsFiles);
-                                    if (ds.getActionCommand() == GetCommand.GET) {
-                                        executeRSync(lsFiles);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        SettingsDialog.info("Command executed");
-        if (ds.getActionCommand() == GetCommand.LS || ds.getActionCommand() == GetCommand.GREP) {
-            lsFilesLast = saveLS(lsFilesAll);
-            if (!isText && tsk != null && !tsk.isCancelled()) {
-                showRecent();
-            }
+//            for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
+//                if (appProfile.isSelected()) {
+//                    GetLogs.logger.debug("processing command for profile " + appProfile);
+//                    for (DownloadSettings.App app : appProfile.getApps()) {
+//                        if (app.isChecked()) {
+//                            if (ds.isProd()) {
+//                                lsFiles.clear();
+//                                executeCmd(appProfile, app, false);
+//                                if (!lsFiles.isEmpty()) {
+//                                    lsFilesAll.addAll(lsFiles);
+//                                    if (ds.getActionCommand() == GetCommand.GET) {
+//                                        executeRSync(lsFiles, null, null);
+//                                    }
+//                                }
+//                            }
+//                            if (ds.isLfmt()) {
+//                                lsFiles.clear();
+//                                executeCmd(appProfile, app, true);
+//                                if (!lsFiles.isEmpty()) {
+//                                    lsFilesAll.addAll(lsFiles);
+//                                    if (ds.getActionCommand() == GetCommand.GET) {
+//                                        executeRSync(lsFiles, null, null);
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 
@@ -254,11 +248,28 @@ public class CommandExecutor {
 
         if (ds.isAppLogs()) {
             ArrayList<StringBuilder> fileNameClause = getFileNameClause(appProfile, ap, false);
-            executeCmd(appProfile, ap, theAppHost, logsDir.toString(), fileNameClause, isLFMT, false);
+            ArrayList<JTableFileEntry> lsFiles = executeCmd(appProfile, ap, theAppHost, logsDir.toString(), fileNameClause, isLFMT, false);
+            if (lsFiles != null && !lsFiles.isEmpty()) {
+                synchronized (lsFilesAll) {
+                    lsFilesAll.addAll(lsFiles);
+                }
+                if (ds.getActionCommand() == GetCommand.GET) {
+                    executeRSync(lsFiles, null, null);
+                }
+            }
+
         }
         if (ds.isLcaLogs()) {
             ArrayList<StringBuilder> fileNameClause = getFileNameClause(appProfile, ap, true);
-            executeCmd(appProfile, ap, theAppHost, logsDir.toString(), fileNameClause, isLFMT, true);
+            ArrayList<JTableFileEntry> lsFiles = executeCmd(appProfile, ap, theAppHost, logsDir.toString(), fileNameClause, isLFMT, true);
+            if (lsFiles != null && !lsFiles.isEmpty()) {
+                synchronized (lsFilesAll) {
+                    lsFilesAll.addAll(lsFiles);
+                }
+                if (ds.getActionCommand() == GetCommand.GET) {
+                    executeRSync(lsFiles, null, null);
+                }
+            }
         }
 
     }
@@ -279,8 +290,9 @@ public class CommandExecutor {
 
     ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
 
-    private void executeLS(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir,
+    private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir,
             ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+        ArrayList<JTableFileEntry> lsFiles = null;
         ArrayList<String> sshParams = new ArrayList<>();
         HashMap<String, Boolean> nameSuffixes = appProfile.getNameSuffixes();
 
@@ -343,8 +355,10 @@ public class CommandExecutor {
 
         sshCmd.append("\"");
         sshParams.add(sshCmd.toString());
-        ExtProcess procSSH = extProcessManager.addProcess(new ExtProcessLogback(sshParams, false, true));
-
+        ExtProcess procSSH = null;
+        synchronized (extProcessManager) {
+            procSSH = extProcessManager.addProcess(new ExtProcessLogback(sshParams, false, true));
+        }
         procSSH.startProcess(true, true);
 
         int waitFor = procSSH.waitFor();
@@ -359,7 +373,8 @@ public class CommandExecutor {
             }
 
         } else {
-            SettingsDialog.info("ls successful ");
+            lsFiles = new ArrayList<>();
+            SettingsDialog.info("ls successful for [" + appProfile.getName() + "] + app[" + ap + "]" + ((isLFMT) ? " on LFMT" : ""));
             for (String string : procSSH.getSTDOut()) {
 //                lsTab.addRow(appProfile, ap, theAppHost, string, logsDir.toString(), isLFMT, lcaLog);
                 lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
@@ -371,8 +386,11 @@ public class CommandExecutor {
 
             }
         }
-        extProcessManager.doneProcess(procSSH);
+        synchronized (extProcessManager) {
+            extProcessManager.doneProcess(procSSH);
+        }
         ((AbstractTableModel) lsTab.getModel()).fireTableDataChanged();
+        return lsFiles;
 
     }
 
@@ -381,20 +399,20 @@ public class CommandExecutor {
         HashSet<ExtProcess> processes = new HashSet<>(2);
 
         private ExtProcess addProcess(ExtProcess extProcess) {
-            synchronized (processes) {
+            synchronized (this) {
                 processes.add(extProcess);
                 return extProcess;
             }
         }
 
         private void doneProcess(ExtProcess procSSH) {
-            synchronized (processes) {
+            synchronized (this) {
                 processes.remove(procSSH);
             }
         }
 
         private void cancelAll() {
-            synchronized (processes) {
+            synchronized (this) {
                 for (ExtProcess processe : processes) {
                     processe.cancel();
                 }
@@ -726,7 +744,7 @@ public class CommandExecutor {
         return ret1;
     }
 
-    private void executeCmd(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean isLCALog) {
+    private ArrayList<JTableFileEntry> executeCmd(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean isLCALog) {
         try {
             switch (ds.getActionCommand()) {
                 case GREP:
@@ -744,17 +762,15 @@ public class CommandExecutor {
                         this way for suffixes we first get list of files and then execute rsync on files received.
                         This may be ugly, but is effective
                          */
-                        executeLS(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, isLCALog);
+                        return executeLS(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, isLCALog);
                     }
                     break;
 
                 case LS:
-                    executeLS(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, isLCALog);
-                    break;
+                    return executeLS(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, isLCALog);
 
                 case GREPGET:
                     executeGrepGet(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, isLCALog);
-                    break;
 
             }
         } catch (IOException e) {
@@ -762,6 +778,7 @@ public class CommandExecutor {
         } catch (InterruptedException e) {
             SettingsDialog.error(e.getMessage());
         }
+        return null;
     }
 
     void setSettingsFile(String sGUIProfile) {
@@ -781,15 +798,24 @@ public class CommandExecutor {
             lsOutput.doShow();
 
             if (lsOutput.getCloseCause() == JOptionPane.OK_OPTION) {
-                SettingsDialog.info("About to download " + lsTab.getSelectedFiles().size() + " files");
-                executeRSync(lsTab.getSelectedFiles());
-                SettingsDialog.info("Done downloading " + lsTab.getSelectedFiles().size() + " files");
+                if (lsTab.getSelectedFiles().size() > 0) {
+                    SettingsDialog.info("About to download " + lsTab.getSelectedFiles().size() + " files");
+                    ThreadGroup tg = new ThreadGroup("Run group");
+                    CountDownLatch latch = new CountDownLatch(lsTab.getSelectedFiles().size());
 
+                    doExecuteCmd(parent, this, tg, latch, new ISubTask() {
+                        @Override
+                        public void task() throws InterruptedException, IOException {
+                            executeRSync(lsTab.getSelectedFiles(), tg, latch);
+                        }
+                    });
+                }
             }
         }
     }
 
-    private void executeRSync(ArrayList<JTableFileEntry> selectedRows) throws IOException, InterruptedException {
+    private void executeRSync(ArrayList<JTableFileEntry> selectedRows,
+            ThreadGroup tg, CountDownLatch latch) {
         if (selectedRows == null || selectedRows.size() == 0) {
             SettingsDialog.info("No rows selected");
         } else {
@@ -805,11 +831,30 @@ public class CommandExecutor {
 
                 rSyncFiles.addAll(GetLogs.rSyncAddClause(stripDir(row.fileName)));
             }
-            for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
-                SavedSearchStorage key = entry.getKey();
-                ArrayList<String> value = entry.getValue();
-                executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
+            if (r.size() > 0) {
+                for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
+                    SavedSearchStorage key = entry.getKey();
+                    ArrayList<String> value = entry.getValue();
+                    if (tg != null && latch != null) {
+                        CallbackThread cs = new CallbackThread(tg, latch, new ISubTask() {
+                            @Override
+                            public void task() throws InterruptedException, IOException {
+                                executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
+                            }
+                        });
+                        cs.start();
+                    } else {
+                        try {
+                            executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
+                        } catch (IOException ex) {
+                            Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                        }
 
+                    }
+
+                }
             }
 
         }
@@ -875,30 +920,179 @@ public class CommandExecutor {
     }
 
     private void cancel() {
-
-        extProcessManager.cancelAll();
+        synchronized (extProcessManager) {
+            extProcessManager.cancelAll();
+        }
     }
 
-    public class QueryTask extends SwingWorker<Void, String> {
+    /**
+     *
+     */
+    public interface ISubTask {
+
+        void task() throws InterruptedException, IOException;
+    }
+
+    public interface IThreadingSubTask {
+
+        ArrayList<ISubTask> task() throws InterruptedException, IOException;
+    }
+
+    public interface ISubTaskGroup {
+
+        ThreadGroup task() throws InterruptedException, IOException;
+    }
+
+    public class QueryTask extends QueryTaskBase {
+
+        private ThreadGroup threadGroup;
+        private CountDownLatch latch;
+        private ISubTask subTask;
+
+        private QueryTask(CommandExecutor aThis, ThreadGroup cbt, CountDownLatch latch, ISubTask subTask) {
+            super(aThis);
+            this.threadGroup = cbt;
+            this.latch = latch;
+            this.subTask = subTask;
+        }
+
+        @Override
+        void onBackground() throws InterruptedException, IOException {
+            subTask.task();
+            if (threadGroup != null && latch != null) {
+                latch.await();
+            }
+
+        }
+
+        @Override
+        void onDone() {
+
+        }
+
+        @Override
+        void onCancel() {
+            if (threadGroup != null) {
+                threadGroup.interrupt();
+            }
+
+        }
+
+    };
+
+    public class QueryThreadingTask extends QueryTaskBase {
+
+        private IThreadingSubTask threadingSubTask;
+
+        public QueryThreadingTask(CommandExecutor ce, IThreadingSubTask threadingSubTask) {
+            super(ce);
+            this.threadingSubTask = threadingSubTask;
+        }
+
+//        boolean myCancel(boolean mayInterruptIfRunning) {
+//            ce.cancel();
+//            cancel(mayInterruptIfRunning);
+//            if (isDone()) {
+//                return true;
+//            }
+//
+//            try {
+//                Thread.sleep(150);
+//
+//                /*  
+//            may consider implementing this
+//            
+//            from https://stackoverflow.com/questions/671049/how-do-you-kill-a-thread-in-java
+//            
+//            Thread f = <A thread to be stopped>
+//            Method m = Thread.class.getDeclaredMethod( "stop0" , new Class[]{Object.class} );
+//            m.setAccessible( true );
+//            m.invoke( f , new ThreadDeath() );
+//            
+//                 */
+//                if (!isDone()) {
+//                    SettingsDialog.info("Thread not done; killing");
+//                    Thread.currentThread().stop();
+//                }
+//
+//            } catch (InterruptedException ex) {
+//                LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+//            }
+//            return true;
+//        }
+        @Override
+        void onDone() {
+            if (ds.getActionCommand() == GetCommand.LS || ds.getActionCommand() == GetCommand.GREP) {
+                lsFilesLast = saveLS(lsFilesAll);
+                try {
+                    showRecent();
+                } catch (IOException ex) {
+                    Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                }
+            }
+        }
+
+        @Override
+        void onCancel() {
+            if (threadGroup != null) {
+                threadGroup.interrupt();
+            }
+        }
+
+        ThreadGroup threadGroup = null;
+        CountDownLatch latch = null;
+
+        @Override
+        void onBackground() throws InterruptedException, IOException {
+            if (threadingSubTask != null) {
+                ArrayList<ISubTask> tasks = threadingSubTask.task();
+                if (tasks != null && !tasks.isEmpty()) {
+                    threadGroup = new ThreadGroup("theGroup");
+                    latch = new CountDownLatch(tasks.size());
+                    for (ISubTask task : tasks) {
+                        CallbackThread callbackThread = new CallbackThread(threadGroup, latch, task);
+                        callbackThread.start();
+                    }
+                    latch.await();
+                } else {
+                    LogManager.getLogger().error("nothing to do");
+                }
+
+            }
+        }
+
+    };
+
+    public abstract class QueryTaskBase extends SwingWorker<Void, String> {
 
         private final CommandExecutor ce;
 
-        private QueryTask(CommandExecutor aThis) {
+        abstract void onBackground() throws InterruptedException, IOException;
+
+        abstract void onDone();
+
+        abstract void onCancel();
+
+        private QueryTaskBase(CommandExecutor aThis) {
             super();
             ce = aThis;
         }
 
         boolean myCancel(boolean mayInterruptIfRunning) {
-            ce.cancel();
-            cancel(mayInterruptIfRunning);
-            if (isDone()) {
-                return true;
-            }
-
             try {
-                Thread.sleep(150);
+                ce.cancel();
+                cancel(mayInterruptIfRunning);
+                onCancel();
+                if (isDone()) {
+                    return true;
+                }
 
-                /*  
+                try {
+                    Thread.sleep(150);
+
+                    /*  
             may consider implementing this
             
             from https://stackoverflow.com/questions/671049/how-do-you-kill-a-thread-in-java
@@ -908,14 +1102,19 @@ public class CommandExecutor {
             m.setAccessible( true );
             m.invoke( f , new ThreadDeath() );
             
-                 */
-                if (!isDone()) {
-                    SettingsDialog.info("Thread not done; killing");
-                    Thread.currentThread().stop();
-                }
+                     */
+                    if (!isDone()) {
+                        SettingsDialog.info("Thread not done; killing");
+                        Thread.currentThread().stop();
+                    }
 
-            } catch (InterruptedException ex) {
-                LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+                } catch (InterruptedException ex) {
+                    LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+                }
+            } finally {
+                if (rp != null) {
+                    rp.dispose();
+                }
             }
             return true;
         }
@@ -943,44 +1142,10 @@ public class CommandExecutor {
 
         @Override
         protected Void doInBackground() throws Exception {
-            if (!isText) {
-                if (lsTab == null) {
-                    lsTab = new JTableFileList();
-                }
-                lsTab.clearTable();
-
+            if (rp != null) {
+                rp.doShow();
             }
-            lsFilesAll.clear();
-
-            for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
-                if (appProfile.isSelected()) {
-                    GetLogs.logger.debug("processing command for profile " + appProfile);
-                    for (DownloadSettings.App app : appProfile.getApps()) {
-                        if (app.isChecked()) {
-                            if (ds.isProd()) {
-                                lsFiles.clear();
-                                executeCmd(appProfile, app, false);
-                                if (!lsFiles.isEmpty()) {
-                                    lsFilesAll.addAll(lsFiles);
-                                    if (ds.getActionCommand() == GetCommand.GET) {
-                                        executeRSync(lsFiles);
-                                    }
-                                }
-                            }
-                            if (ds.isLfmt()) {
-                                lsFiles.clear();
-                                executeCmd(appProfile, app, true);
-                                if (!lsFiles.isEmpty()) {
-                                    lsFilesAll.addAll(lsFiles);
-                                    if (ds.getActionCommand() == GetCommand.GET) {
-                                        executeRSync(lsFiles);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            onBackground();
 
             return null;
         }
@@ -988,11 +1153,15 @@ public class CommandExecutor {
         @Override
         protected void done() {
             LogManager.getLogger().debug("swingworker done");
-            rp.dispose();
+            if (rp != null) {
+                rp.dispose();
+            }
             if (isCancelled()) {
-                JOptionPane.showMessageDialog(null, "Query was cancelled", "Error", JOptionPane.ERROR_MESSAGE);
+//                JOptionPane.showMessageDialog(null, "Query was cancelled", "Error", JOptionPane.ERROR_MESSAGE);
+                LogManager.getLogger().debug("Query was cancelled");
             } else {
-
+                SettingsDialog.info("Command executed");
+                onDone();
             }
         }
 
@@ -1002,17 +1171,68 @@ public class CommandExecutor {
 
     };
 
-    QueryTask tsk = null;
-
     private void doExecuteCmd(java.awt.Window parent1, CommandExecutor aThis) {
+        QueryTaskBase tsk = null;
 
-        tsk = new QueryTask(aThis);
+        tsk = new QueryThreadingTask(aThis, new IThreadingSubTask() {
+            @Override
+            public ArrayList<ISubTask> task() throws InterruptedException, IOException {
+                lsFilesAll.clear();
+                if (!isText) {
+                    if (lsTab == null) {
+                        lsTab = new JTableFileList();
+                    }
+                    lsTab.clearTable();
+
+                }
+
+                ArrayList<ISubTask> ret1 = new ArrayList<>();
+                for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
+                    if (appProfile.isSelected()) {
+                        GetLogs.logger.debug("processing command for profile " + appProfile);
+                        for (DownloadSettings.App app : appProfile.getApps()) {
+                            if (app.isChecked()) {
+                                if (ds.isProd()) {
+                                    ret1.add(new ISubTask() {
+                                        @Override
+                                        public void task() throws InterruptedException, IOException {
+                                            executeCmd(appProfile, app, false);
+                                        }
+                                    });
+                                }
+                                if (ds.isLfmt()) {
+                                    ret1.add(new ISubTask() {
+                                        @Override
+                                        public void task() throws InterruptedException, IOException {
+                                            executeCmd(appProfile, app, true);
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                return ret1;
+            }
+        });
         if (rp == null) {
             rp = new RequestProgress(parent1, true, tsk);
         }
         tsk.setRp(rp);
         tsk.execute();
-        rp.doShow();
+    }
+
+    private void doExecuteCmd(Window parent1, CommandExecutor aThis,
+            ThreadGroup cbt, CountDownLatch latch,
+            ISubTask subTask) {
+
+        QueryTaskBase tsk = new QueryTask(aThis, cbt, latch, subTask);
+        if (rp == null) {
+            rp = new RequestProgress(parent1, true, tsk);
+        }
+        tsk.setRp(rp);
+
+        tsk.execute();
     }
 
     static class JTableFileEntry {
@@ -1130,4 +1350,88 @@ public class CommandExecutor {
 
     JTableFileList lsTab = null;
 
+    class CallbackThread implements Runnable {
+
+        private final ISubTask task;
+        private Thread t;
+        private ThreadGroup threadGroup;
+        private CountDownLatch latch;
+
+        public CallbackThread(ISubTask tsk) {
+            this.task = tsk;
+        }
+
+        private CallbackThread(ThreadGroup tg, CountDownLatch _latch, ISubTask iSubTask) {
+            this(iSubTask);
+            threadGroup = tg;
+            this.latch = _latch;
+        }
+
+        public Thread getThread() {
+            if (t == null) {
+                t = new Thread(threadGroup, this);
+            }
+            return t;
+        }
+
+        @Override
+        public void run() {
+            try {
+                task.task();
+
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } finally {
+                latch.countDown();
+            }
+        }
+
+        public void start() {
+            getThread().start();
+        }
+
+    }
+
+    class CallbackThreadGroup implements Runnable {
+
+        private final ISubTaskGroup task;
+        private Thread t;
+
+        public CallbackThreadGroup(ISubTaskGroup tsk) {
+            this.task = tsk;
+        }
+
+        public Thread getThread() {
+            if (t == null) {
+                t = new Thread(this);
+            }
+            return t;
+        }
+
+        private ThreadGroup taskGrp = null;
+
+        public ThreadGroup getTaskGrp() {
+            return taskGrp;
+        }
+
+        @Override
+        public void run() {
+            try {
+                taskGrp = task.task();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
+        }
+
+        public ThreadGroup start() throws InterruptedException {
+            getThread().start();
+            getThread().join();
+            return getTaskGrp();
+        }
+
+    }
 }
