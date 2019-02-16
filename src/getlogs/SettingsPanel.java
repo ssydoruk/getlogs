@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import static javax.swing.Action.SHORT_DESCRIPTION;
@@ -107,6 +108,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         lmApps = new DefaultListModel<Object>();
         clbApps = new CheckBoxList(lmApps);
+        clbApps.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
         jpApps.add(new JScrollPane(clbApps));
 
         SearchableUtils.installSearchable(clbProfile);
@@ -252,14 +255,18 @@ public class SettingsPanel extends javax.swing.JPanel {
         for (DownloadSettings.App app : pr.getApps()) {
             lmApps.addElement(app);
         }
-        for (int i = 0; i < lmApps.getSize(); i++) {
-            if (((DownloadSettings.App) lmApps.getElementAt(i)).isChecked()) {
-                clbAppSelectionModel.addSelectionInterval(i, i);
+        if (!lmApps.isEmpty()) {
+            lmApps.insertElementAt(CheckBoxList.ALL_ENTRY, 0);
+            for (int i = 1; i < lmApps.getSize(); i++) {
+                if (((DownloadSettings.App) lmApps.getElementAt(i)).isChecked()) {
+                    clbAppSelectionModel.addSelectionInterval(i, i);
+                }
             }
         }
         for (ListSelectionListener listSelectionListener : listSelectionListeners) {
             clbAppSelectionModel.addListSelectionListener(listSelectionListener);
         }
+
         rbGenesysLogs.setSelected(pr.isIsGenesysName());
         rbCloudLogs.setSelected(!pr.isIsGenesysName());
         ext.setData(pr.getNameSuffixes());
@@ -305,7 +312,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     int minIndex = lsm.getMinSelectionIndex();
                     int maxIndex = lsm.getMaxSelectionIndex();
 
-                    appSelected((minIndex == maxIndex && minIndex >= 0));
+                    appSelected((minIndex >= 0));
                 }
 
             });
@@ -328,8 +335,10 @@ public class SettingsPanel extends javax.swing.JPanel {
 //                    );
                     for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
                         if (!lmApps.isEmpty() && i < lmApps.getSize()) {
-                            ((DownloadSettings.App) lmApps.getElementAt(i))
-                                    .setChecked(lsm.isSelectedIndex(i));
+                            if (lmApps.getElementAt(i) instanceof DownloadSettings.App) {
+                                ((DownloadSettings.App) lmApps.getElementAt(i))
+                                        .setChecked(lsm.isSelectedIndex(i));
+                            }
                         }
 
                     }
@@ -339,9 +348,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     }
 
-    private void appSelected(boolean singleSelection) {
-        jbAppDelete.setEnabled(singleSelection);
-        jpAppProperties.setEnabled(singleSelection);
+    private void appSelected(boolean itemsSelected) {
+        jbAppDelete.setEnabled(itemsSelected);
+        jpAppProperties.setEnabled(itemsSelected);
 //        rbCloudLogs.setEnabled(singleSelection);
 //        rbGenesysLogs.setEnabled(singleSelection);
 //        cbLFMTs.setEnabled(singleSelection);
@@ -890,14 +899,24 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void jbAppDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAppDeleteActionPerformed
         DownloadSettings.AppProfile appPr = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
-        DownloadSettings.App app = (DownloadSettings.App) clbApps.getSelectedValue();
-        if (appPr != null && app != null) {
-            if (JOptionPane.showConfirmDialog(this, "Do you really want to delete "
-                    + "app [" + app.getName() + "]"
-                    + " from profile ["
-                    + appPr.getName() + "]", "Please confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                appPr.removeApp(app);
-                lmApps.removeElement(app);
+        List<DownloadSettings.App> selectedValuesList = clbApps.getSelectedValuesList();
+        if (appPr != null && selectedValuesList != null) {
+            StringBuilder sPrompt = new StringBuilder();
+            sPrompt.append("Do you really want to delete ");
+            if (selectedValuesList.size() == 1) {
+                sPrompt.append("app [" + selectedValuesList.get(0).getName() + "]");
+            } else {
+                sPrompt.append(selectedValuesList.size()).append(" applications ");
+            }
+            sPrompt.append(" from profile [")
+                    .append(appPr.getName())
+                    .append("]");
+            if (JOptionPane.showConfirmDialog(this, sPrompt, "Please confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                for (DownloadSettings.App app : selectedValuesList) {
+                    appPr.removeApp(app);
+                    lmApps.removeElement(app);
+
+                }
             }
         }
     }//GEN-LAST:event_jbAppDeleteActionPerformed
@@ -1246,7 +1265,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             tca = new TableColumnAdjuster(theTab);
             jScrollPane = new JScrollPane(theTab);
             theTab.getTableHeader().setVisible(true);
-            theTab.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
+            theTab.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         }
 
@@ -1292,7 +1311,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 
 //            panel.add(mainPanel, BorderLayout.CENTER);
 //            return panel;
-
             JPanel listPane = new JPanel(new BorderLayout());
 
             listPane.add(jScrollPane, BorderLayout.CENTER);
