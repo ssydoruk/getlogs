@@ -10,6 +10,8 @@ import Utils.TDateRange;
 import Utils.UTCTimeRange;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import org.apache.logging.log4j.LogManager;
@@ -89,7 +91,7 @@ public class DownloadSettings {
         this.lcaLogs = false;
         this.actionCommand = GetCommand.LS;
         this.lfmtHostInstances = new ArrayList();
-        this.appProfiles = new HashSet<>();
+        this.appProfiles = new ArrayList<>();
         lfmt = true;
         prod = true;
         rangeStart = 0;
@@ -121,7 +123,7 @@ public class DownloadSettings {
     }
 
     void setCMDTime(String timeSpec) {
-        LogManager.getLogger().trace("Set time: "+timeSpec);
+        LogManager.getLogger().trace("Set time: " + timeSpec);
         if (timeSpec != null && !timeSpec.isEmpty() && !GetLogs.regDateTimeSpec.matcher(timeSpec).matches()) {
             LogManager.getLogger().error("Time is specified [" + timeSpec + "] but the format is incorrect");
         } else {
@@ -145,7 +147,7 @@ public class DownloadSettings {
         for (Object[] objects : data) {
             lfmtHostInstances.add(new LFMTHostInstance(objects));
         }
-        
+
     }
 
     public static class LFMTHostInstance {
@@ -161,8 +163,8 @@ public class DownloadSettings {
         }
 
         private LFMTHostInstance(Object[] objects) {
-            this((String)objects[0], (String)objects[1], (String)objects[2]);
-            
+            this((String) objects[0], (String) objects[1], (String) objects[2]);
+
         }
 
         public String getBaseDir() {
@@ -192,10 +194,12 @@ public class DownloadSettings {
 
     }
 
-    private HashSet<AppProfile> appProfiles;
+    private ArrayList<AppProfile> appProfiles;
 
-    public HashSet<AppProfile> getAppProfiles() {
-        return appProfiles;
+    public ArrayList<AppProfile> getAppProfiles() {
+        ArrayList<AppProfile> ret = new ArrayList<>(appProfiles);
+        Collections.sort(ret, new AppProfile.SortByName());
+        return ret;
     }
 
     private boolean lfmt;
@@ -320,11 +324,11 @@ public class DownloadSettings {
             this.isGenesysName = isGenesysName;
         }
 
-        public HashMap<String, Boolean>  getNameSuffixes() {
+        public HashMap<String, Boolean> getNameSuffixes() {
             return nameSuffixes;
         }
 
-        public void setNameSuffixes(HashMap<String, Boolean>  nameSuffixes) {
+        public void setNameSuffixes(HashMap<String, Boolean> nameSuffixes) {
             this.nameSuffixes = nameSuffixes;
         }
 
@@ -402,6 +406,13 @@ public class DownloadSettings {
                     + ((newLFMT == null) ? "null" : newLFMT));
             setLFMT(newLFMT);
 
+        }
+
+        public static class SortByName implements Comparator<AppProfile> {
+
+            public int compare(AppProfile a, AppProfile b) {
+                return a.getName().compareToIgnoreCase(b.getName());
+            }
         }
 
     }
