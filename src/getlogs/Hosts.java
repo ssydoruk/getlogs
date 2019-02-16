@@ -40,4 +40,11 @@ class Hosts extends HashMap<String, String> {
         LogManager.getLogger().debug("Read "+cnt+" records");
     }
 
+    String lookupHost(String app) {
+        String ret=get(app);
+        if(ret==null || ret.isEmpty())
+            ret="(Unknown!!!)";
+        return ret;
+    }
+
 }

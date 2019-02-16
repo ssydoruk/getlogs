@@ -367,8 +367,8 @@ public class DownloadSettings {
             return Name;
         }
 
-        App addApp(String string) {
-            App ret = new App(string);
+        App addApp(String app) {
+            App ret = new App(app);
             apps.add(ret);
             return ret;
         }

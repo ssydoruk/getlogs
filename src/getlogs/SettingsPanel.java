@@ -887,7 +887,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 //            HashSet<String> selValues = new HashSet<>(selectedRows.length);
             DownloadSettings.AppProfile profile = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
             for (int selectedRow : selectedRows) {
-                DownloadSettings.App addApp = profile.addApp((String) infoTableModel.getValueAt(selectedRow, 0));
+                String app=(String) infoTableModel.getValueAt(selectedRow, 0);
+                
+                DownloadSettings.App addApp = profile.addApp(app);
 //                lmApps.addElement(addApp);
 //                selValues.add((String) infoTableModel.getValueAt(selectedRow, 0));
             }
@@ -915,6 +917,9 @@ public class SettingsPanel extends javax.swing.JPanel {
                 for (DownloadSettings.App app : selectedValuesList) {
                     appPr.removeApp(app);
                     lmApps.removeElement(app);
+                    if( lmApps.size()==1 && (lmApps.getElementAt(0).equals(CheckBoxList.ALL_ENTRY)  ) ){
+                        lmApps.remove(0);
+                    }
 
                 }
             }
