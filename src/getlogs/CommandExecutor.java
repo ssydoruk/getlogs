@@ -29,6 +29,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -254,7 +257,7 @@ public class CommandExecutor {
                     lsFilesAll.addAll(lsFiles);
                 }
                 if (ds.getActionCommand() == GetCommand.GET) {
-                    executeRSync(lsFiles, null, null);
+                    executeRSync(lsFiles, null);
                 }
             }
 
@@ -267,7 +270,7 @@ public class CommandExecutor {
                     lsFilesAll.addAll(lsFiles);
                 }
                 if (ds.getActionCommand() == GetCommand.GET) {
-                    executeRSync(lsFiles, null, null);
+                    executeRSync(lsFiles, null);
                 }
             }
         }
@@ -800,13 +803,12 @@ public class CommandExecutor {
             if (lsOutput.getCloseCause() == JOptionPane.OK_OPTION) {
                 if (lsTab.getSelectedFiles().size() > 0) {
                     SettingsDialog.info("About to download " + lsTab.getSelectedFiles().size() + " files");
-                    ThreadGroup tg = new ThreadGroup("Run group");
                     CountDownLatch latch = new CountDownLatch(lsTab.getSelectedFiles().size());
 
-                    doExecuteCmd(parent, this, tg, latch, new ISubTask() {
+                    doExecuteCmd(parent, this, latch, new ISubTask() {
                         @Override
                         public void task() throws InterruptedException, IOException {
-                            executeRSync(lsTab.getSelectedFiles(), tg, latch);
+                            executeRSync(lsTab.getSelectedFiles(), latch);
                         }
                     });
                 }
@@ -815,7 +817,7 @@ public class CommandExecutor {
     }
 
     private void executeRSync(ArrayList<JTableFileEntry> selectedRows,
-            ThreadGroup tg, CountDownLatch latch) {
+            CountDownLatch latch) {
         if (selectedRows == null || selectedRows.size() == 0) {
             SettingsDialog.info("No rows selected");
         } else {
@@ -835,14 +837,13 @@ public class CommandExecutor {
                 for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
                     SavedSearchStorage key = entry.getKey();
                     ArrayList<String> value = entry.getValue();
-                    if (tg != null && latch != null) {
-                        CallbackThread cs = new CallbackThread(tg, latch, new ISubTask() {
+                    if (latch != null) {
+                        executor.execute(new CallbackThread(latch, new ISubTask() {
                             @Override
                             public void task() throws InterruptedException, IOException {
                                 executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
                             }
-                        });
-                        cs.start();
+                        }));
                     } else {
                         try {
                             executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
@@ -945,13 +946,11 @@ public class CommandExecutor {
 
     public class QueryTask extends QueryTaskBase {
 
-        private ThreadGroup threadGroup;
         private CountDownLatch latch;
         private ISubTask subTask;
 
-        private QueryTask(CommandExecutor aThis, ThreadGroup cbt, CountDownLatch latch, ISubTask subTask) {
+        private QueryTask(CommandExecutor aThis, CountDownLatch latch, ISubTask subTask) {
             super(aThis);
-            this.threadGroup = cbt;
             this.latch = latch;
             this.subTask = subTask;
         }
@@ -959,7 +958,7 @@ public class CommandExecutor {
         @Override
         void onBackground() throws InterruptedException, IOException {
             subTask.task();
-            if (threadGroup != null && latch != null) {
+            if (latch != null) {
                 latch.await();
             }
 
@@ -972,10 +971,7 @@ public class CommandExecutor {
 
         @Override
         void onCancel() {
-            if (threadGroup != null) {
-                threadGroup.interrupt();
-            }
-
+            cancelExecutor();
         }
 
     };
@@ -1036,12 +1032,9 @@ public class CommandExecutor {
 
         @Override
         void onCancel() {
-            if (threadGroup != null) {
-                threadGroup.interrupt();
-            }
+            cancelExecutor();
         }
 
-        ThreadGroup threadGroup = null;
         CountDownLatch latch = null;
 
         @Override
@@ -1049,11 +1042,9 @@ public class CommandExecutor {
             if (threadingSubTask != null) {
                 ArrayList<ISubTask> tasks = threadingSubTask.task();
                 if (tasks != null && !tasks.isEmpty()) {
-                    threadGroup = new ThreadGroup("theGroup");
                     latch = new CountDownLatch(tasks.size());
                     for (ISubTask task : tasks) {
-                        CallbackThread callbackThread = new CallbackThread(threadGroup, latch, task);
-                        callbackThread.start();
+                        executor.submit(new CallbackThread(latch, task));
                     }
                     latch.await();
                 } else {
@@ -1064,6 +1055,21 @@ public class CommandExecutor {
         }
 
     };
+
+    private static void cancelExecutor() {
+        synchronized (executor) {
+            List<Runnable> shutdownNow = executor.shutdownNow();
+            if (shutdownNow != null && !shutdownNow.isEmpty()) {
+                try {
+                    if (!executor.awaitTermination(500, TimeUnit.MILLISECONDS)) {
+                        LogManager.getLogger().error("Not all thread terminated after timeout");
+                    }
+                } catch (InterruptedException ex) {
+                    LogManager.getLogger().error(ex);
+                }
+            }
+        }
+    }
 
     public abstract class QueryTaskBase extends SwingWorker<Void, String> {
 
@@ -1223,10 +1229,10 @@ public class CommandExecutor {
     }
 
     private void doExecuteCmd(Window parent1, CommandExecutor aThis,
-            ThreadGroup cbt, CountDownLatch latch,
+            CountDownLatch latch,
             ISubTask subTask) {
 
-        QueryTaskBase tsk = new QueryTask(aThis, cbt, latch, subTask);
+        QueryTaskBase tsk = new QueryTask(aThis, latch, subTask);
         if (rp == null) {
             rp = new RequestProgress(parent1, true, tsk);
         }
@@ -1350,28 +1356,20 @@ public class CommandExecutor {
 
     JTableFileList lsTab = null;
 
+    private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+
     class CallbackThread implements Runnable {
 
         private final ISubTask task;
-        private Thread t;
-        private ThreadGroup threadGroup;
         private CountDownLatch latch;
 
         public CallbackThread(ISubTask tsk) {
             this.task = tsk;
         }
 
-        private CallbackThread(ThreadGroup tg, CountDownLatch _latch, ISubTask iSubTask) {
+        private CallbackThread(CountDownLatch _latch, ISubTask iSubTask) {
             this(iSubTask);
-            threadGroup = tg;
             this.latch = _latch;
-        }
-
-        public Thread getThread() {
-            if (t == null) {
-                t = new Thread(threadGroup, this);
-            }
-            return t;
         }
 
         @Override
@@ -1388,50 +1386,6 @@ public class CommandExecutor {
             }
         }
 
-        public void start() {
-            getThread().start();
-        }
-
     }
 
-    class CallbackThreadGroup implements Runnable {
-
-        private final ISubTaskGroup task;
-        private Thread t;
-
-        public CallbackThreadGroup(ISubTaskGroup tsk) {
-            this.task = tsk;
-        }
-
-        public Thread getThread() {
-            if (t == null) {
-                t = new Thread(this);
-            }
-            return t;
-        }
-
-        private ThreadGroup taskGrp = null;
-
-        public ThreadGroup getTaskGrp() {
-            return taskGrp;
-        }
-
-        @Override
-        public void run() {
-            try {
-                taskGrp = task.task();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-            }
-        }
-
-        public ThreadGroup start() throws InterruptedException {
-            getThread().start();
-            getThread().join();
-            return getTaskGrp();
-        }
-
-    }
 }
