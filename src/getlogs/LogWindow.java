@@ -84,7 +84,7 @@ public class LogWindow extends StandardDialog {
     public LogWindow() {
         setModal(false);
         setMinimumSize(new Dimension(300, 200));
-        setMaximumSize(new Dimension(500, 200));
+//        setMaximumSize(new Dimension(500, 200));
         setFocusable(true);
 
     }

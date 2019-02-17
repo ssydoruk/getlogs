@@ -360,7 +360,7 @@ public class CommandExecutor {
         sshParams.add(sshCmd.toString());
         ExtProcess procSSH = null;
         synchronized (extProcessManager) {
-            procSSH = extProcessManager.addProcess(new ExtProcessLogback(sshParams, false, true));
+            procSSH = extProcessManager.addProcess(new ExtProcessLogback(appProfile, ap, sshParams, false, true));
         }
         procSSH.startProcess(true, true);
 
@@ -543,7 +543,8 @@ public class CommandExecutor {
 
         rsyncParams.add(dstSpec.toString());
 //        LogManager.getLogger().trace("executing: " + rsyncParams);
-        ExtProcessLogback procRSync = (ExtProcessLogback) extProcessManager.addProcess(new ExtProcessLogback(rsyncParams,
+        ExtProcessLogback procRSync = (ExtProcessLogback) extProcessManager.addProcess(new ExtProcessLogback(
+                appProfile, ap, rsyncParams,
                 true, true));
         procRSync.startProcess();
         procRSync.waitFor();
@@ -551,6 +552,15 @@ public class CommandExecutor {
     }
 
     class ExtProcessLogback extends ExtProcess {
+
+        private AppProfile profile = null;
+        private App app = null;
+
+        private ExtProcessLogback(AppProfile appProfile, App ap, ArrayList<String> sshParams, boolean b, boolean b0) throws IOException {
+            this(sshParams, b, b0);
+            this.profile = appProfile;
+            this.app = ap;
+        }
 
         private void initLogBack(boolean logStdin, boolean logStdout) {
             if (logStdin) {
@@ -566,7 +576,15 @@ public class CommandExecutor {
                 setStderrReadProc(new IProcessOutputRead() {
                     @Override
                     public void lineRead(String s) {
-                        logMessage(Level.ERROR, "! " + s);
+                        StringBuilder msg = new StringBuilder();
+                        if (profile != null) {
+                            msg.append("[").append(profile).append("]");
+                        }
+                        if (app != null) {
+                            msg.append(" a[").append(app.getName()).append("(").append(GetLogs.getHosts().lookupHost(app.getName())).append(")]");
+                        }
+                        msg.append("! ").append(s);
+                        logMessage(Level.ERROR, msg.toString());
 
                     }
                 });
@@ -640,7 +658,7 @@ public class CommandExecutor {
             sshCmd.append("cvf - ")
                     .append("{} +");
             sshParams.add(sshCmd.toString());
-            ExtProcess procSSH = extProcessManager.addProcess(new ExtProcessLogback(sshParams, true, true));
+            ExtProcess procSSH = extProcessManager.addProcess(new ExtProcessLogback(sshParams, false, true));
 
             ExtProcess procTar = null;
             ArrayList<String> tarParams = new ArrayList<>();
@@ -649,10 +667,11 @@ public class CommandExecutor {
             tarParams.add("-f");
             tarParams.add("-");
 
+
+            procSSH.startProcess();
             procTar = extProcessManager.addProcess(new ExtProcessLogback(tarParams, procSSH));
             procTar.startProcess();
 
-            procSSH.startProcess();
             procSSH.waitFor();
             procTar.waitFor();
             extProcessManager.doneProcess(procSSH);
@@ -1062,24 +1081,23 @@ public class CommandExecutor {
 
     private static void cancelExecutor() {
         synchronized (executor) {
-            boolean terminatedOK=true;
+            boolean terminatedOK = true;
             List<Runnable> shutdownNow = executor.shutdownNow();
             if (shutdownNow != null && !shutdownNow.isEmpty()) {
                 try {
                     if (!executor.awaitTermination(500, TimeUnit.MILLISECONDS)) {
-                        terminatedOK=false;
+                        terminatedOK = false;
                         LogManager.getLogger().error("Not all thread terminated after timeout");
                     }
                 } catch (InterruptedException ex) {
                     LogManager.getLogger().error(ex);
                 }
             }
-            if(terminatedOK){
+            if (terminatedOK) {
                 executor.purge();
-                executor=(ThreadPoolExecutor) Executors.newCachedThreadPool();
+                executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
             }
-            if(executor.isTerminated())
-            {
+            if (executor.isTerminated()) {
                 LogManager.getLogger().error("executor terminated");
             }
         }
@@ -1211,7 +1229,7 @@ public class CommandExecutor {
                     if (appProfile.isSelected()) {
                         GetLogs.logger.debug("processing command for profile " + appProfile);
                         for (DownloadSettings.App app : appProfile.getApps()) {
-                            GetLogs.logger.debug("processing app  " + app+": "+app.isChecked());
+                            GetLogs.logger.debug("processing app  " + app + ": " + app.isChecked());
                             if (app.isChecked()) {
                                 if (ds.isProd()) {
                                     ret1.add(new ISubTask() {
