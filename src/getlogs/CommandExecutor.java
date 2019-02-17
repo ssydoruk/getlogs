@@ -377,11 +377,11 @@ public class CommandExecutor {
 
         } else {
             lsFiles = new ArrayList<>();
-            SettingsDialog.info("ls successful for [" + appProfile.getName() + "] + app[" + ap + "]" + ((isLFMT) ? " on LFMT" : ""));
             for (String string : procSSH.getSTDOut()) {
 //                lsTab.addRow(appProfile, ap, theAppHost, string, logsDir.toString(), isLFMT, lcaLog);
                 lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
             }
+            SettingsDialog.info("ls successful for [" + appProfile.getName() + "] + app[" + ap + "]" + ((isLFMT) ? " on LFMT" : "")+" : got "+lsFiles.size()+" files");
             ArrayList<String> errBuf = procSSH.getErrBuf();
             if (errBuf != null && !errBuf.isEmpty()) {
                 lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, null, logsDir, isLFMT, lcaLog), StringUtils.join(errBuf, " | ")));
@@ -666,7 +666,6 @@ public class CommandExecutor {
             tarParams.add("-x");
             tarParams.add("-f");
             tarParams.add("-");
-
 
             procSSH.startProcess();
             procTar = extProcessManager.addProcess(new ExtProcessLogback(tarParams, procSSH));
