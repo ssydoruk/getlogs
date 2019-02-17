@@ -1090,7 +1090,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         lmProfile.clear();
         int selIdx = -1;
-        for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
+        for (DownloadSettings.AppProfile appProfile : ds.getAppProfilesSorted()) {
             lmProfile.addElement(appProfile);
             int idx = lmProfile.size() - 1;
             if (activeProfile == appProfile) {

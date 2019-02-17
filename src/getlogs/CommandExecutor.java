@@ -1044,7 +1044,11 @@ public class CommandExecutor {
                 if (tasks != null && !tasks.isEmpty()) {
                     latch = new CountDownLatch(tasks.size());
                     for (ISubTask task : tasks) {
-                        executor.submit(new CallbackThread(latch, task));
+                        try {
+                            executor.execute(new CallbackThread(latch, task));
+                        } catch (Exception e) {
+                            LogManager.getLogger().error("Not possible to submit thread", e);
+                        }
                     }
                     latch.await();
                 } else {
@@ -1058,15 +1062,25 @@ public class CommandExecutor {
 
     private static void cancelExecutor() {
         synchronized (executor) {
+            boolean terminatedOK=true;
             List<Runnable> shutdownNow = executor.shutdownNow();
             if (shutdownNow != null && !shutdownNow.isEmpty()) {
                 try {
                     if (!executor.awaitTermination(500, TimeUnit.MILLISECONDS)) {
+                        terminatedOK=false;
                         LogManager.getLogger().error("Not all thread terminated after timeout");
                     }
                 } catch (InterruptedException ex) {
                     LogManager.getLogger().error(ex);
                 }
+            }
+            if(terminatedOK){
+                executor.purge();
+                executor=(ThreadPoolExecutor) Executors.newCachedThreadPool();
+            }
+            if(executor.isTerminated())
+            {
+                LogManager.getLogger().error("executor terminated");
             }
         }
     }
@@ -1197,6 +1211,7 @@ public class CommandExecutor {
                     if (appProfile.isSelected()) {
                         GetLogs.logger.debug("processing command for profile " + appProfile);
                         for (DownloadSettings.App app : appProfile.getApps()) {
+                            GetLogs.logger.debug("processing app  " + app+": "+app.isChecked());
                             if (app.isChecked()) {
                                 if (ds.isProd()) {
                                     ret1.add(new ISubTask() {
@@ -1356,7 +1371,7 @@ public class CommandExecutor {
 
     JTableFileList lsTab = null;
 
-    private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+    private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 
     class CallbackThread implements Runnable {
 

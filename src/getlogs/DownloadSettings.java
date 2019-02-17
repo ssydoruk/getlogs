@@ -197,6 +197,10 @@ public class DownloadSettings {
     private ArrayList<AppProfile> appProfiles;
 
     public ArrayList<AppProfile> getAppProfiles() {
+        return appProfiles;
+    }
+
+    public ArrayList<AppProfile> getAppProfilesSorted() {
         ArrayList<AppProfile> ret = new ArrayList<>(appProfiles);
         Collections.sort(ret, new AppProfile.SortByName());
         return ret;
@@ -427,6 +431,7 @@ public class DownloadSettings {
         }
 
         public void setChecked(boolean checked) {
+            LogManager.getLogger().debug(this.toString()+" set cheked "+checked);
             this.checked = checked;
         }
 
