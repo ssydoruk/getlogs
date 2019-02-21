@@ -142,7 +142,7 @@ public class CommandExecutor {
     private Window parent;
     private ArrayList<JTableFileEntry> lsFilesAll = new ArrayList<>();
     private ArrayList<JTableFileEntry> lsFilesLast = new ArrayList<>();
-    private RequestProgress rp;
+    private RequestProgress rp = null;
     private final ExtProcessManager extProcessManager;
 
     public CommandExecutor(boolean isText) {
@@ -257,7 +257,7 @@ public class CommandExecutor {
                     lsFilesAll.addAll(lsFiles);
                 }
                 if (ds.getActionCommand() == GetCommand.GET) {
-                    executeRSync(lsFiles, null);
+                    executeRSync(lsFiles);
                 }
             }
 
@@ -270,7 +270,7 @@ public class CommandExecutor {
                     lsFilesAll.addAll(lsFiles);
                 }
                 if (ds.getActionCommand() == GetCommand.GET) {
-                    executeRSync(lsFiles, null);
+                    executeRSync(lsFiles);
                 }
             }
         }
@@ -359,12 +359,11 @@ public class CommandExecutor {
         sshCmd.append("\"");
         sshParams.add(sshCmd.toString());
         ExtProcess procSSH = null;
-        synchronized (extProcessManager) {
-            procSSH = extProcessManager.addProcess(new ExtProcessLogback(appProfile, ap, sshParams, false, true));
-        }
+        procSSH = extProcessManager.addProcess(new ExtProcessLogback(appProfile, ap, sshParams, false, true));
         procSSH.startProcess(true, true);
 
         int waitFor = procSSH.waitFor();
+        LogManager.getLogger().debug("process terminated, result: " + waitFor);
         if (waitFor != 0) {
             SettingsDialog.error("LS failed, error code: " + waitFor);
             ArrayList<String> errBuf = procSSH.getErrBuf();
@@ -381,7 +380,7 @@ public class CommandExecutor {
 //                lsTab.addRow(appProfile, ap, theAppHost, string, logsDir.toString(), isLFMT, lcaLog);
                 lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
             }
-            SettingsDialog.info("ls successful for [" + appProfile.getName() + "] + app[" + ap + "]" + ((isLFMT) ? " on LFMT" : "")+" : got "+lsFiles.size()+" files");
+            SettingsDialog.info("ls successful for [" + appProfile.getName() + "] + app[" + ap + "]" + ((isLFMT) ? " on LFMT" : "") + " : got " + lsFiles.size() + " files");
             ArrayList<String> errBuf = procSSH.getErrBuf();
             if (errBuf != null && !errBuf.isEmpty()) {
                 lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, null, logsDir, isLFMT, lcaLog), StringUtils.join(errBuf, " | ")));
@@ -389,9 +388,7 @@ public class CommandExecutor {
 
             }
         }
-        synchronized (extProcessManager) {
-            extProcessManager.doneProcess(procSSH);
-        }
+        extProcessManager.doneProcess(procSSH);
         ((AbstractTableModel) lsTab.getModel()).fireTableDataChanged();
         return lsFiles;
 
@@ -547,7 +544,9 @@ public class CommandExecutor {
                 appProfile, ap, rsyncParams,
                 true, true));
         procRSync.startProcess();
-        procRSync.waitFor();
+        int waitFor = procRSync.waitFor();
+        LogManager.getLogger().debug("process terminated, result: " + waitFor);
+
         extProcessManager.doneProcess(procRSync);
     }
 
@@ -820,13 +819,27 @@ public class CommandExecutor {
 
             if (lsOutput.getCloseCause() == JOptionPane.OK_OPTION) {
                 if (lsTab.getSelectedFiles().size() > 0) {
-                    SettingsDialog.info("About to download " + lsTab.getSelectedFiles().size() + " files");
-                    CountDownLatch latch = new CountDownLatch(lsTab.getSelectedFiles().size());
+
+                    HashMap<SavedSearchStorage, ArrayList<String>> r = new HashMap<>();
+
+                    for (JTableFileEntry row : lsTab.getSelectedFiles()) {
+                        SavedSearchStorage storage = row.storage;
+                        ArrayList<String> rSyncFiles = r.get(storage);
+                        if (rSyncFiles == null) {
+                            rSyncFiles = new ArrayList<>();
+                            r.put(storage, rSyncFiles);
+                        }
+
+                        rSyncFiles.addAll(GetLogs.rSyncAddClause(stripDir(row.fileName)));
+                    }
+                    SettingsDialog.info("About to download " + lsTab.getSelectedFiles().size() + " files (" + r.size() + " threads)");
+
+                    CountDownLatch latch = new CountDownLatch(r.size());
 
                     doExecuteCmd(parent, this, latch, new ISubTask() {
                         @Override
                         public void task() throws InterruptedException, IOException {
-                            executeRSync(lsTab.getSelectedFiles(), latch);
+                            executeRSync(r, latch);
                         }
                     });
                 }
@@ -834,8 +847,24 @@ public class CommandExecutor {
         }
     }
 
-    private void executeRSync(ArrayList<JTableFileEntry> selectedRows,
+    private void executeRSync(HashMap<SavedSearchStorage, ArrayList<String>> r,
             CountDownLatch latch) {
+
+        for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
+            SavedSearchStorage key = entry.getKey();
+            ArrayList<String> value = entry.getValue();
+            executor.execute(new CallbackThread(latch, new ISubTask() {
+                @Override
+                public void task() throws InterruptedException, IOException {
+                    executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
+                }
+            }));
+
+        }
+
+    }
+
+    private void executeRSync(ArrayList<JTableFileEntry> selectedRows) {
         if (selectedRows == null || selectedRows.size() == 0) {
             SettingsDialog.info("No rows selected");
         } else {
@@ -855,22 +884,12 @@ public class CommandExecutor {
                 for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
                     SavedSearchStorage key = entry.getKey();
                     ArrayList<String> value = entry.getValue();
-                    if (latch != null) {
-                        executor.execute(new CallbackThread(latch, new ISubTask() {
-                            @Override
-                            public void task() throws InterruptedException, IOException {
-                                executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
-                            }
-                        }));
-                    } else {
-                        try {
-                            executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
-                        } catch (IOException ex) {
-                            Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                        }
-
+                    try {
+                        executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
+                    } catch (IOException ex) {
+                        Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                     }
 
                 }
@@ -939,9 +958,7 @@ public class CommandExecutor {
     }
 
     private void cancel() {
-        synchronized (extProcessManager) {
-            extProcessManager.cancelAll();
-        }
+        extProcessManager.cancelAll();
     }
 
     /**
@@ -1119,12 +1136,9 @@ public class CommandExecutor {
 
         boolean myCancel(boolean mayInterruptIfRunning) {
             try {
+                onCancel();
                 ce.cancel();
                 cancel(mayInterruptIfRunning);
-                onCancel();
-                if (isDone()) {
-                    return true;
-                }
 
                 try {
                     Thread.sleep(150);
@@ -1179,11 +1193,14 @@ public class CommandExecutor {
 
         @Override
         protected Void doInBackground() throws Exception {
-            if (rp != null) {
-                rp.doShow();
-            }
-            onBackground();
+            try {
+                if (rp != null) {
+                    rp.doShow();
+                }
+                onBackground();
+            } finally {
 
+            }
             return null;
         }
 
@@ -1407,7 +1424,16 @@ public class CommandExecutor {
         @Override
         public void run() {
             try {
+                Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                    @Override
+                    public void uncaughtException(Thread t, Throwable e) {
+                        LogManager.getLogger().error("Uncought exception in thread " + t.getName(), e);
+                        latch.countDown();
+                    }
+                });
+                LogManager.getLogger().debug("Thread " + Thread.currentThread() + " starting task");
                 task.task();
+                LogManager.getLogger().debug("Thread " + Thread.currentThread() + " done task");
 
             } catch (InterruptedException ex) {
                 Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
