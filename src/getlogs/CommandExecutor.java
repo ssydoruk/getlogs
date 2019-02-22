@@ -794,9 +794,9 @@ public class CommandExecutor {
 
             }
         } catch (IOException e) {
-            SettingsDialog.error(e.getMessage());
+            SettingsDialog.error(e.toString() + ": " + StringUtils.join(e.getStackTrace(), ";"));
         } catch (InterruptedException e) {
-            SettingsDialog.error(e.getMessage());
+//            SettingsDialog.error(e.toString() + ": " + StringUtils.join(e.getStackTrace(), ";"));
         }
         return null;
     }
@@ -1096,6 +1096,7 @@ public class CommandExecutor {
     };
 
     private static void cancelExecutor() {
+        LogManager.getLogger().debug("Cancelling...");
         synchronized (executor) {
             boolean terminatedOK = true;
             List<Runnable> shutdownNow = executor.shutdownNow();
@@ -1123,6 +1124,16 @@ public class CommandExecutor {
 
         private final CommandExecutor ce;
 
+        boolean userCancelling = false;
+
+        public boolean isUserCancelling() {
+            return userCancelling;
+        }
+
+        public void setUserCancelling(boolean userCancelling) {
+            this.userCancelling = userCancelling;
+        }
+
         abstract void onBackground() throws InterruptedException, IOException;
 
         abstract void onDone();
@@ -1136,6 +1147,7 @@ public class CommandExecutor {
 
         boolean myCancel(boolean mayInterruptIfRunning) {
             try {
+                setUserCancelling(true);
                 onCancel();
                 ce.cancel();
                 cancel(mayInterruptIfRunning);
@@ -1317,14 +1329,14 @@ public class CommandExecutor {
                     return storage.ap.getName();
 
                 case 2:
-                    return storage.getAppHost();
+                    return storage.isLfmt();
 
                 case 3:
-                    return fileName;
+                    return storage.getAppHost();
 
                 case 4:
+                    return fileName;
 
-                    return errorMsg;
 
             }
             return null;
@@ -1336,9 +1348,9 @@ public class CommandExecutor {
         HashMap<Integer, String> ret1 = new HashMap<>();
         ret1.put(0, "Profile");
         ret1.put(1, "application");
-        ret1.put(2, "host");
-        ret1.put(3, "file");
-        ret1.put(4, "Error message");
+        ret1.put(2, "LFMT?");
+        ret1.put(3, "host");
+        ret1.put(4, "file");
 
         return ret1;
     }
@@ -1431,12 +1443,13 @@ public class CommandExecutor {
                         latch.countDown();
                     }
                 });
-                LogManager.getLogger().debug("Thread " + Thread.currentThread() + " starting task");
-                task.task();
-                LogManager.getLogger().debug("Thread " + Thread.currentThread() + " done task");
+//                LogManager.getLogger().debug("Thread " + Thread.currentThread() + " starting task");
+                try {
+                    task.task();
+                } catch (InterruptedException interruptedException) {
+                }
+//                LogManager.getLogger().debug("Thread " + Thread.currentThread() + " done task");
 
-            } catch (InterruptedException ex) {
-                Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             } catch (IOException ex) {
                 Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             } finally {

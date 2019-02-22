@@ -309,7 +309,18 @@ public class GetLogs {
                 if (s.length() > 0) {
                     s.append(" ");
                 }
+                boolean hasSpaces = false;
+                if (arg.contains(" ")) {
+                    hasSpaces = true;
+                }
+
+                if (hasSpaces) {
+                    s.append("\"");
+                }
                 s.append(arg);
+                if (hasSpaces) {
+                    s.append("\"");
+                }
             }
             logger.debug("Command line: " + s);
         }
