@@ -64,9 +64,9 @@ public class CommandExecutor {
 //        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "2019012", "1"));
 //        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190124", "1"));
 //    }
-    private static final Pattern regVariable = Pattern.compile("\\{([A-Z]{2,4})\\}");
+    private static final Pattern regVariable = Pattern.compile("\\{([A-Z]{2,4}|NAME)\\}");
 
-    private static String cloudPattern(String fileNameRegex, String datePattern, String timePattern) {
+    private static String cloudPattern(String fileNameRegex, String datePattern, String timePattern, App ap) {
         System.out.println(fileNameRegex + "-" + datePattern + "-" + timePattern);
         int pos = 0;
         Matcher m;
@@ -89,6 +89,8 @@ public class CommandExecutor {
 
             } else if (m.group(1).equals("SS")) {
                 ret.append(fillPattern(timePattern, 4, 4));
+            } else if (m.group(1).equals("NAME")) {
+                ret.append(ap.getName());
 
             } else {
                 SettingsDialog.error("Incorrect specification [" + m.group(1) + "] "
@@ -280,12 +282,14 @@ public class CommandExecutor {
     public SavedSearchStorage getStorage(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog) {
         SavedSearchStorage _ret = new SavedSearchStorage(appProfile, ap, theAppHost, logsDir, lfmt, lcaLog);
 
-        for (SavedSearchStorage savedSearchStorage : savedSearch) {
-            if (savedSearchStorage.equals(_ret)) {
-                return savedSearchStorage;
+        synchronized (savedSearch) {
+            for (SavedSearchStorage savedSearchStorage : savedSearch) {
+                if (savedSearchStorage.equals(_ret)) {
+                    return savedSearchStorage;
+                }
             }
+            savedSearch.add(_ret);
         }
-        savedSearch.add(_ret);
 
         return _ret;
 
@@ -734,7 +738,7 @@ public class CommandExecutor {
                                 datePattern = ds.getDateSpec();
                                 timePattern = ds.getTimeSpec();
                             }
-                            ret1.add(new StringBuilder(cloudPattern(suffix, datePattern, timePattern)));
+                            ret1.add(new StringBuilder(cloudPattern(suffix, datePattern, timePattern, ap)));
                         }
                     }
                 }
@@ -1336,7 +1340,6 @@ public class CommandExecutor {
 
                 case 4:
                     return fileName;
-
 
             }
             return null;
