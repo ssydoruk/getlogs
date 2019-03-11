@@ -99,22 +99,31 @@ public class StringListEdit extends JPanel {
 //            values.add(new Object[]{hi.getHost(), hi.getInstance(), hi.getBaseDir()});
 //        }
         for (Object entry : lmItems.toArray()) {
-            values.add(new String[]{((ListEntry) entry).toString()});
+            if (!entry.equals(CheckBoxList.ALL_ENTRY)) {
+                values.add(new String[]{((ListEntry) entry).toString()});
+            }
+
         }
 
-        getStringsEditor().setData(new Object[]{columnTitle},
+        getStringsEditor().setData(new Object[]{columnTitle
+        },
                 values
         );
-        getStringsEditor().setAddChoices(addChoices);
-        getStringsEditor().doShow();
+        getStringsEditor()
+                .setAddChoices(addChoices);
+        getStringsEditor()
+                .doShow();
         ArrayList<Object[]> data1 = getStringsEditor().getData();
-        for (Object object : lmItems.toArray()) {
-            ListEntry le = (ListEntry) object;
-            int idx = leIdx(data1, le);
-            if (idx < 0) {
-                lmItems.removeElement(le);
-            } else {
-                data1.set(idx, null);
+        for (Object object
+                : lmItems.toArray()) {
+            if (!object.equals(CheckBoxList.ALL_ENTRY)) {
+                ListEntry le = (ListEntry) object;
+                int idx = leIdx(data1, le);
+                if (idx < 0) {
+                    lmItems.removeElement(le);
+                } else {
+                    data1.set(idx, null);
+                }
             }
         }
         for (Object[] objects : data1) {
@@ -122,6 +131,7 @@ public class StringListEdit extends JPanel {
                 lmItems.addElement(new ListEntry(objects[0].toString(), Boolean.TRUE));
             }
         }
+
         dataChanged();
 //            ds.loadLFMTs(stringsEditor.getData());
 
@@ -134,8 +144,10 @@ public class StringListEdit extends JPanel {
 
             for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
                 if (i < lmItems.getSize()) {
-                    ((ListEntry) lmItems.getElementAt(i))
-                            .setSelected(lsm.isSelectedIndex(i));
+                    if (!lmItems.getElementAt(i).equals(CheckBoxList.ALL_ENTRY)) {
+                        ((ListEntry) lmItems.getElementAt(i))
+                                .setSelected(lsm.isSelectedIndex(i));
+                    }
                 }
 
             }
@@ -158,13 +170,17 @@ public class StringListEdit extends JPanel {
     }
 
     void setData(HashMap<String, Boolean> nameSuffixes) {
-        ArrayList<Pair<String, Boolean>> ar = new ArrayList<>(nameSuffixes.size());
-        for (Map.Entry<String, Boolean> entry : nameSuffixes.entrySet()) {
-            String key = entry.getKey();
-            Boolean value = entry.getValue();
-            ar.add(new Pair(key, value));
+        if (nameSuffixes != null && !nameSuffixes.isEmpty()) {
+            ArrayList<Pair<String, Boolean>> ar = new ArrayList<>(nameSuffixes.size());
+            for (Map.Entry<String, Boolean> entry : nameSuffixes.entrySet()) {
+                String key = entry.getKey();
+                Boolean value = entry.getValue();
+                ar.add(new Pair(key, value));
+            }
+            setData(ar);
+        } else {
+            setData((ArrayList<Pair<String, Boolean>>) null);
         }
-        setData(ar);
     }
 
     void setData(ArrayList<Pair<String, Boolean>> nameSuffixes) {
@@ -191,6 +207,8 @@ public class StringListEdit extends JPanel {
 
                 }
             }
+            lmItems.insertElementAt(CheckBoxList.ALL_ENTRY, 0);
+
             clbItems.addCheckBoxListSelectedValues(selected.toArray(new ListEntry[selected.size()]));
 
         }
@@ -225,8 +243,10 @@ public class StringListEdit extends JPanel {
         } else {
             ArrayList<Pair<String, Boolean>> d = new ArrayList<>(lmItems.size());
             for (Object object : lmItems.toArray()) {
-                ListEntry le = (ListEntry) object;
-                d.add(new Pair(le.getKey(), le.isSelected()));
+                if (!object.equals(CheckBoxList.ALL_ENTRY)) {
+                    ListEntry le = (ListEntry) object;
+                    d.add(new Pair(le.getKey(), le.isSelected()));
+                }
             }
             updatedFun.dataChanged(d);
         }
@@ -243,6 +263,7 @@ public class StringListEdit extends JPanel {
 
         }
         return stringsEditor;
+
     }
 
     public interface IDataChangedFun {
