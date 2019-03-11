@@ -14,6 +14,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
@@ -32,6 +33,8 @@ import org.apache.logging.log4j.LogManager;
  * @author stepan_sydoruk
  */
 public class StringListEdit extends JPanel {
+
+    private ValuesEditor.IAddChoices addChoices;
 
     @Override
     public void setEnabled(boolean enabled) {
@@ -90,11 +93,7 @@ public class StringListEdit extends JPanel {
     }
 
     private void btChangePressed(ActionEvent e) {
-        if (stringsEditor == null) {
-            stringsEditor = new ValuesEditor((Window) this.getRootPane().getParent(), "Edit list",
-                    "Select %d LFMTs");
 
-        }
         ArrayList<Object[]> values = new ArrayList<>();
 //        for (DownloadSettings.LFMTHostInstance hi : ds.getLfmtHostInstances()) {
 //            values.add(new Object[]{hi.getHost(), hi.getInstance(), hi.getBaseDir()});
@@ -103,29 +102,29 @@ public class StringListEdit extends JPanel {
             values.add(new String[]{((ListEntry) entry).toString()});
         }
 
-        stringsEditor.setData(new Object[]{columnTitle},
+        getStringsEditor().setData(new Object[]{columnTitle},
                 values
         );
-        stringsEditor.doShow();
-        {
-            ArrayList<Object[]> data1 = stringsEditor.getData();
-            for (Object object : lmItems.toArray()) {
-                ListEntry le = (ListEntry) object;
-                int idx = leIdx(data1, le);
-                if (idx < 0) {
-                    lmItems.removeElement(le);
-                } else {
-                    data1.set(idx, null);
-                }
+        getStringsEditor().setAddChoices(addChoices);
+        getStringsEditor().doShow();
+        ArrayList<Object[]> data1 = getStringsEditor().getData();
+        for (Object object : lmItems.toArray()) {
+            ListEntry le = (ListEntry) object;
+            int idx = leIdx(data1, le);
+            if (idx < 0) {
+                lmItems.removeElement(le);
+            } else {
+                data1.set(idx, null);
             }
-            for (Object[] objects : data1) {
-                if (objects != null) {
-                    lmItems.addElement(new ListEntry(objects[0].toString(), Boolean.TRUE));
-                }
-            }
-            dataChanged();
-//            ds.loadLFMTs(stringsEditor.getData());
         }
+        for (Object[] objects : data1) {
+            if (objects != null) {
+                lmItems.addElement(new ListEntry(objects[0].toString(), Boolean.TRUE));
+            }
+        }
+        dataChanged();
+//            ds.loadLFMTs(stringsEditor.getData());
+
     }
 
     private void clbItemsCheckedChanged(ListSelectionEvent evt) {
@@ -157,16 +156,15 @@ public class StringListEdit extends JPanel {
     public ArrayList<Pair<String, Boolean>> getData() {
         return data;
     }
-    
+
     void setData(HashMap<String, Boolean> nameSuffixes) {
-        ArrayList<Pair<String, Boolean>> ar=new ArrayList<>(nameSuffixes.size());
+        ArrayList<Pair<String, Boolean>> ar = new ArrayList<>(nameSuffixes.size());
         for (Map.Entry<String, Boolean> entry : nameSuffixes.entrySet()) {
             String key = entry.getKey();
             Boolean value = entry.getValue();
             ar.add(new Pair(key, value));
         }
         setData(ar);
-    
     }
 
     void setData(ArrayList<Pair<String, Boolean>> nameSuffixes) {
@@ -185,7 +183,7 @@ public class StringListEdit extends JPanel {
 
         if (data != null) {
             ArrayList<ListEntry> selected = new ArrayList<>();
-            for ( Pair<String, Boolean> entry : data) {
+            for (Pair<String, Boolean> entry : data) {
                 ListEntry le = new ListEntry(entry.getKey(), entry.getValue());
                 lmItems.addElement(le);
                 if (le.isSelected()) {
@@ -202,13 +200,18 @@ public class StringListEdit extends JPanel {
     }
 
     void noSelection() {
-        setData((ArrayList<Pair<String, Boolean>> )null);
+        setData((ArrayList<Pair<String, Boolean>>) null);
     }
 
     private int leIdx(ArrayList<Object[]> data1, ListEntry le) {
         for (int i = 0; i < data1.size(); i++) {
-            if (data1.get(i).toString().equals(le.toString())) {
-                return i;
+            Object[] objArr = data1.get(i);
+            if (objArr != null && objArr.length > 0) {
+                String elem = (String) objArr[0];
+                LogManager.getLogger().debug(elem + "-" + le.getKey());
+                if (elem.equals(le.getKey())) {
+                    return i;
+                }
             }
 
         }
@@ -227,6 +230,19 @@ public class StringListEdit extends JPanel {
             }
             updatedFun.dataChanged(d);
         }
+    }
+
+    void setAddChoices(ValuesEditor.IAddChoices iAddChoices) {
+        this.addChoices = iAddChoices;
+    }
+
+    private ValuesEditor getStringsEditor() {
+        if (stringsEditor == null) {
+            stringsEditor = new ValuesEditor(SwingUtilities.getWindowAncestor(this), "Edit list",
+                    "Select %d LFMTs");
+
+        }
+        return stringsEditor;
     }
 
     public interface IDataChangedFun {

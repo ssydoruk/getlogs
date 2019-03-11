@@ -161,6 +161,24 @@ public class SettingsPanel extends javax.swing.JPanel {
                 }
             }
         });
+
+        ext.setAddChoices(new ValuesEditor.IAddChoices() {
+            @Override
+            public HashSet<String> getAddChoices() {
+                HashSet<String> ret = new HashSet<>();
+                for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
+                    HashMap<String, Boolean> sfx = appProfile.getNameSuffixes();
+                    if (sfx != null) {
+                        for (String key : sfx.keySet()) {
+                            ret.add(key);
+                        }
+                    }
+                }
+                return ret;
+
+            }
+        });
+
         pExtensions.add(ext);
         afterActions = new StringListEdit("After actions");
         afterActions.setUpdatedFun(new StringListEdit.IDataChangedFun() {
@@ -1163,7 +1181,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         jtfOutputDir.setText(ds.getOutputDir());
         cbUseRSync.setSelected(ds.isUseRSync());
         afterActions.setData(ds.getAfterActions());
-        
 
         initCB(cbTimeProfile, ds.getTimeProfile(), new TimeProfile[]{TimeProfile.VALUE_HOURS, TimeProfile.VALUE_FILES, TimeProfile.REGEX}, null);
 

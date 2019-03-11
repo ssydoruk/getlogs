@@ -15,10 +15,13 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -59,6 +62,22 @@ public class ValuesEditor extends StandardDialog {
         int rowsSelected = tab.getSelectedRows().length;
         editButton.setEnabled(rowsSelected == 1);
         deleteButton.setEnabled(rowsSelected == 1);
+    }
+
+    private IAddChoices addChoices = null;
+
+    public IAddChoices getAddChoices() {
+        return addChoices;
+    }
+
+    public void setAddChoices(IAddChoices addChoices) {
+        this.addChoices = addChoices;
+    }
+
+    public interface IAddChoices {
+
+        public HashSet<String> getAddChoices();
+
     }
 
     ValuesEditor(Window parent, String title, String selectedFormat) {
@@ -195,15 +214,34 @@ public class ValuesEditor extends StandardDialog {
 
     EditValuesDialog editDialog = null;
 
-    private void addValuePressed(ActionEvent e) {
+    private EditValuesDialog getEditDialog() {
         if (editDialog == null) {
             editDialog = new EditValuesDialog(tab.getColumnModel());
         }
+        return editDialog;
+    }
+
+    private void addValuePressed(ActionEvent e) {
         ArrayList<String> vals;
-        if ((vals = editDialog.doShow(null)) != null) {
+        if ((vals = getEditDialog().doShow(null)) != null) {
             infoTableModel.addRow(vals.toArray(new String[vals.size()]));
         }
 
+    }
+
+    private ArrayList<ArrayList<String>> getAllValues() {
+        ArrayList<ArrayList<String>> ret = new ArrayList<>(tab.getColumnCount());
+
+        for (int j = 0; j < tab.getColumnCount(); j++) {
+            ArrayList<String> r = new ArrayList<String>(tab.getRowCount());
+            for (int i = 0; i < tab.getRowCount(); i++) {
+                r.add((String) tab.getValueAt(i, j));
+
+            }
+            ret.add(r);
+        }
+
+        return ret;
     }
 
     private void editValuePressed(ActionEvent e) {
@@ -213,10 +251,8 @@ public class ValuesEditor extends StandardDialog {
             for (int i = 0; i < tab.getColumnCount(); i++) {
                 vals.add((String) tab.getValueAt(selectedRow, i));
             }
-            if (editDialog == null) {
-                editDialog = new EditValuesDialog(tab.getColumnModel());
-            }
-            if ((vals = editDialog.doShow(vals)) != null) {
+
+            if ((vals = getEditDialog().doShow(vals)) != null) {
                 for (int i = 0; i < vals.size(); i++) {
                     infoTableModel.setValueAt(vals.get(i), selectedRow, i);
                 }
@@ -258,6 +294,8 @@ public class ValuesEditor extends StandardDialog {
             infoTableModel.addRow(value);
         }
         tab.setModel(infoTableModel);
+//        infoTableModel.fireTableDataChanged();
+//        infoTableModel.fireTableStructureChanged();
     }
 
     public ArrayList<Object[]> getData() {
@@ -275,8 +313,6 @@ public class ValuesEditor extends StandardDialog {
     }
 
     class EditValuesDialog extends StandardDialog {
-
-        private EnterPanel lfmtBaseDir;
 
         public EditValuesDialog() {
             super();
@@ -299,15 +335,36 @@ public class ValuesEditor extends StandardDialog {
             if (vals != null) {
                 setTitle("Edit entry");
                 for (int i = 0; i < pan.size(); i++) {
-                    pan.get(i).setText(vals.get(i));
+                    EnterPanel enterPanel = pan.get(i);
+                    addChoices(enterPanel, i);
+                    enterPanel.setText(vals.get(i));
                 }
             } else {
                 for (int i = 0; i < pan.size(); i++) {
-                    pan.get(i).setText(null);
+                    EnterPanel enterPanel = pan.get(i);
+                    addChoices(enterPanel, i);
+                    enterPanel.setText(null);
                 }
+
                 setTitle("New entry");
             }
             return doShow();
+        }
+
+        private void addChoices(EnterPanel enterPanel, int col) {
+            enterPanel.clearChoices();
+            HashSet<String> ch = new HashSet<>();
+            IAddChoices addChoices1 = getAddChoices();
+            if (addChoices1 != null) {
+                ch.addAll(addChoices1.getAddChoices());
+            }
+            ArrayList<ArrayList<String>> allValues = getAllValues();
+            if (allValues != null && allValues.size() >= col - 1) {
+                ch.addAll(allValues.get(col));
+            }
+            ArrayList<String> sorted = new ArrayList<>(ch);
+            Collections.sort(sorted);
+            enterPanel.addChoices(sorted);
         }
 
         class EnterPanel {
@@ -316,23 +373,43 @@ public class ValuesEditor extends StandardDialog {
                 return enterPanel;
             }
 
-            private final JTextField tbValue;
+            private final JComboBox<String> tbValue;
             private JPanel enterPanel;
 
             public String getText() {
-                return tbValue.getText();
+                return tbValue.getSelectedItem().toString();
             }
 
             public void setText(String txt) {
-                tbValue.setText(txt);
+                tbValue.setSelectedItem(txt);
             }
 
             EnterPanel(String title) {
                 enterPanel = new JPanel();
                 enterPanel.setLayout(new BoxLayout(enterPanel, BoxLayout.LINE_AXIS));
                 enterPanel.add(new JLabel(title));
-                tbValue = new JTextField();
+                tbValue = new JComboBox();
+                tbValue.setEditable(true);
                 enterPanel.add(tbValue);
+            }
+
+            private void clearChoices() {
+                tbValue.removeAllItems();
+
+            }
+
+            private void addChoices(HashSet<String> addChoices) {
+                for (String addChoice : addChoices) {
+                    tbValue.addItem(addChoice);
+                }
+
+            }
+
+            private void addChoices(ArrayList<String> addChoices) {
+                for (String addChoice : addChoices) {
+                    tbValue.addItem(addChoice);
+                }
+
             }
         }
 

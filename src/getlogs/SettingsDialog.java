@@ -42,7 +42,7 @@ public class SettingsDialog extends StandardDialog {
     private final CommandExecutor ce;
     private static LogWindow lw;
 
-    public SettingsDialog(DownloadSettings ds) {
+    public SettingsDialog(DownloadSettings ds, String guiProfile) {
         super();
         settingsPanel = new SettingsPanel(ds);
         ce = new CommandExecutor(this);
@@ -59,6 +59,7 @@ public class SettingsDialog extends StandardDialog {
 
             }
         });
+        setTitle("GetLogs"+"("+guiProfile+")");
     }
 
     public CommandExecutor getCe() {

@@ -971,7 +971,7 @@ public class GetLogs {
         java.awt.EventQueue.invokeAndWait(new Runnable() {
             public void run() {
 
-                SettingsDialog dlg = new SettingsDialog(ds);
+                SettingsDialog dlg = new SettingsDialog(ds, sGUIProfile);
                 dlg.getCe().setSettingsFile(sGUIProfile);
                 dlg.pack();
                 dlg.invalidate();
