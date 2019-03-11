@@ -44,7 +44,7 @@ public class StringListEdit extends JPanel {
     private final JButton btChange;
     private ValuesEditor stringsEditor;
     private final String columnTitle;
-    private HashMap<String, Boolean> data;
+    private ArrayList<Pair<String, Boolean>> data;
     CheckBoxList clbItems;
 
     public StringListEdit(String columnTitle) {
@@ -154,7 +154,22 @@ public class StringListEdit extends JPanel {
         this.updatedFun = updatedFun;
     }
 
+    public ArrayList<Pair<String, Boolean>> getData() {
+        return data;
+    }
+    
     void setData(HashMap<String, Boolean> nameSuffixes) {
+        ArrayList<Pair<String, Boolean>> ar=new ArrayList<>(nameSuffixes.size());
+        for (Map.Entry<String, Boolean> entry : nameSuffixes.entrySet()) {
+            String key = entry.getKey();
+            Boolean value = entry.getValue();
+            ar.add(new Pair(key, value));
+        }
+        setData(ar);
+    
+    }
+
+    void setData(ArrayList<Pair<String, Boolean>> nameSuffixes) {
         this.data = nameSuffixes;
 
         clbItems.setValueIsAdjusting(true);
@@ -170,7 +185,7 @@ public class StringListEdit extends JPanel {
 
         if (data != null) {
             ArrayList<ListEntry> selected = new ArrayList<>();
-            for (Map.Entry<String, Boolean> entry : data.entrySet()) {
+            for ( Pair<String, Boolean> entry : data) {
                 ListEntry le = new ListEntry(entry.getKey(), entry.getValue());
                 lmItems.addElement(le);
                 if (le.isSelected()) {
@@ -187,7 +202,7 @@ public class StringListEdit extends JPanel {
     }
 
     void noSelection() {
-        setData(null);
+        setData((ArrayList<Pair<String, Boolean>> )null);
     }
 
     private int leIdx(ArrayList<Object[]> data1, ListEntry le) {
@@ -205,10 +220,10 @@ public class StringListEdit extends JPanel {
         if (updatedFun == null) {
             LogManager.getLogger().info("Update function not defined");
         } else {
-            HashMap<String, Boolean> d = new HashMap<>(lmItems.size());
+            ArrayList<Pair<String, Boolean>> d = new ArrayList<>(lmItems.size());
             for (Object object : lmItems.toArray()) {
                 ListEntry le = (ListEntry) object;
-                d.put(le.getKey(), le.isSelected());
+                d.add(new Pair(le.getKey(), le.isSelected()));
             }
             updatedFun.dataChanged(d);
         }
@@ -216,7 +231,7 @@ public class StringListEdit extends JPanel {
 
     public interface IDataChangedFun {
 
-        public void dataChanged(HashMap<String, Boolean> newData);
+        public void dataChanged(ArrayList<Pair<String, Boolean>> newData);
 
     }
 

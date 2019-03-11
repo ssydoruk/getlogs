@@ -5,6 +5,7 @@
  */
 package getlogs;
 
+import Utils.Pair;
 import static Utils.ScreenInfo.CenterWindow;
 import Utils.TDateRange;
 import Utils.TableColumnAdjuster;
@@ -16,6 +17,7 @@ import com.jidesoft.dialog.StandardDialog;
 import static com.jidesoft.dialog.StandardDialog.RESULT_CANCELLED;
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.CheckBoxListSelectionModel;
+import com.jidesoft.swing.FolderChooser;
 import com.jidesoft.swing.SearchableUtils;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -27,10 +29,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,6 +73,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -86,6 +92,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private InfoPanel lfmtPanes = null;
     private ValuesEditor lfmtEditor = null;
     private final StringListEdit ext;
+    private final StringListEdit afterActions;
 
     public DownloadSettings getDs() {
         return ds;
@@ -147,7 +154,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         ext = new StringListEdit("Extention");
         ext.setUpdatedFun(new StringListEdit.IDataChangedFun() {
             @Override
-            public void dataChanged(HashMap<String, Boolean> newData) {
+            public void dataChanged(ArrayList<Pair<String, Boolean>> newData) {
                 DownloadSettings.AppProfile sel = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
                 if (sel != null) {
                     sel.setNameSuffixes(newData);
@@ -155,6 +162,14 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
         pExtensions.add(ext);
+        afterActions = new StringListEdit("After actions");
+        afterActions.setUpdatedFun(new StringListEdit.IDataChangedFun() {
+            @Override
+            public void dataChanged(ArrayList<Pair<String, Boolean>> newData) {
+                getDs().setAfterActions(newData);
+            }
+        });
+        pAfterActions.add(afterActions);
 
 //        tfFilenameSuffixes.getDocument().addDocumentListener(new DocumentListener() {
 //            @Override
@@ -416,6 +431,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         jbProfileDelete = new javax.swing.JButton();
         jbProfileRename = new javax.swing.JButton();
         jbProfileSaveAs = new javax.swing.JButton();
+        jpAppsBase = new javax.swing.JPanel();
+        jpApps = new javax.swing.JPanel();
+        jPanel10 = new javax.swing.JPanel();
+        jbAppAdd = new javax.swing.JButton();
+        jbAppDelete = new javax.swing.JButton();
         jpAppProperties = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         rbGenesysLogs = new javax.swing.JRadioButton();
@@ -426,11 +446,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbLFMTs = new javax.swing.JComboBox();
         btEditLFMTs = new javax.swing.JButton();
         pExtensions = new javax.swing.JPanel();
-        jpAppsBase = new javax.swing.JPanel();
-        jpApps = new javax.swing.JPanel();
-        jPanel10 = new javax.swing.JPanel();
-        jbAppAdd = new javax.swing.JButton();
-        jbAppDelete = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         cbLfmtLog = new javax.swing.JCheckBox();
@@ -465,9 +480,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         lGrepText = new javax.swing.JLabel();
         tfGrepText = new javax.swing.JTextField();
         jPanel17 = new javax.swing.JPanel();
+        jPanel24 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jtfOutputDir = new javax.swing.JTextField();
         jbSelectDirectory = new javax.swing.JButton();
+        pAfterActions = new javax.swing.JPanel();
 
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
 
@@ -517,6 +534,34 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel4.add(jPanel8);
 
         jPanel1.add(jPanel4);
+
+        jpAppsBase.setBorder(javax.swing.BorderFactory.createTitledBorder("Apps"));
+        jpAppsBase.setLayout(new javax.swing.BoxLayout(jpAppsBase, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jpApps.setLayout(new java.awt.BorderLayout());
+        jpAppsBase.add(jpApps);
+
+        jPanel10.setLayout(new java.awt.GridLayout(1, 0));
+
+        jbAppAdd.setText("Add");
+        jbAppAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbAppAddActionPerformed(evt);
+            }
+        });
+        jPanel10.add(jbAppAdd);
+
+        jbAppDelete.setText("Delete");
+        jbAppDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbAppDeleteActionPerformed(evt);
+            }
+        });
+        jPanel10.add(jbAppDelete);
+
+        jpAppsBase.add(jPanel10);
+
+        jPanel1.add(jpAppsBase);
 
         jpAppProperties.setLayout(new javax.swing.BoxLayout(jpAppProperties, javax.swing.BoxLayout.PAGE_AXIS));
 
@@ -595,34 +640,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         jpAppProperties.add(pExtensions);
 
         jPanel1.add(jpAppProperties);
-
-        jpAppsBase.setBorder(javax.swing.BorderFactory.createTitledBorder("Apps"));
-        jpAppsBase.setLayout(new javax.swing.BoxLayout(jpAppsBase, javax.swing.BoxLayout.PAGE_AXIS));
-
-        jpApps.setLayout(new java.awt.BorderLayout());
-        jpAppsBase.add(jpApps);
-
-        jPanel10.setLayout(new java.awt.GridLayout(1, 0));
-
-        jbAppAdd.setText("Add");
-        jbAppAdd.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbAppAddActionPerformed(evt);
-            }
-        });
-        jPanel10.add(jbAppAdd);
-
-        jbAppDelete.setText("Delete");
-        jbAppDelete.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbAppDeleteActionPerformed(evt);
-            }
-        });
-        jPanel10.add(jbAppDelete);
-
-        jpAppsBase.add(jPanel10);
-
-        jPanel1.add(jpAppsBase);
 
         add(jPanel1);
 
@@ -766,11 +783,13 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel9.add(jPanel19);
 
-        jPanel17.setLayout(new javax.swing.BoxLayout(jPanel17, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel17.setLayout(new javax.swing.BoxLayout(jPanel17, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jPanel24.setLayout(new javax.swing.BoxLayout(jPanel24, javax.swing.BoxLayout.LINE_AXIS));
 
         jLabel2.setText("Output directory");
-        jPanel17.add(jLabel2);
-        jPanel17.add(jtfOutputDir);
+        jPanel24.add(jLabel2);
+        jPanel24.add(jtfOutputDir);
 
         jbSelectDirectory.setText("...");
         jbSelectDirectory.addActionListener(new java.awt.event.ActionListener() {
@@ -778,7 +797,13 @@ public class SettingsPanel extends javax.swing.JPanel {
                 jbSelectDirectoryActionPerformed(evt);
             }
         });
-        jPanel17.add(jbSelectDirectory);
+        jPanel24.add(jbSelectDirectory);
+
+        jPanel17.add(jPanel24);
+
+        pAfterActions.setBorder(javax.swing.BorderFactory.createTitledBorder("Post download actions"));
+        pAfterActions.setLayout(new java.awt.BorderLayout());
+        jPanel17.add(pAfterActions);
 
         jPanel9.add(jPanel17);
 
@@ -794,8 +819,20 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jbProfileAddActionPerformed
 
     private void jbSelectDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSelectDirectoryActionPerformed
-        JFileChooser fc = new JFileChooser();
-        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        JFileChooser fc = null;
+        String curDir = jtfOutputDir.getText();
+
+        if (curDir != null && !curDir.isEmpty()) {
+            File f = new File(curDir);
+            if (f.isDirectory()) {
+                fc = new FolderChooser(f);
+            }
+
+        }
+        if (fc == null) {
+            fc = new FolderChooser();
+        }
+//        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 //In response to a button click:
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -1049,6 +1086,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel21;
     private javax.swing.JPanel jPanel22;
     private javax.swing.JPanel jPanel23;
+    private javax.swing.JPanel jPanel24;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
@@ -1074,6 +1112,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lHours;
     private javax.swing.JLabel lbDateRegex;
     private javax.swing.JLabel lbTimeRegex;
+    private javax.swing.JPanel pAfterActions;
     private javax.swing.JPanel pExtensions;
     private javax.swing.JRadioButton rbCloudLogs;
     private javax.swing.JRadioButton rbGenesysLogs;
@@ -1123,6 +1162,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbLCALogs.setSelected(ds.isLcaLogs());
         jtfOutputDir.setText(ds.getOutputDir());
         cbUseRSync.setSelected(ds.isUseRSync());
+        afterActions.setData(ds.getAfterActions());
+        
 
         initCB(cbTimeProfile, ds.getTimeProfile(), new TimeProfile[]{TimeProfile.VALUE_HOURS, TimeProfile.VALUE_FILES, TimeProfile.REGEX}, null);
 
@@ -1167,6 +1208,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         ds.setTimeProfile((TimeProfile) cbTimeProfile.getSelectedItem());
         ds.setHours(ftHours.getText());
         ds.setActionCommand((GetCommand) cbCommand.getSelectedItem());
+//        ds.setAfterActions(afterActions.getData());
 //        ds.setTimeRange(dtRange.getTimeRangeAlways());
         ds.setCMDDate(tfDateRegex.getText());
         ds.setCMDTime(tfTimeRegex.getText());

@@ -65,6 +65,7 @@ public class CommandExecutor {
 //        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190124", "1"));
 //    }
     private static final Pattern regVariable = Pattern.compile("\\{([A-Z]{2,4}|NAME)\\}");
+    private static final Pattern regPostAction = Pattern.compile("\\{(NAME|OUTDIR)\\}");
 
     private static String cloudPattern(String fileNameRegex, String datePattern, String timePattern, App ap) {
         System.out.println(fileNameRegex + "-" + datePattern + "-" + timePattern);
@@ -186,35 +187,6 @@ public class CommandExecutor {
             }
             lsFilesAll.clear();
 
-//            for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
-//                if (appProfile.isSelected()) {
-//                    GetLogs.logger.debug("processing command for profile " + appProfile);
-//                    for (DownloadSettings.App app : appProfile.getApps()) {
-//                        if (app.isChecked()) {
-//                            if (ds.isProd()) {
-//                                lsFiles.clear();
-//                                executeCmd(appProfile, app, false);
-//                                if (!lsFiles.isEmpty()) {
-//                                    lsFilesAll.addAll(lsFiles);
-//                                    if (ds.getActionCommand() == GetCommand.GET) {
-//                                        executeRSync(lsFiles, null, null);
-//                                    }
-//                                }
-//                            }
-//                            if (ds.isLfmt()) {
-//                                lsFiles.clear();
-//                                executeCmd(appProfile, app, true);
-//                                if (!lsFiles.isEmpty()) {
-//                                    lsFilesAll.addAll(lsFiles);
-//                                    if (ds.getActionCommand() == GetCommand.GET) {
-//                                        executeRSync(lsFiles, null, null);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
         }
     }
 
@@ -363,7 +335,7 @@ public class CommandExecutor {
         sshCmd.append("\"");
         sshParams.add(sshCmd.toString());
         ExtProcess procSSH = null;
-        procSSH = extProcessManager.addProcess(new ExtProcessLogback(appProfile, ap, sshParams, false, true));
+        procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, false, true));
         procSSH.startProcess(true, true);
 
         int waitFor = procSSH.waitFor();
@@ -486,6 +458,52 @@ public class CommandExecutor {
         return matchedFiles;
     }
 
+    private String replacePostActionVars(String word) {
+        int pos = 0;
+        Matcher m;
+        StringBuilder ret = new StringBuilder();
+        while ((m = regPostAction.matcher(word)).find(pos)) {
+            ret.append(word.substring(pos, m.start()));
+            if (m.group(1).equals("OUTDIR")) {
+                ret.append(ds.getOutputDir());
+
+            } else if (m.group(1).equals("OUTDIR")) {
+                ret.append(ds.getOutputDir());
+
+            } else {
+                SettingsDialog.error("Incorrect specification [" + m.group(1) + "] "
+                        + "in pattern [" + word + "]. Allowed: {OUTDIR}");
+                return null;
+            }
+
+//            ret.append(StringUtils.repeat("^", m.end() - m.start()));
+            pos = m.end();
+        }
+        if (pos < word.length()) {
+            ret.append(word.substring(pos));
+        }
+        return ret.toString();
+
+    }
+
+    private void executeAfterCommand(String key) throws IOException, InterruptedException {
+        ArrayList<String> cmdParams = new ArrayList<>();
+        String[] split = StringUtils.split(key);
+        for (String string : split) {
+            cmdParams.add(replacePostActionVars(string));
+        }
+
+//        LogManager.getLogger().trace("executing: " + rsyncParams);
+        ExtProcess procRSync = extProcessManager.addProcess(new ExtProcessFinishing(
+                cmdParams, true, true));
+        procRSync.startProcess();
+        int waitFor = procRSync.waitFor();
+        LogManager.getLogger().debug("process terminated, result: " + waitFor);
+
+        extProcessManager.doneProcess(procRSync);
+
+    }
+
     /**
      *
      * @param appProfile
@@ -544,7 +562,7 @@ public class CommandExecutor {
 
         rsyncParams.add(dstSpec.toString());
 //        LogManager.getLogger().trace("executing: " + rsyncParams);
-        ExtProcessLogback procRSync = (ExtProcessLogback) extProcessManager.addProcess(new ExtProcessLogback(
+        ExtProcessApp procRSync = (ExtProcessApp) extProcessManager.addProcess(new ExtProcessApp(
                 appProfile, ap, rsyncParams,
                 true, true));
         procRSync.startProcess();
@@ -554,12 +572,12 @@ public class CommandExecutor {
         extProcessManager.doneProcess(procRSync);
     }
 
-    class ExtProcessLogback extends ExtProcess {
+    class ExtProcessApp extends ExtProcess {
 
         private AppProfile profile = null;
         private App app = null;
 
-        private ExtProcessLogback(AppProfile appProfile, App ap, ArrayList<String> sshParams, boolean b, boolean b0) throws IOException {
+        private ExtProcessApp(AppProfile appProfile, App ap, ArrayList<String> sshParams, boolean b, boolean b0) throws IOException {
             this(sshParams, b, b0);
             this.profile = appProfile;
             this.app = ap;
@@ -594,12 +612,49 @@ public class CommandExecutor {
             }
         }
 
-        public ExtProcessLogback(ArrayList<String> tarParams, ExtProcess procSSH) throws IOException {
+        public ExtProcessApp(ArrayList<String> tarParams, ExtProcess procSSH) throws IOException {
             super(tarParams, procSSH);
             initLogBack(false, false);
         }
 
-        public ExtProcessLogback(List<String> tarParams, boolean logStdin, boolean logStdout) throws IOException {
+        public ExtProcessApp(List<String> tarParams, boolean logStdin, boolean logStdout) throws IOException {
+            super(tarParams);
+            initLogBack(logStdin, logStdout);
+        }
+
+    }
+
+    class ExtProcessFinishing extends ExtProcess {
+
+        private void initLogBack(boolean logStdin, boolean logStdout) {
+            if (logStdin) {
+                setStdinReadProc(new IProcessOutputRead() {
+                    @Override
+                    public void lineRead(String s) {
+                        logMessage(Level.INFO, s);
+                    }
+                });
+            }
+
+            if (logStdout) {
+                setStderrReadProc(new IProcessOutputRead() {
+                    @Override
+                    public void lineRead(String s) {
+                        StringBuilder msg = new StringBuilder();
+                        msg.append("! ").append(s);
+                        logMessage(Level.ERROR, msg.toString());
+
+                    }
+                });
+            }
+        }
+
+        public ExtProcessFinishing(ArrayList<String> tarParams, ExtProcess procSSH) throws IOException {
+            super(tarParams, procSSH);
+            initLogBack(false, false);
+        }
+
+        public ExtProcessFinishing(List<String> tarParams, boolean logStdin, boolean logStdout) throws IOException {
             super(tarParams);
             initLogBack(logStdin, logStdout);
         }
@@ -661,7 +716,7 @@ public class CommandExecutor {
             sshCmd.append("cvf - ")
                     .append("{} +");
             sshParams.add(sshCmd.toString());
-            ExtProcess procSSH = extProcessManager.addProcess(new ExtProcessLogback(sshParams, false, true));
+            ExtProcess procSSH = extProcessManager.addProcess(new ExtProcessApp(sshParams, false, true));
 
             ExtProcess procTar = null;
             ArrayList<String> tarParams = new ArrayList<>();
@@ -671,7 +726,7 @@ public class CommandExecutor {
             tarParams.add("-");
 
             procSSH.startProcess();
-            procTar = extProcessManager.addProcess(new ExtProcessLogback(tarParams, procSSH));
+            procTar = extProcessManager.addProcess(new ExtProcessApp(tarParams, procSSH));
             procTar.startProcess();
 
             procSSH.waitFor();
@@ -839,16 +894,52 @@ public class CommandExecutor {
                     SettingsDialog.info("About to download " + lsTab.getSelectedFiles().size() + " files (" + r.size() + " threads)");
 
                     CountDownLatch latch = new CountDownLatch(r.size());
+                    CountDownLatch finalLatch = new CountDownLatch(1);
 
-                    doExecuteCmd(parent, this, latch, new ISubTask() {
+                    doExecuteCmd(parent, this,
+                            latch,
+                            new ISubTask() {
                         @Override
                         public void task() throws InterruptedException, IOException {
                             executeRSync(r, latch);
                         }
-                    });
+                    },
+                            finalLatch,
+                            new ISubTask() {
+                        @Override
+                        public void task() throws InterruptedException, IOException {
+                            afterActions(finalLatch);
+                        }
+                    }
+                    );
+
                 }
             }
+        } else {
+            JOptionPane.showMessageDialog(parent, "No files to display", "Info", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void afterActions(CountDownLatch latch) throws InterruptedException {
+
+        executor.execute(new CallbackThreadLatched(latch, new ISubTask() {
+            @Override
+            public void task() throws InterruptedException, IOException {
+                for (Pair<String, Boolean> entry : ds.getAfterActions()) {
+                    if (entry.getValue()) {
+                        executeAfterCommand(entry.getKey());
+                    }
+
+                }
+//                for (int i = 0; i < 10; i++) {
+//                    Thread.sleep(1000);
+//                    SettingsDialog.info(Integer.toString(i));
+//                }
+                latch.countDown();
+            }
+
+        }));
+
     }
 
     private void executeRSync(HashMap<SavedSearchStorage, ArrayList<String>> r,
@@ -857,7 +948,7 @@ public class CommandExecutor {
         for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
             SavedSearchStorage key = entry.getKey();
             ArrayList<String> value = entry.getValue();
-            executor.execute(new CallbackThread(latch, new ISubTask() {
+            executor.execute(new CallbackThreadLatched(latch, new ISubTask() {
                 @Override
                 public void task() throws InterruptedException, IOException {
                     executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
@@ -994,6 +1085,20 @@ public class CommandExecutor {
             this.subTask = subTask;
         }
 
+        private QueryTask(CommandExecutor aThis,
+                CountDownLatch latch,
+                ISubTask subTask,
+                CountDownLatch finishLatch,
+                ISubTask finishingTask) {
+            this(aThis, latch, subTask);
+            if (finishingTask != null) {
+                setFinishingTask(finishingTask);
+            }
+            if (finishLatch != null) {
+                setFinishLatch(finishLatch);
+            }
+        }
+
         @Override
         void onBackground() throws InterruptedException, IOException {
             subTask.task();
@@ -1084,7 +1189,7 @@ public class CommandExecutor {
                     latch = new CountDownLatch(tasks.size());
                     for (ISubTask task : tasks) {
                         try {
-                            executor.execute(new CallbackThread(latch, task));
+                            executor.execute(new CallbackThreadLatched(latch, task));
                         } catch (Exception e) {
                             LogManager.getLogger().error("Not possible to submit thread", e);
                         }
@@ -1206,6 +1311,24 @@ public class CommandExecutor {
         }
 
         String theTitle = "";
+        private ISubTask finishingTask = null;
+        private CountDownLatch finishLatch = null;
+
+        public ISubTask getFinishingTask() {
+            return finishingTask;
+        }
+
+        public void setFinishingTask(ISubTask finishingTask) {
+            this.finishingTask = finishingTask;
+        }
+
+        public CountDownLatch getFinishLatch() {
+            return finishLatch;
+        }
+
+        public void setFinishLatch(CountDownLatch finishLatch) {
+            this.finishLatch = finishLatch;
+        }
 
         @Override
         protected Void doInBackground() throws Exception {
@@ -1214,6 +1337,14 @@ public class CommandExecutor {
                     rp.doShow();
                 }
                 onBackground();
+
+                if (finishingTask != null) {
+                    finishingTask.task();
+                    if (finishLatch != null) {
+                        finishLatch.await();
+                    }
+                }
+
             } finally {
 
             }
@@ -1290,17 +1421,42 @@ public class CommandExecutor {
             rp = new RequestProgress(parent1, true, tsk);
         }
         tsk.setRp(rp);
+        if (ds.getActionCommand() == GetCommand.GET || ds.getActionCommand() == GetCommand.GREPGET) {
+
+            CountDownLatch finalLatch = new CountDownLatch(1);
+            tsk.setFinishLatch(finalLatch);
+            tsk.setFinishingTask(
+                    new ISubTask() {
+                @Override
+                public void task() throws InterruptedException, IOException {
+                    afterActions(finalLatch);
+                }
+            }
+            );
+
+        }
         tsk.execute();
     }
 
     private void doExecuteCmd(Window parent1, CommandExecutor aThis,
             CountDownLatch latch,
             ISubTask subTask) {
+        doExecuteCmd(parent1, aThis,
+                latch,
+                subTask, null, null);
+    }
 
-        QueryTaskBase tsk = new QueryTask(aThis, latch, subTask);
+    private void doExecuteCmd(Window parent1, CommandExecutor aThis,
+            CountDownLatch latch,
+            ISubTask subTask,
+            CountDownLatch finishLatch,
+            ISubTask finishingTask) {
+
+        QueryTaskBase tsk = new QueryTask(aThis, latch, subTask, finishLatch, finishingTask);
         if (rp == null) {
             rp = new RequestProgress(parent1, true, tsk);
         }
+
         tsk.setRp(rp);
 
         tsk.execute();
@@ -1422,16 +1578,16 @@ public class CommandExecutor {
 
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 
-    class CallbackThread implements Runnable {
+    class CallbackThreadLatched implements Runnable {
 
         private final ISubTask task;
         private CountDownLatch latch;
 
-        public CallbackThread(ISubTask tsk) {
+        public CallbackThreadLatched(ISubTask tsk) {
             this.task = tsk;
         }
 
-        private CallbackThread(CountDownLatch _latch, ISubTask iSubTask) {
+        private CallbackThreadLatched(CountDownLatch _latch, ISubTask iSubTask) {
             this(iSubTask);
             this.latch = _latch;
         }

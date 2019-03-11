@@ -32,6 +32,16 @@ public class DownloadSettings {
     private boolean appLogs;
     private boolean lcaLogs;
 
+    private ArrayList<Pair<String, Boolean>> afterActions;
+
+    public ArrayList<Pair<String, Boolean>> getAfterActions() {
+        return afterActions;
+    }
+
+    public void setAfterActions(ArrayList<Pair<String, Boolean>> afterActions) {
+        this.afterActions = afterActions;
+    }
+
     public boolean isAppLogs() {
         return appLogs;
     }
@@ -332,8 +342,11 @@ public class DownloadSettings {
             return nameSuffixes;
         }
 
-        public void setNameSuffixes(HashMap<String, Boolean> nameSuffixes) {
-            this.nameSuffixes = nameSuffixes;
+        public void setNameSuffixes(ArrayList<Pair<String, Boolean>> nameSuffixes) {
+            this.nameSuffixes = new HashMap<>(nameSuffixes.size());
+            for (Pair<String, Boolean> sfx : nameSuffixes) {
+                this.nameSuffixes.put(sfx.getKey(), sfx.getValue());
+            }
         }
 
         public boolean isSelected() {
@@ -431,7 +444,7 @@ public class DownloadSettings {
         }
 
         public void setChecked(boolean checked) {
-            LogManager.getLogger().debug(this.toString()+" set cheked "+checked);
+            LogManager.getLogger().debug(this.toString() + " set cheked " + checked);
             this.checked = checked;
         }
 

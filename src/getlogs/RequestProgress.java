@@ -110,6 +110,8 @@ public class RequestProgress extends javax.swing.JDialog {
                 //            try {
                 //                Thread.sleep(300);
                 //                if (!wrk.isDone() && !wrk.isCancelled()) {
+//                System.out.println(this+" Making visible");
+                setVisible(false);
                 pack();
                 setLocationRelativeTo(getParent());
                 taMessages.setText(null);
