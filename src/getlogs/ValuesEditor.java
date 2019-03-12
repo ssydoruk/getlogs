@@ -49,6 +49,8 @@ public class ValuesEditor extends StandardDialog {
     private JTable tab;
     private final String selectedFormat;
     private TableColumnAdjuster tca;
+    private JButton upButton;
+    private JButton downButton;
 
     public int getCloseCause() {
         return closeCause;
@@ -59,9 +61,13 @@ public class ValuesEditor extends StandardDialog {
     }
 
     private void selectionChanged() {
-        int rowsSelected = tab.getSelectedRows().length;
-        editButton.setEnabled(rowsSelected == 1);
-        deleteButton.setEnabled(rowsSelected == 1);
+        int[] selectedRows = tab.getSelectedRows();
+        boolean singleSelection = selectedRows != null && selectedRows.length == 1;
+        editButton.setEnabled(singleSelection);
+        deleteButton.setEnabled(singleSelection);
+        boolean moreThanOneSelected = selectedRows != null && selectedRows.length > 0;
+        upButton.setEnabled(moreThanOneSelected && selectedRows[0] > 0);
+        downButton.setEnabled(moreThanOneSelected && selectedRows[selectedRows.length - 1] < tab.getRowCount() - 1);
     }
 
     private IAddChoices addChoices = null;
@@ -177,6 +183,28 @@ public class ValuesEditor extends StandardDialog {
         });
         deleteButton.setText("Delete");
 
+        upButton = new JButton();
+        buttonPanel.addButton(upButton);
+        upButton.setAction(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                upPressed(e);
+
+            }
+
+        });
+        upButton.setText("Up");
+
+        downButton = new JButton();
+        buttonPanel.addButton(downButton);
+        downButton.setAction(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                downPressed(e);
+
+            }
+
+        });
+        downButton.setText("Down");
+
         cancelButton = new JButton();
         buttonPanel.addButton(cancelButton);
 
@@ -242,6 +270,37 @@ public class ValuesEditor extends StandardDialog {
         }
 
         return ret;
+    }
+
+    public void moveUpwards() {
+        moveRowBy(-1);
+    }
+
+    public void moveDownwards() {
+        moveRowBy(1);
+    }
+
+    private void moveRowBy(int by) {
+        DefaultTableModel model = (DefaultTableModel) tab.getModel();
+        int[] rows = tab.getSelectedRows();
+        int destination = rows[0] + by;
+        int rowCount = model.getRowCount();
+
+        if (destination < 0 || destination >= rowCount) {
+            return;
+        }
+
+        model.moveRow(rows[0], rows[rows.length - 1], destination);
+        tab.setRowSelectionInterval(rows[0] + by, rows[rows.length - 1] + by);
+    }
+
+    private void upPressed(ActionEvent e) {
+        moveUpwards();
+
+    }
+
+    private void downPressed(ActionEvent e) {
+        moveDownwards();
     }
 
     private void editValuePressed(ActionEvent e) {

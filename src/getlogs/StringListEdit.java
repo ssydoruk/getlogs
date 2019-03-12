@@ -113,27 +113,62 @@ public class StringListEdit extends JPanel {
                 .setAddChoices(addChoices);
         getStringsEditor()
                 .doShow();
+//        ArrayList<Object[]> data1 = getStringsEditor().getData();
+//        for (Object object
+//                : lmItems.toArray()) {
+//            if (!object.equals(CheckBoxList.ALL_ENTRY)) {
+//                ListEntry le = (ListEntry) object;
+//                int idx = leIdx(data1, le);
+//                if (idx < 0) {
+//                    lmItems.removeElement(le);
+//                } else {
+//                    data1.set(idx, null);
+//                }
+//            }
+//        }
+//        for (Object[] objects : data1) {
+//            if (objects != null) {
+//                lmItems.addElement(new ListEntry(objects[0].toString(), Boolean.TRUE));
+//            }
+//        }
+
         ArrayList<Object[]> data1 = getStringsEditor().getData();
+        ArrayList<Pair<String, Boolean>> itemsState = new ArrayList<>();
+
+        for (int i = 0; i < data1.size(); i++) {
+            Object[] objArr = data1.get(i);
+            if (objArr != null && objArr.length > 0) {
+                String elem = (String) objArr[0];
+                ListEntry le = leIdx(elem);
+                if (le != null) {
+                    itemsState.add(new Pair(elem, le.isSelected()));
+                } else {
+                    itemsState.add(new Pair(elem, true));
+                }
+            }
+
+        }
+
+        setData(itemsState);
+
+        dataChanged();
+//            ds.loadLFMTs(stringsEditor.getData());
+    }
+
+    private ListEntry leIdx(String item) {
+
         for (Object object
                 : lmItems.toArray()) {
             if (!object.equals(CheckBoxList.ALL_ENTRY)) {
                 ListEntry le = (ListEntry) object;
-                int idx = leIdx(data1, le);
-                if (idx < 0) {
-                    lmItems.removeElement(le);
-                } else {
-                    data1.set(idx, null);
+                if (le.getKey().equals(item)) {
+                    return le;
                 }
-            }
-        }
-        for (Object[] objects : data1) {
-            if (objects != null) {
-                lmItems.addElement(new ListEntry(objects[0].toString(), Boolean.TRUE));
+
             }
         }
 
-        dataChanged();
-//            ds.loadLFMTs(stringsEditor.getData());
+        return null;
 
     }
 
