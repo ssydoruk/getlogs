@@ -174,7 +174,15 @@ public class CommandExecutor {
     }
 
     public void executeCmd(java.awt.Window parent) throws IOException, InterruptedException {
+        if (!ds.isAppLogs() && !ds.isLcaLogs()) {
+            JOptionPane.showMessageDialog(parent, "Either Application or LCA checkbox needs to be checked", "Cannot continue",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         SettingsDialog.info("* " + ds.getActionCommand() + " started");
+        FileUtils.forceMkdir(new File(ds.getOutputDir()));
+
         if (parent != null) {
             doExecuteCmd(parent, this);
         } else {
@@ -558,7 +566,6 @@ public class CommandExecutor {
         } else {
             dstSpec.append(ap);
         }
-        FileUtils.forceMkdir(new File(dstSpec.toString()));
 
         rsyncParams.add(dstSpec.toString());
 //        LogManager.getLogger().trace("executing: " + rsyncParams);
@@ -665,7 +672,6 @@ public class CommandExecutor {
         if (useRSync1) {
             executeRSync(appProfile, ap, theAppHost, logsDir, GetLogs.rSyncAddClause(fileNameClause.toString()), isLFMT, lcaLog);
         } else {
-            FileUtils.forceMkdir(new File(ds.getOutputDir()));
             Utils.FileUtils.setCurrentDirectory(ds.getOutputDir());
             ArrayList<String> sshParams = new ArrayList<>();
             sshParams.add("ssh");
