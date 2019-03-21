@@ -566,6 +566,7 @@ public class CommandExecutor {
         } else {
             dstSpec.append(ap);
         }
+        Utils.FileUtils.mkDir(dstSpec.toString());
 
         rsyncParams.add(dstSpec.toString());
 //        LogManager.getLogger().trace("executing: " + rsyncParams);
