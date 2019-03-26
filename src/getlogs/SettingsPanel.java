@@ -82,6 +82,8 @@ import org.apache.logging.log4j.LogManager;
  */
 public class SettingsPanel extends javax.swing.JPanel {
 
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
+
     private final CheckBoxList clbProfile;
     private final CheckBoxList clbApps;
     private final DefaultListModel<Object> lmProfile;
@@ -1245,9 +1247,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 
             writer.close();
         } catch (FileNotFoundException ex) {
-            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+            logger.log(org.apache.logging.log4j.Level.FATAL, ex);
         } catch (IOException ex) {
-            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+            logger.log(org.apache.logging.log4j.Level.FATAL, ex);
         }
 
     }
@@ -1376,15 +1378,15 @@ public class SettingsPanel extends javax.swing.JPanel {
 
             CenterWindow(this);
 
-            if (LogManager.getLogger().isTraceEnabled()) {
-                LogManager.getLogger().trace("Show info PanelDialog; title=" + getTitle() + "; tab cols:" + theTab.getColumnCount() + " rows: " + theTab.getRowCount());
+            if (logger.isTraceEnabled()) {
+                logger.trace("Show info PanelDialog; title=" + getTitle() + "; tab cols:" + theTab.getColumnCount() + " rows: " + theTab.getRowCount());
                 StringBuilder s = new StringBuilder(512);
                 for (int i = 0; i < theTab.getRowCount(); i++) {
                     s.setLength(0);
                     for (int j = 0; j < theTab.getColumnCount(); j++) {
                         s.append("[" + theTab.getValueAt(i, j) + "],");
                     }
-                    LogManager.getLogger().trace(s);
+                    logger.trace(s);
                 }
 
             }

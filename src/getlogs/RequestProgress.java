@@ -16,6 +16,8 @@ import org.apache.logging.log4j.LogManager;
  */
 public class RequestProgress extends javax.swing.JDialog {
 
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
+
     private CommandExecutor.QueryTaskBase wrk;
 
     /**
@@ -95,7 +97,7 @@ public class RequestProgress extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jbCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbCancelActionPerformed
-        LogManager.getLogger().info("interrupt process selected");
+        logger.info("interrupt process selected");
         if (wrk.myCancel(true))
             ;
 
@@ -187,13 +189,13 @@ public class RequestProgress extends javax.swing.JDialog {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+            logger.log(org.apache.logging.log4j.Level.FATAL, ex);
         } catch (InstantiationException ex) {
-            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+            logger.log(org.apache.logging.log4j.Level.FATAL, ex);
         } catch (IllegalAccessException ex) {
-            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+            logger.log(org.apache.logging.log4j.Level.FATAL, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+            logger.log(org.apache.logging.log4j.Level.FATAL, ex);
         }
         //</editor-fold>
 
@@ -225,7 +227,7 @@ public class RequestProgress extends javax.swing.JDialog {
 
     public void addProgress(List<String> chunks) {
         for (String chunk : chunks) {
-            LogManager.getLogger().trace("Displaying progress: " + chunk);
+            logger.trace("Displaying progress: " + chunk);
             taMessages.append(chunk + "\n");
         }
     }

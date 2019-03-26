@@ -19,14 +19,16 @@ import org.apache.logging.log4j.LogManager;
  */
 class Hosts extends HashMap<String, String> {
 
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
+
     Hosts(String fileName) throws FileNotFoundException, IOException {
         File file = new File(fileName);
 
         BufferedReader br = new BufferedReader(new FileReader(file));
-        
-        LogManager.getLogger().debug("Reading host/app settings from file ["+fileName+"]");
+
+        logger.debug("Reading host/app settings from file [" + fileName + "]");
         String st;
-        int cnt=0;
+        int cnt = 0;
         while ((st = br.readLine()) != null) {
             String[] split = st.split(",");
             if (split.length > 1) {
@@ -37,13 +39,14 @@ class Hosts extends HashMap<String, String> {
             }
         }
         br.close();
-        LogManager.getLogger().debug("Read "+cnt+" records");
+        logger.debug("Read " + cnt + " records");
     }
 
     String lookupHost(String app) {
-        String ret=get(app);
-        if(ret==null || ret.isEmpty())
-            ret="(Unknown!!!)";
+        String ret = get(app);
+        if (ret == null || ret.isEmpty()) {
+            ret = "(Unknown!!!)";
+        }
         return ret;
     }
 

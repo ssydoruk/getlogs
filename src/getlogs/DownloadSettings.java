@@ -31,6 +31,8 @@ public class DownloadSettings {
     private boolean useRSync;
     private boolean appLogs;
     private boolean lcaLogs;
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
+
 
     private ArrayList<Pair<String, Boolean>> afterActions;
 
@@ -133,9 +135,9 @@ public class DownloadSettings {
     }
 
     void setCMDTime(String timeSpec) {
-        LogManager.getLogger().trace("Set time: " + timeSpec);
+        logger.trace("Set time: " + timeSpec);
         if (timeSpec != null && !timeSpec.isEmpty() && !GetLogs.regDateTimeSpec.matcher(timeSpec).matches()) {
-            LogManager.getLogger().error("Time is specified [" + timeSpec + "] but the format is incorrect");
+            logger.error("Time is specified [" + timeSpec + "] but the format is incorrect");
         } else {
             this.timeSpec = timeSpec;
         }
@@ -419,7 +421,7 @@ public class DownloadSettings {
             if (lfmtHostInstances != null && !lfmtHostInstances.isEmpty()) {
                 newLFMT = lfmtHostInstances.get(0);
             }
-            LogManager.getLogger().error("Incorrect LFMT setting for " + this.toString() + "; was: " + ((lfmt1 == null) ? "null" : lfmt1) + " changed to "
+            logger.error("Incorrect LFMT setting for " + this.toString() + "; was: " + ((lfmt1 == null) ? "null" : lfmt1) + " changed to "
                     + ((newLFMT == null) ? "null" : newLFMT));
             setLFMT(newLFMT);
 
@@ -444,7 +446,7 @@ public class DownloadSettings {
         }
 
         public void setChecked(boolean checked) {
-            LogManager.getLogger().debug(this.toString() + " set cheked " + checked);
+            logger.debug(this.toString() + " set cheked " + checked);
             this.checked = checked;
         }
 

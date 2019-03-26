@@ -27,14 +27,16 @@ import org.apache.logging.log4j.LogManager;
  */
 public class SettingsDialog extends StandardDialog {
 
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
+
     static void info(String str) {
-        LogManager.getLogger().info(str);
+        logger.info(str);
         lw.addMsg(str);
 
     }
 
     static void error(String str) {
-      LogManager.getLogger().error(str);
+        logger.error(str);
         lw.addMsg(str);
     }
 
@@ -59,7 +61,7 @@ public class SettingsDialog extends StandardDialog {
 
             }
         });
-        setTitle("GetLogs"+"("+guiProfile+")");
+        setTitle("GetLogs" + "(" + guiProfile + ")");
     }
 
     public CommandExecutor getCe() {
@@ -111,9 +113,9 @@ public class SettingsDialog extends StandardDialog {
                 try {
                     executeCommand(e);
                 } catch (IOException ex) {
-                    LogManager.getLogger().error("", ex);
+                    logger.error("", ex);
                 } catch (InterruptedException ex) {
-                    LogManager.getLogger().error("", ex);
+                    logger.error("", ex);
                 }
             }
 

@@ -33,6 +33,8 @@ import org.apache.logging.log4j.LogManager;
  */
 public abstract class JTablePopup extends JTable {
 
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
+
     protected final JTablePopupMenu popupMenu;
 
     public JPopupMenu getPopupMenu() {
@@ -137,7 +139,7 @@ public abstract class JTablePopup extends JTable {
         }
 
         public void mouseReleased(MouseEvent e) {
-  
+
         }
 
     }
@@ -148,7 +150,6 @@ public abstract class JTablePopup extends JTable {
 
     protected int popupRow;
     protected int popupCol;
-
 
     void showFindDialog() {
         if (findDlg == null) {
@@ -206,7 +207,6 @@ public abstract class JTablePopup extends JTable {
         return null;
     }
 
-
     Pair<Integer, Integer> searchCell(EnterRegexDialog findDlg, int popupRow, int popupCol) {
         TableModel model = getModel();
 
@@ -257,7 +257,7 @@ public abstract class JTablePopup extends JTable {
     void nextFind(boolean isDown) {
         findDlg.setDown(isDown);
         Pair<Integer, Integer> cell = searchCell(findDlg, getPopupRow(), getPopupCol());
-        LogManager.getLogger().debug("found cell: " + cell);
+        logger.debug("found cell: " + cell);
         if (cell != null) {
             Integer thePopupRow = cell.getKey();
             Integer thePopupCol = cell.getValue();

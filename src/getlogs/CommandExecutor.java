@@ -8,6 +8,7 @@ package getlogs;
 import Utils.Pair;
 import Utils.ScreenInfo;
 import Utils.UnixProcess.ExtProcess;
+import static Utils.Util.rSyncAddClause;
 import static Utils.Util.stripDir;
 import com.jidesoft.dialog.JideOptionPane;
 import com.jidesoft.dialog.StandardDialog;
@@ -276,6 +277,7 @@ public class CommandExecutor {
     }
 
     ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir,
             ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
@@ -347,7 +349,7 @@ public class CommandExecutor {
         procSSH.startProcess(true, true);
 
         int waitFor = procSSH.waitFor();
-        LogManager.getLogger().debug("process terminated, result: " + waitFor);
+        logger.debug("process terminated, result: " + waitFor);
         if (waitFor != 0) {
             SettingsDialog.error("LS failed, error code: " + waitFor);
             ArrayList<String> errBuf = procSSH.getErrBuf();
@@ -410,7 +412,7 @@ public class CommandExecutor {
         ArrayList<String> executeGrep = executeGrep(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         ArrayList<String> rSyncFiles = new ArrayList<>();
         for (String fileName : executeGrep) {
-            rSyncFiles.addAll(GetLogs.rSyncAddClause(stripDir(fileName)));
+            rSyncFiles.addAll(rSyncAddClause(stripDir(fileName)));
         }
 
         executeRSync(appProfile, ap, theAppHost, logsDir, rSyncFiles, isLFMT, lcaLog);
@@ -501,12 +503,12 @@ public class CommandExecutor {
             cmdParams.add(replacePostActionVars(string));
         }
 
-//        LogManager.getLogger().trace("executing: " + rsyncParams);
+//        logger.trace("executing: " + rsyncParams);
         ExtProcess procRSync = extProcessManager.addProcess(new ExtProcessFinishing(
                 cmdParams, true, true));
         procRSync.startProcess();
         int waitFor = procRSync.waitFor();
-        LogManager.getLogger().debug("process terminated, result: " + waitFor);
+        logger.debug("process terminated, result: " + waitFor);
 
         extProcessManager.doneProcess(procRSync);
 
@@ -569,13 +571,13 @@ public class CommandExecutor {
         Utils.FileUtils.mkDir(dstSpec.toString());
 
         rsyncParams.add(dstSpec.toString());
-//        LogManager.getLogger().trace("executing: " + rsyncParams);
+//        logger.trace("executing: " + rsyncParams);
         ExtProcessApp procRSync = (ExtProcessApp) extProcessManager.addProcess(new ExtProcessApp(
                 appProfile, ap, rsyncParams,
                 true, true));
         procRSync.startProcess();
         int waitFor = procRSync.waitFor();
-        LogManager.getLogger().debug("process terminated, result: " + waitFor);
+        logger.debug("process terminated, result: " + waitFor);
 
         extProcessManager.doneProcess(procRSync);
     }
@@ -671,7 +673,7 @@ public class CommandExecutor {
 
     private void executeGet(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean useRSync1, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         if (useRSync1) {
-            executeRSync(appProfile, ap, theAppHost, logsDir, GetLogs.rSyncAddClause(fileNameClause.toString()), isLFMT, lcaLog);
+            executeRSync(appProfile, ap, theAppHost, logsDir, rSyncAddClause(fileNameClause.toString()), isLFMT, lcaLog);
         } else {
             Utils.FileUtils.setCurrentDirectory(ds.getOutputDir());
             ArrayList<String> sshParams = new ArrayList<>();
@@ -896,7 +898,7 @@ public class CommandExecutor {
                             r.put(storage, rSyncFiles);
                         }
 
-                        rSyncFiles.addAll(GetLogs.rSyncAddClause(stripDir(row.fileName)));
+                        rSyncFiles.addAll(rSyncAddClause(stripDir(row.fileName)));
                     }
                     SettingsDialog.info("About to download " + lsTab.getSelectedFiles().size() + " files (" + r.size() + " threads)");
 
@@ -980,7 +982,7 @@ public class CommandExecutor {
                     r.put(storage, rSyncFiles);
                 }
 
-                rSyncFiles.addAll(GetLogs.rSyncAddClause(stripDir(row.fileName)));
+                rSyncFiles.addAll(rSyncAddClause(stripDir(row.fileName)));
             }
             if (r.size() > 0) {
                 for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
@@ -1163,7 +1165,7 @@ public class CommandExecutor {
 //                }
 //
 //            } catch (InterruptedException ex) {
-//                LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+//                logger.log(org.apache.logging.log4j.Level.FATAL, ex);
 //            }
 //            return true;
 //        }
@@ -1198,12 +1200,12 @@ public class CommandExecutor {
                         try {
                             executor.execute(new CallbackThreadLatched(latch, task));
                         } catch (Exception e) {
-                            LogManager.getLogger().error("Not possible to submit thread", e);
+                            logger.error("Not possible to submit thread", e);
                         }
                     }
                     latch.await();
                 } else {
-                    LogManager.getLogger().error("nothing to do");
+                    logger.error("nothing to do");
                 }
 
             }
@@ -1212,7 +1214,7 @@ public class CommandExecutor {
     };
 
     private static void cancelExecutor() {
-        LogManager.getLogger().debug("Cancelling...");
+        logger.debug("Cancelling...");
         synchronized (executor) {
             boolean terminatedOK = true;
             List<Runnable> shutdownNow = executor.shutdownNow();
@@ -1220,10 +1222,10 @@ public class CommandExecutor {
                 try {
                     if (!executor.awaitTermination(500, TimeUnit.MILLISECONDS)) {
                         terminatedOK = false;
-                        LogManager.getLogger().error("Not all thread terminated after timeout");
+                        logger.error("Not all thread terminated after timeout");
                     }
                 } catch (InterruptedException ex) {
-                    LogManager.getLogger().error(ex);
+                    logger.error(ex);
                 }
             }
             if (terminatedOK) {
@@ -1231,7 +1233,7 @@ public class CommandExecutor {
                 executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
             }
             if (executor.isTerminated()) {
-                LogManager.getLogger().error("executor terminated");
+                logger.error("executor terminated");
             }
         }
     }
@@ -1288,7 +1290,7 @@ public class CommandExecutor {
                     }
 
                 } catch (InterruptedException ex) {
-                    LogManager.getLogger().log(org.apache.logging.log4j.Level.FATAL, ex);
+                    logger.log(org.apache.logging.log4j.Level.FATAL, ex);
                 }
             } finally {
                 if (rp != null) {
@@ -1360,13 +1362,13 @@ public class CommandExecutor {
 
         @Override
         protected void done() {
-            LogManager.getLogger().debug("swingworker done");
+            logger.debug("swingworker done");
             if (rp != null) {
                 rp.dispose();
             }
             if (isCancelled()) {
 //                JOptionPane.showMessageDialog(null, "Query was cancelled", "Error", JOptionPane.ERROR_MESSAGE);
-                LogManager.getLogger().debug("Query was cancelled");
+                logger.debug("Query was cancelled");
             } else {
                 SettingsDialog.info("Command executed");
                 onDone();
@@ -1605,16 +1607,16 @@ public class CommandExecutor {
                 Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                     @Override
                     public void uncaughtException(Thread t, Throwable e) {
-                        LogManager.getLogger().error("Uncought exception in thread " + t.getName(), e);
+                        logger.error("Uncought exception in thread " + t.getName(), e);
                         latch.countDown();
                     }
                 });
-//                LogManager.getLogger().debug("Thread " + Thread.currentThread() + " starting task");
+//                logger.debug("Thread " + Thread.currentThread() + " starting task");
                 try {
                     task.task();
                 } catch (InterruptedException interruptedException) {
                 }
-//                LogManager.getLogger().debug("Thread " + Thread.currentThread() + " done task");
+//                logger.debug("Thread " + Thread.currentThread() + " done task");
 
             } catch (IOException ex) {
                 Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);

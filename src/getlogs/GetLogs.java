@@ -7,6 +7,7 @@ package getlogs;
 
 import Utils.ScreenInfo;
 import Utils.UnixProcess.ExtProcess;
+import static Utils.Util.rSyncAddClause;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -291,7 +292,7 @@ public class GetLogs {
         try {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
-            LogManager.getLogger().error(e);
+            logger.error(e);
             showHelpExit(e.getMessage(), options);
         }
 
@@ -502,7 +503,7 @@ public class GetLogs {
 
             Configurator.initialize(builder.build());
 //        System.out.println(builder.toXmlConfiguration());
-            logger = LogManager.getLogger();
+            logger = logger;
             logger.info("log initialized");
         }
 //        LogWindow.initCustomLogger();
@@ -518,7 +519,7 @@ public class GetLogs {
 
     private static void showHelpExit(String msg, Options options) {
         if (msg != null && !msg.isEmpty()) {
-            LogManager.getLogger().error(msg);
+            logger.error(msg);
         }
         showHelpExit(options);
     }
@@ -754,12 +755,7 @@ public class GetLogs {
         executeRSync(ap, theAppHost, logsDir, rSyncFiles);
     }
 
-    public static ArrayList<String> rSyncAddClause(String fileName) {
-        ArrayList<String> ret = new ArrayList<String>();
-        ret.add("-f");//--filter
-        ret.add("+ /*" + fileName);
-        return ret;
-    }
+
 
     private static void executeRSync(String ap, String theAppHost, StringBuilder logsDir, ArrayList<String> fileNameClause) throws IOException, InterruptedException {
         ArrayList<String> rsyncParams = new ArrayList<>();
@@ -951,7 +947,7 @@ public class GetLogs {
                 reader.close();
                 ds.checkLFMT();
             } catch (JsonSyntaxException | JsonIOException | IOException ex) {
-                LogManager.getLogger().error(ex);
+                logger.error(ex);
             }
         } else {
             ds = new DownloadSettings();

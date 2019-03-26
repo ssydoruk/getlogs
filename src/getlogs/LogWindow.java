@@ -44,6 +44,8 @@ import org.apache.logging.log4j.io.IoBuilder;
  */
 public class LogWindow extends StandardDialog {
 
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
+
     static void info(String command_executed) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -69,7 +71,6 @@ public class LogWindow extends StandardDialog {
         ctx.updateLoggers(config);
 
         // Run the job
-        org.apache.logging.log4j.Logger logger = LogManager.getLogger();
         logger.info("Hello, World!");
         logger.info("This is awesome!");
         logger.info("Hope it works!");

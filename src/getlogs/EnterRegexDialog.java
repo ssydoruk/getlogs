@@ -39,6 +39,8 @@ public class EnterRegexDialog extends javax.swing.JDialog {
      */
     public static final int RET_OK = 1;
     private Pattern selectedRegEx = null;
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
+
 
     /**
      * Creates new form EnterRegexDialog
@@ -121,7 +123,7 @@ public class EnterRegexDialog extends javax.swing.JDialog {
                 if (lastRegEx.charAt(lastRegEx.length() - 1) != '$') {
                     rx.append('$');
                 }
-                LogManager.getLogger().debug("Searching for [" + rx + "]");
+                logger.debug("Searching for [" + rx + "]");
                 return Pattern.compile(rx.toString(), Pattern.CASE_INSENSITIVE);
             } else {
                 return Pattern.compile(lastRegEx, Pattern.CASE_INSENSITIVE);
@@ -140,7 +142,7 @@ public class EnterRegexDialog extends javax.swing.JDialog {
             try {
                 this.selectedRegEx = getRegex(editLine, isMatchWholeWordSelected());
             } catch (PatternSyntaxException e) {
-                LogManager.getLogger().error(
+                logger.error(
                         "Cannot compile regex [" + editLine + "]:\n"
                         + e.getMessage(),
                         "Regex error");

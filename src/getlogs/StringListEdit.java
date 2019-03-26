@@ -34,6 +34,8 @@ import org.apache.logging.log4j.LogManager;
  */
 public class StringListEdit extends JPanel {
 
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
+
     private ValuesEditor.IAddChoices addChoices;
 
     @Override
@@ -174,7 +176,7 @@ public class StringListEdit extends JPanel {
 
     private void clbItemsCheckedChanged(ListSelectionEvent evt) {
         if (!evt.getValueIsAdjusting()) {
-            LogManager.getLogger().debug("Item checked");
+            logger.debug("Item checked");
             CheckBoxListSelectionModel lsm = (CheckBoxListSelectionModel) evt.getSource();
 
             for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
@@ -191,7 +193,7 @@ public class StringListEdit extends JPanel {
     }
 
     private void clbItemsSelectionChanged(ListSelectionEvent evt) {
-        LogManager.getLogger().debug("Item selection changed");
+        logger.debug("Item selection changed");
     }
 
     private IDataChangedFun updatedFun = null;
@@ -261,7 +263,7 @@ public class StringListEdit extends JPanel {
             Object[] objArr = data1.get(i);
             if (objArr != null && objArr.length > 0) {
                 String elem = (String) objArr[0];
-                LogManager.getLogger().debug(elem + "-" + le.getKey());
+                logger.debug(elem + "-" + le.getKey());
                 if (elem.equals(le.getKey())) {
                     return i;
                 }
@@ -274,7 +276,7 @@ public class StringListEdit extends JPanel {
 
     private void dataChanged() {
         if (updatedFun == null) {
-            LogManager.getLogger().info("Update function not defined");
+            logger.info("Update function not defined");
         } else {
             ArrayList<Pair<String, Boolean>> d = new ArrayList<>(lmItems.size());
             for (Object object : lmItems.toArray()) {

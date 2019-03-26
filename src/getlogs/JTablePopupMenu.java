@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 class JTablePopupMenu extends JPopupMenu {
 
     private final JTablePopup tab;
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     JTablePopupMenu(JTablePopup aThis) {
         tab = aThis;
@@ -44,10 +45,10 @@ class JTablePopupMenu extends JPopupMenu {
                     tab.setPopupRow(row);
                     tab.setPopupCol(col);
                     if (!tab.isRowSelected(row)) {
-                        LogManager.getLogger().debug("1isRowSelected: ");
+                        logger.debug("1isRowSelected: ");
                         tab.changeSelection(row, col, false, false);
                     } else {
-                        LogManager.getLogger().debug("isRowSelected1: ");
+                        logger.debug("isRowSelected1: ");
 
                     }
                     tab.callingPopup();

@@ -45,6 +45,8 @@ import org.apache.logging.log4j.LogManager;
  */
 public class ValuesEditor extends StandardDialog {
 
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
+
     private int closeCause = JOptionPane.CANCEL_OPTION;
     private JTable tab;
     private final String selectedFormat;
@@ -99,15 +101,15 @@ public class ValuesEditor extends StandardDialog {
 
         tca.adjustColumns();
         pack();
-        if (LogManager.getLogger().isTraceEnabled()) {
-            LogManager.getLogger().trace("Show info PanelDialog; title=" + getTitle() + "; tab cols:" + tab.getColumnCount() + " rows: " + tab.getRowCount());
+        if (logger.isTraceEnabled()) {
+            logger.trace("Show info PanelDialog; title=" + getTitle() + "; tab cols:" + tab.getColumnCount() + " rows: " + tab.getRowCount());
             StringBuilder s = new StringBuilder(512);
             for (int i = 0; i < tab.getRowCount(); i++) {
                 s.setLength(0);
                 for (int j = 0; j < tab.getColumnCount(); j++) {
                     s.append("[" + tab.getValueAt(i, j) + "],");
                 }
-                LogManager.getLogger().trace(s);
+                logger.trace(s);
             }
 
         }
