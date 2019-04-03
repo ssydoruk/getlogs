@@ -49,6 +49,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -221,10 +222,14 @@ public class CommandExecutor {
             if (lfmtHostInstance == null || lfmtHostInstance.getHost() == null) {
                 GetLogs.exitHelp("LFMT not configured properly for app " + ap);
             }
-            logsDir.append(lfmtHostInstance.getBaseDir())
-                    .append(lfmtHostInstance.getInstance()).append("/")
-                    .append(lfmtHostInstance.getInstance()).append("_cls/")
-                    .append(theAppHost) //                    .append("/")
+            logsDir.append(lfmtHostInstance.getBaseDir());
+            String instance = lfmtHostInstance.getInstance();
+            if (instance != null && !instance.isEmpty()) {
+                logsDir.append(lfmtHostInstance.getInstance()).append("/")
+                        .append(lfmtHostInstance.getInstance()).append("_cls");
+            };
+
+            logsDir.append("/").append(theAppHost) //                    .append("/")
                     //                    .append(ap)
                     ;
         } else {
@@ -412,7 +417,7 @@ public class CommandExecutor {
         ArrayList<String> executeGrep = executeGrep(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         ArrayList<String> rSyncFiles = new ArrayList<>();
         for (String fileName : executeGrep) {
-            rSyncFiles.addAll(rSyncAddClause(stripDir(fileName)));
+            rSyncFiles.addAll(rSyncAddClause(FilenameUtils.getName(fileName)));
         }
 
         executeRSync(appProfile, ap, theAppHost, logsDir, rSyncFiles, isLFMT, lcaLog);
@@ -898,7 +903,7 @@ public class CommandExecutor {
                             r.put(storage, rSyncFiles);
                         }
 
-                        rSyncFiles.addAll(rSyncAddClause(stripDir(row.fileName)));
+                        rSyncFiles.addAll(rSyncAddClause(FilenameUtils.getName(row.fileName)));
                     }
                     SettingsDialog.info("About to download " + lsTab.getSelectedFiles().size() + " files (" + r.size() + " threads)");
 
@@ -982,7 +987,7 @@ public class CommandExecutor {
                     r.put(storage, rSyncFiles);
                 }
 
-                rSyncFiles.addAll(rSyncAddClause(stripDir(row.fileName)));
+                rSyncFiles.addAll(rSyncAddClause(FilenameUtils.getName(row.fileName)));
             }
             if (r.size() > 0) {
                 for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
