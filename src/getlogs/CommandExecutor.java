@@ -617,7 +617,9 @@ public class CommandExecutor {
                             msg.append("[").append(profile).append("]");
                         }
                         if (app != null) {
+
                             msg.append(" a[").append(app.getName()).append("(").append(GetLogs.getHosts().lookupHost(app.getName())).append(")]");
+                            msg.append(" cmd[" + getCmd() + "]");
                         }
                         msg.append("! ").append(s);
                         logMessage(Level.ERROR, msg.toString());
