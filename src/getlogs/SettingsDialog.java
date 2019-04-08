@@ -43,10 +43,18 @@ public class SettingsDialog extends StandardDialog {
     private final SettingsPanel settingsPanel;
     private final CommandExecutor ce;
     private static LogWindow lw;
+    private JButton jbRun;
+
+    public void setJBRunEnabled(boolean b) {
+        if (jbRun != null) {
+            jbRun.setEnabled(b);
+            jbRun.repaint();
+        }
+    }
 
     public SettingsDialog(DownloadSettings ds, String guiProfile) {
         super();
-        settingsPanel = new SettingsPanel(ds);
+        settingsPanel = new SettingsPanel(ds, this);
         ce = new CommandExecutor(this);
         lw = new LogWindow();
         lw.doShow();
@@ -108,7 +116,7 @@ public class SettingsDialog extends StandardDialog {
         });
         buttonPanel.addButton(lastLSButton);
 
-        JButton jbRun = new JButton(new AbstractAction("Start!") {
+        jbRun = new JButton(new AbstractAction("Start!") {
             public void actionPerformed(ActionEvent e) {
                 try {
                     executeCommand(e);
@@ -121,6 +129,7 @@ public class SettingsDialog extends StandardDialog {
 
         });
         buttonPanel.addButton(jbRun);
+        jbRun.setEnabled(settingsPanel.canRun());
 
         setDefaultCancelAction(cancelButton.getAction());
         setDefaultAction(jbRun.getAction());

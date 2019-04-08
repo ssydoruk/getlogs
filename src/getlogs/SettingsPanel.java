@@ -68,6 +68,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -95,6 +97,9 @@ public class SettingsPanel extends javax.swing.JPanel {
     private ValuesEditor lfmtEditor = null;
     private final StringListEdit ext;
     private final StringListEdit afterActions;
+    private final String profileTitleBase;
+    private final String appTitleBase;
+    private SettingsDialog dlg;
 
     public DownloadSettings getDs() {
         return ds;
@@ -109,6 +114,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 //        jpRange.add(dtRange);
 //        dtTo = new TDateRange();
 //        jpTo.add(dtTo);
+        TitledBorder border = (TitledBorder) jpProfileBase.getBorder();
+        profileTitleBase = border.getTitle();
+        appTitleBase = ((TitledBorder) jpProfileBase.getBorder()).getTitle();
 
         lmProfile = new DefaultListModel<Object>();
         clbProfile = new CheckBoxList(lmProfile);
@@ -220,25 +228,96 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void clbProfileCheckedChanged(ListSelectionEvent evt) {
         if (!evt.getValueIsAdjusting()) {
             CheckBoxListSelectionModel lsm = (CheckBoxListSelectionModel) evt.getSource();
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    int maxSelectionIndex = lsm.getMaxSelectionIndex();
-                    int minSelectionIndex = lsm.getMinSelectionIndex();
+//            SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {
+            int maxSelectionIndex = lsm.getMaxSelectionIndex();
+            int minSelectionIndex = lsm.getMinSelectionIndex();
 //                    System.out.println("-1-" + evt
 //                            + " f: " + evt.getFirstIndex()
 //                            + " l: " + evt.getLastIndex()
 //                            + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
 //                    );
-                    for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
-                        if (i < lmProfile.getSize()) {
-                            ((DownloadSettings.AppProfile) lmProfile.getElementAt(i))
-                                    .setSelected(lsm.isSelectedIndex(i));
-                        }
-
-                    }
+            for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
+                if (i < lmProfile.getSize()) {
+                    ((DownloadSettings.AppProfile) lmProfile.getElementAt(i))
+                            .setSelected(lsm.isSelectedIndex(i));
                 }
-            });
+            }
+            updateProfileTitle();
+            updateStartButton();
+//                }
+//            });
         }
+    }
+
+    private boolean canRunProfiles() {
+//(DownloadSettings.AppProfile) lmProfile.get(minIndex);
+
+        CheckBoxListSelectionModel lsm = clbProfile.getCheckBoxListSelectionModel();
+        DefaultListModel<Object> lm = (DefaultListModel<Object>) clbProfile.getModel();
+        int allEntryIndex = lsm.getAllEntryIndex();
+        for (int i = 0; i < lm.getSize(); i++) {
+            if (lsm.isSelectedIndex(i) && i != allEntryIndex) {
+                DownloadSettings.AppProfile elementAt = (DownloadSettings.AppProfile) lm.getElementAt(i);
+                if(elementAt!=null && hasCheckedApp(elementAt)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private int getSelectedNum(CheckBoxList clb) {
+        int numSelected = 0;
+//(DownloadSettings.AppProfile) lmProfile.get(minIndex);
+
+        CheckBoxListSelectionModel lsm = clb.getCheckBoxListSelectionModel();
+        DefaultListModel<Object> lm = (DefaultListModel<Object>) clb.getModel();
+        int allEntryIndex = lsm.getAllEntryIndex();
+        for (int i = 0; i < lm.getSize(); i++) {
+            if (lsm.isSelectedIndex(i) && i != allEntryIndex) {
+                numSelected++;
+            }
+        }
+        return numSelected;
+    }
+
+    private int getAllSize(CheckBoxList clb) {
+        DefaultListModel<Object> lm = (DefaultListModel<Object>) clb.getModel();
+        return (clb.getCheckBoxListSelectionModel().getAllEntryIndex() >= 0) ? lm.size() - 1 : lm.size();
+
+    }
+
+    private void updateAppTitle() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+
+                int numSelected = getSelectedNum(clbApps);
+                int allSize = getAllSize(clbApps);
+
+                TitledBorder border = (TitledBorder) jpAppsBase.getBorder();
+                if (allSize <= 0) {
+                    border.setTitle(appTitleBase);
+                } else {
+                    border.setTitle(appTitleBase + " (" + numSelected + "/" + (getAllSize(clbApps)) + ")");
+                }
+
+                jpAppsBase.repaint();
+                updateStartButton() ;
+            }
+        });
+
+    }
+
+    private void updateProfileTitle() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+
+                ((TitledBorder) jpProfileBase.getBorder()).setTitle(profileTitleBase + " (" + getSelectedNum(clbProfile) + "/" + (getAllSize(clbProfile)) + ")");
+
+                jpProfileBase.repaint();
+            }
+        });
     }
 
     /**
@@ -330,6 +409,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 //                        clbApps.setCheckBoxListSelectionModel(clbAppSelectionModel);
 //                                clbApps.selectAll();
         }
+        updateAppTitle();
     }
 
     /**
@@ -380,6 +460,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     }
                 }
             });
+            updateAppTitle();
         }
 
     }
@@ -427,9 +508,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         return null;
     }
 
-    SettingsPanel(DownloadSettings ds) {
+    SettingsPanel(DownloadSettings ds, SettingsDialog dlg) {
         this();
         this.ds = ds;
+        this.dlg = dlg;
         loadConfig();
     }
 
@@ -444,7 +526,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         bgFileNaming = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
-        jPanel4 = new javax.swing.JPanel();
+        jpProfileBase = new javax.swing.JPanel();
         jpProfile = new javax.swing.JPanel();
         jPanel8 = new javax.swing.JPanel();
         jbProfileAdd = new javax.swing.JButton();
@@ -511,11 +593,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Application profiles"));
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Profile"));
-        jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.PAGE_AXIS));
+        jpProfileBase.setBorder(javax.swing.BorderFactory.createTitledBorder("Profile"));
+        jpProfileBase.setLayout(new javax.swing.BoxLayout(jpProfileBase, javax.swing.BoxLayout.PAGE_AXIS));
 
         jpProfile.setLayout(new java.awt.BorderLayout());
-        jPanel4.add(jpProfile);
+        jpProfileBase.add(jpProfile);
 
         jPanel8.setLayout(new java.awt.GridLayout(1, 0));
 
@@ -551,9 +633,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         });
         jPanel8.add(jbProfileSaveAs);
 
-        jPanel4.add(jPanel8);
+        jpProfileBase.add(jPanel8);
 
-        jPanel1.add(jPanel4);
+        jPanel1.add(jpProfileBase);
 
         jpAppsBase.setBorder(javax.swing.BorderFactory.createTitledBorder("Apps"));
         jpAppsBase.setLayout(new javax.swing.BoxLayout(jpAppsBase, javax.swing.BoxLayout.PAGE_AXIS));
@@ -782,9 +864,19 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel23.setLayout(new java.awt.BorderLayout());
 
         cbLCALogs.setText("LCA logs");
+        cbLCALogs.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbLCALogsItemStateChanged(evt);
+            }
+        });
         jPanel23.add(cbLCALogs, java.awt.BorderLayout.CENTER);
 
         cbAppLogs.setText("Application logs");
+        cbAppLogs.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbAppLogsItemStateChanged(evt);
+            }
+        });
         jPanel23.add(cbAppLogs, java.awt.BorderLayout.PAGE_START);
 
         jPanel20.add(jPanel23);
@@ -1074,6 +1166,15 @@ public class SettingsPanel extends javax.swing.JPanel {
 //            timeProfileChanged((TimeProfile) evt.getSource());
     }//GEN-LAST:event_cbTimeProfileActionPerformed
 
+    private void cbAppLogsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbAppLogsItemStateChanged
+        updateStartButton();
+
+    }//GEN-LAST:event_cbAppLogsItemStateChanged
+
+    private void cbLCALogsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbLCALogsItemStateChanged
+        updateStartButton();
+    }//GEN-LAST:event_cbLCALogsItemStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;
@@ -1108,7 +1209,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel23;
     private javax.swing.JPanel jPanel24;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
@@ -1125,6 +1225,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jpApps;
     private javax.swing.JPanel jpAppsBase;
     private javax.swing.JPanel jpProfile;
+    private javax.swing.JPanel jpProfileBase;
     private javax.swing.JPanel jpRange;
     private javax.swing.JTextField jtfOutputDir;
     private javax.swing.JLabel lCommand;
@@ -1199,6 +1300,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 //        cbCommand.addItemListener(aListener);
         tfGrepText.setText(ds.getGrepText());
         updateLFMTs();
+        updateProfileTitle();
     }
 
     private void addProfile(String showInputDialog) {
@@ -1302,6 +1404,25 @@ public class SettingsPanel extends javax.swing.JPanel {
             cbCommand.addActionListener(itemListener);
         }
         cbCommand.setSelectedItem(selectedObject);
+    }
+
+    private void updateStartButton() {
+        dlg.setJBRunEnabled(
+                canRun()
+        );
+    }
+
+    boolean canRun() {
+        return canRunProfiles()
+                && (cbAppLogs.isSelected() || cbLCALogs.isSelected());
+    }
+
+    private boolean hasCheckedApp(DownloadSettings.AppProfile elementAt) {
+        for (DownloadSettings.App app : elementAt.getApps()) {
+            if(app.isChecked())
+                return true;
+        }
+        return false;        
     }
 
     public enum TimeProfile {
