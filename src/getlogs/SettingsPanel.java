@@ -23,6 +23,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.LayoutManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -110,10 +111,9 @@ public class SettingsPanel extends javax.swing.JPanel {
      */
     public SettingsPanel() {
         initComponents();
-//        dtRange = new TDateRange(false);
-//        jpRange.add(dtRange);
-//        dtTo = new TDateRange();
-//        jpTo.add(dtTo);
+        dtRange = new TDateRange(false);
+        jpRange.add(dtRange);
+
         TitledBorder border = (TitledBorder) jpProfileBase.getBorder();
         profileTitleBase = border.getTitle();
         appTitleBase = ((TitledBorder) jpProfileBase.getBorder()).getTitle();
@@ -259,7 +259,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         for (int i = 0; i < lm.getSize(); i++) {
             if (lsm.isSelectedIndex(i) && i != allEntryIndex) {
                 DownloadSettings.AppProfile elementAt = (DownloadSettings.AppProfile) lm.getElementAt(i);
-                if(elementAt!=null && hasCheckedApp(elementAt)){
+                if (elementAt != null && hasCheckedApp(elementAt)) {
                     return true;
                 }
             }
@@ -303,7 +303,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 }
 
                 jpAppsBase.repaint();
-                updateStartButton() ;
+                updateStartButton();
             }
         });
 
@@ -394,8 +394,8 @@ public class SettingsPanel extends javax.swing.JPanel {
             for (int i = 0; i < mod.getSize(); i++) {
                 DownloadSettings.LFMTHostInstance inst = mod.getElementAt(i);
                 if (inst.getHost().equals(lfmtHostInstance.getHost())
-                        && inst.getInstance().equals( lfmtHostInstance.getInstance())
-                        && inst.getBaseDir().equals ( lfmtHostInstance.getBaseDir())) {
+                        && inst.getInstance().equals(lfmtHostInstance.getInstance())
+                        && inst.getBaseDir().equals(lfmtHostInstance.getBaseDir())) {
                     sel = i;
                     break;
                 }
@@ -525,6 +525,17 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         bgFileNaming = new javax.swing.ButtonGroup();
+        jpLastFiles = new javax.swing.JPanel();
+        ftHours = new javax.swing.JFormattedTextField();
+        lHours = new javax.swing.JLabel();
+        jpRegEx = new javax.swing.JPanel();
+        jPanel25 = new javax.swing.JPanel();
+        lbDateRegex = new javax.swing.JLabel();
+        tfDateRegex = new javax.swing.JTextField();
+        jPanel26 = new javax.swing.JPanel();
+        lbTimeRegex = new javax.swing.JLabel();
+        tfTimeRegex = new javax.swing.JTextField();
+        jpRange = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jpProfileBase = new javax.swing.JPanel();
         jpProfile = new javax.swing.JPanel();
@@ -552,19 +563,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel7 = new javax.swing.JPanel();
         cbLfmtLog = new javax.swing.JCheckBox();
         cbProdLog = new javax.swing.JCheckBox();
-        jPanel3 = new javax.swing.JPanel();
+        jpRangeSelect = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
-        ftHours = new javax.swing.JFormattedTextField();
-        lHours = new javax.swing.JLabel();
         cbTimeProfile = new javax.swing.JComboBox<>();
-        jPanel12 = new javax.swing.JPanel();
-        jpRange = new javax.swing.JPanel();
-        jPanel15 = new javax.swing.JPanel();
-        lbDateRegex = new javax.swing.JLabel();
-        tfDateRegex = new javax.swing.JTextField();
-        jPanel14 = new javax.swing.JPanel();
-        lbTimeRegex = new javax.swing.JLabel();
-        tfTimeRegex = new javax.swing.JTextField();
+        jpRangeParams = new javax.swing.JPanel();
         jPanel9 = new javax.swing.JPanel();
         jPanel19 = new javax.swing.JPanel();
         jPanel16 = new javax.swing.JPanel();
@@ -587,6 +589,32 @@ public class SettingsPanel extends javax.swing.JPanel {
         jtfOutputDir = new javax.swing.JTextField();
         jbSelectDirectory = new javax.swing.JButton();
         pAfterActions = new javax.swing.JPanel();
+
+        jpLastFiles.setLayout(new javax.swing.BoxLayout(jpLastFiles, javax.swing.BoxLayout.LINE_AXIS));
+
+        ftHours.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
+        jpLastFiles.add(ftHours);
+        jpLastFiles.add(lHours);
+
+        jpRegEx.setLayout(new javax.swing.BoxLayout(jpRegEx, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jPanel25.setLayout(new javax.swing.BoxLayout(jPanel25, javax.swing.BoxLayout.LINE_AXIS));
+
+        lbDateRegex.setText("Date shell regex(YYYYMMDD digits, [-])");
+        jPanel25.add(lbDateRegex);
+        jPanel25.add(tfDateRegex);
+
+        jpRegEx.add(jPanel25);
+
+        jPanel26.setLayout(new javax.swing.BoxLayout(jPanel26, javax.swing.BoxLayout.LINE_AXIS));
+
+        lbTimeRegex.setText("Time shell regex(HHMMSS digits, [-])");
+        jPanel26.add(lbTimeRegex);
+        jPanel26.add(tfTimeRegex);
+
+        jpRegEx.add(jPanel26);
+
+        jpRange.setLayout(new java.awt.BorderLayout());
 
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
 
@@ -763,10 +791,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel2.add(jPanel7);
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Range select"));
-        jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
-
-        ftHours.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
+        jpRangeSelect.setBorder(javax.swing.BorderFactory.createTitledBorder("Range select"));
+        jpRangeSelect.setLayout(new javax.swing.BoxLayout(jpRangeSelect, javax.swing.BoxLayout.LINE_AXIS));
 
         cbTimeProfile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -781,50 +807,22 @@ public class SettingsPanel extends javax.swing.JPanel {
             .addGroup(jPanel11Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(cbTimeProfile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ftHours, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lHours)
-                .addContainerGap(47, Short.MAX_VALUE))
+                .addContainerGap(197, Short.MAX_VALUE))
         );
         jPanel11Layout.setVerticalGroup(
             jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel11Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cbTimeProfile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ftHours, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lHours))
+                .addComponent(cbTimeProfile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
-        jPanel3.add(jPanel11);
+        jpRangeSelect.add(jPanel11);
 
-        jPanel12.setLayout(new javax.swing.BoxLayout(jPanel12, javax.swing.BoxLayout.PAGE_AXIS));
+        jpRangeParams.setLayout(new java.awt.BorderLayout());
+        jpRangeSelect.add(jpRangeParams);
 
-        jpRange.setLayout(new javax.swing.BoxLayout(jpRange, javax.swing.BoxLayout.PAGE_AXIS));
-
-        jPanel15.setLayout(new javax.swing.BoxLayout(jPanel15, javax.swing.BoxLayout.LINE_AXIS));
-
-        lbDateRegex.setText("Date shell regex(YYYYMMDD digits, [-])");
-        jPanel15.add(lbDateRegex);
-        jPanel15.add(tfDateRegex);
-
-        jpRange.add(jPanel15);
-
-        jPanel14.setLayout(new javax.swing.BoxLayout(jPanel14, javax.swing.BoxLayout.LINE_AXIS));
-
-        lbTimeRegex.setText("Time shell regex(HHMMSS digits, [-])");
-        jPanel14.add(lbTimeRegex);
-        jPanel14.add(tfTimeRegex);
-
-        jpRange.add(jPanel14);
-
-        jPanel12.add(jpRange);
-
-        jPanel3.add(jPanel12);
-
-        jPanel2.add(jPanel3);
+        jPanel2.add(jpRangeSelect);
 
         add(jPanel2);
 
@@ -1194,10 +1192,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
-    private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel13;
-    private javax.swing.JPanel jPanel14;
-    private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel16;
     private javax.swing.JPanel jPanel17;
     private javax.swing.JPanel jPanel18;
@@ -1208,7 +1203,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel22;
     private javax.swing.JPanel jPanel23;
     private javax.swing.JPanel jPanel24;
-    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel25;
+    private javax.swing.JPanel jPanel26;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
@@ -1224,9 +1220,13 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jpAppProperties;
     private javax.swing.JPanel jpApps;
     private javax.swing.JPanel jpAppsBase;
+    private javax.swing.JPanel jpLastFiles;
     private javax.swing.JPanel jpProfile;
     private javax.swing.JPanel jpProfileBase;
     private javax.swing.JPanel jpRange;
+    private javax.swing.JPanel jpRangeParams;
+    private javax.swing.JPanel jpRangeSelect;
+    private javax.swing.JPanel jpRegEx;
     private javax.swing.JTextField jtfOutputDir;
     private javax.swing.JLabel lCommand;
     private javax.swing.JLabel lGrepText;
@@ -1285,10 +1285,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbUseRSync.setSelected(ds.isUseRSync());
         afterActions.setData(ds.getAfterActions());
 
-        initCB(cbTimeProfile, ds.getTimeProfile(), new TimeProfile[]{TimeProfile.VALUE_HOURS, TimeProfile.VALUE_FILES, TimeProfile.REGEX}, null);
+        initCB(cbTimeProfile, ds.getTimeProfile(), new TimeProfile[]{TimeProfile.VALUE_FILES, TimeProfile.REGEX, TimeProfile.RANGE}, null);
 
         ftHours.setText(ds.getHours());
-//        dtRange.setTimeRange(ds.getTimeRange());
+        dtRange.setTimeRange(ds.getTimeRange());
         timeProfileChanged((TimeProfile) cbTimeProfile.getSelectedItem());
         tfDateRegex.setText(ds.getDateSpec());
         tfTimeRegex.setText(ds.getTimeSpec());
@@ -1330,7 +1330,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         ds.setHours(ftHours.getText());
         ds.setActionCommand((GetCommand) cbCommand.getSelectedItem());
 //        ds.setAfterActions(afterActions.getData());
-//        ds.setTimeRange(dtRange.getTimeRangeAlways());
+        ds.setTimeRange(dtRange.getTimeRangeAlways());
         ds.setCMDDate(tfDateRegex.getText());
         ds.setCMDTime(tfTimeRegex.getText());
 
@@ -1357,13 +1357,35 @@ public class SettingsPanel extends javax.swing.JPanel {
     }
 
     private void timeProfileChanged(TimeProfile timeProfile) {
-        ftHours.setEnabled(timeProfile == TimeProfile.VALUE_HOURS || timeProfile == TimeProfile.VALUE_FILES);
-        lHours.setEnabled(timeProfile == TimeProfile.VALUE_HOURS || timeProfile == TimeProfile.VALUE_FILES);
-        lHours.setText(((timeProfile == TimeProfile.REGEX) ? "" : ((timeProfile == TimeProfile.VALUE_FILES) ? "files" : "hours")));
-        lbDateRegex.setEnabled(timeProfile == TimeProfile.REGEX);
-        lbTimeRegex.setEnabled(timeProfile == TimeProfile.REGEX);
-        tfDateRegex.setEnabled(timeProfile == TimeProfile.REGEX);
-        tfTimeRegex.setEnabled(timeProfile == TimeProfile.REGEX);
+        jpRangeParams.removeAll();
+        JPanel jpToAdd = null;
+        switch (timeProfile) {
+            case REGEX:
+                jpToAdd = jpRegEx;
+                break;
+            case RANGE:
+                jpToAdd = jpRange;
+
+                break;
+            case VALUE_FILES:
+                jpToAdd = jpLastFiles;
+                break;
+        }
+        if (jpToAdd != null) {
+            LayoutManager layout = jpRangeParams.getLayout();
+            jpRangeParams.add(jpToAdd);
+//            jpToAdd.setVisible(true);
+//            jpToAdd.invalidate();
+            jpRangeSelect.revalidate();
+//            jpRangeSelect.repaint();
+        }
+//        ftHours.setEnabled(timeProfile == TimeProfile.VALUE_HOURS || timeProfile == TimeProfile.VALUE_FILES);
+//        lHours.setEnabled(timeProfile == TimeProfile.VALUE_HOURS || timeProfile == TimeProfile.VALUE_FILES);
+//        lHours.setText(((timeProfile == TimeProfile.REGEX) ? "" : ((timeProfile == TimeProfile.VALUE_FILES) ? "files" : "hours")));
+//        lbDateRegex.setEnabled(timeProfile == TimeProfile.REGEX);
+//        lbTimeRegex.setEnabled(timeProfile == TimeProfile.REGEX);
+//        tfDateRegex.setEnabled(timeProfile == TimeProfile.REGEX);
+//        tfTimeRegex.setEnabled(timeProfile == TimeProfile.REGEX);
     }
 
     private void updateLFMTs() {
@@ -1419,17 +1441,19 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private boolean hasCheckedApp(DownloadSettings.AppProfile elementAt) {
         for (DownloadSettings.App app : elementAt.getApps()) {
-            if(app.isChecked())
+            if (app.isChecked()) {
                 return true;
+            }
         }
-        return false;        
+        return false;
     }
 
     public enum TimeProfile {
 
         VALUE_HOURS("Last hours:"),
         VALUE_FILES("Last files:"),
-        REGEX("Date/Time shell regex");
+        REGEX("Date/Time shell regex"),
+        RANGE("Should cover range");
 
         private final String name;
 

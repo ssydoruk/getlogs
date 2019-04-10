@@ -33,7 +33,6 @@ public class DownloadSettings {
     private boolean lcaLogs;
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
-
     private ArrayList<Pair<String, Boolean>> afterActions;
 
     public ArrayList<Pair<String, Boolean>> getAfterActions() {
