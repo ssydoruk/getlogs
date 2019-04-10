@@ -111,7 +111,7 @@ public class SettingsPanel extends javax.swing.JPanel {
      */
     public SettingsPanel() {
         initComponents();
-        dtRange = new TDateRange(false);
+        dtRange = new TDateRange(true);
         jpRange.add(dtRange);
 
         TitledBorder border = (TitledBorder) jpProfileBase.getBorder();
@@ -576,7 +576,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel20 = new javax.swing.JPanel();
         jPanel22 = new javax.swing.JPanel();
         cbUseRSync = new javax.swing.JCheckBox();
-        cbListFiles = new javax.swing.JCheckBox();
         jPanel23 = new javax.swing.JPanel();
         cbLCALogs = new javax.swing.JCheckBox();
         cbAppLogs = new javax.swing.JCheckBox();
@@ -853,9 +852,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         cbUseRSync.setText("Use RSync");
         jPanel22.add(cbUseRSync, java.awt.BorderLayout.CENTER);
-
-        cbListFiles.setText("list files (directories only if unchecked)");
-        jPanel22.add(cbListFiles, java.awt.BorderLayout.PAGE_START);
 
         jPanel20.add(jPanel22);
 
@@ -1182,7 +1178,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbLCALogs;
     private javax.swing.JComboBox cbLFMTs;
     private javax.swing.JCheckBox cbLfmtLog;
-    private javax.swing.JCheckBox cbListFiles;
     private javax.swing.JCheckBox cbProdLog;
     private javax.swing.JComboBox<String> cbTimeProfile;
     private javax.swing.JCheckBox cbUseRSync;
@@ -1276,7 +1271,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void loadConfig() {
         loadProfile(null);
 
-        cbListFiles.setSelected(ds.isListFiles());
+//        cbListFiles.setSelected(ds.isListFiles());
         cbLfmtLog.setSelected(ds.isLfmt());
         cbProdLog.setSelected(ds.isProd());
         cbAppLogs.setSelected(ds.isAppLogs());
@@ -1319,7 +1314,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     public void saveConfig() {
         ds.setUseRSync(cbUseRSync.isSelected());
-        ds.setListFiles(cbListFiles.isSelected());
+//        ds.setListFiles(cbListFiles.isSelected());
         ds.setGrepText(tfGrepText.getText());
         ds.setOutputDir(jtfOutputDir.getText());
         ds.setLfmt(cbLfmtLog.isSelected());
@@ -1396,7 +1391,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void cbCommandSelectionChanged(GetCommand getCommand) {
         cbUseRSync.setEnabled(getCommand == GetCommand.GET || getCommand == GetCommand.GREPGET);
-        cbListFiles.setEnabled(getCommand == GetCommand.LS);
+//        cbListFiles.setEnabled(getCommand == GetCommand.LS);
         tfGrepText.setEnabled(getCommand == GetCommand.GREP || getCommand == GetCommand.GREPGET);
         lGrepText.setEnabled(getCommand == GetCommand.GREP || getCommand == GetCommand.GREPGET);
 

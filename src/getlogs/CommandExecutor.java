@@ -7,6 +7,7 @@ package getlogs;
 
 import Utils.Pair;
 import Utils.ScreenInfo;
+import Utils.UTCTimeRange;
 import Utils.UnixProcess.ExtProcess;
 import static Utils.Util.rSyncAddClause;
 import static Utils.Util.stripDir;
@@ -23,6 +24,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -367,9 +369,41 @@ public class CommandExecutor {
 
         } else {
             lsFiles = new ArrayList<>();
+            boolean startFound = false;
             for (String string : procSSH.getSTDOut()) {
 //                lsTab.addRow(appProfile, ap, theAppHost, string, logsDir.toString(), isLFMT, lcaLog);
-                lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
+                if (ds.getTimeProfile() == SettingsPanel.TimeProfile.RANGE) {
+                    long utcTime = appProfile.getFileNameTime(string);
+                    boolean shouldAdd = true;
+                    if (utcTime > 0) { // was able to parse time name
+                        UTCTimeRange timeRange = ds.getTimeRange();
+                        if (utcTime > timeRange.getEnd()) {
+                            shouldAdd = false;
+                        } else {
+                            if ((utcTime > timeRange.getStart())) {
+                                shouldAdd = true;
+                            } else {
+                                /*so the assumption is that files are always sorted*/
+                                if (startFound == false) {
+                                    startFound = true;
+                                    shouldAdd = true;
+                                } else {
+                                    shouldAdd = false;
+                                }
+                            }
+                        }
+                    }
+                    logger.debug("file [" + string + "]"
+                            //                                +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime > timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime < timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
+                            + " shouldadd: " + shouldAdd
+                    );
+                    if (shouldAdd) {
+                        lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
+                    }
+
+                } else {
+                    lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
+                }
             }
             SettingsDialog.info("ls successful for [" + appProfile.getName() + "] + app[" + ap + "]" + ((isLFMT) ? " on LFMT" : "") + " : got " + lsFiles.size() + " files");
             ArrayList<String> errBuf = procSSH.getErrBuf();
@@ -379,7 +413,9 @@ public class CommandExecutor {
 
             }
         }
+
         extProcessManager.doneProcess(procSSH);
+
         ((AbstractTableModel) lsTab.getModel()).fireTableDataChanged();
         return lsFiles;
 
@@ -585,6 +621,7 @@ public class CommandExecutor {
         logger.debug("process terminated, result: " + waitFor);
 
         extProcessManager.doneProcess(procRSync);
+
     }
 
     class ExtProcessApp extends ExtProcess {
@@ -997,10 +1034,14 @@ public class CommandExecutor {
                     ArrayList<String> value = entry.getValue();
                     try {
                         executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
+
                     } catch (IOException ex) {
-                        Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                        Logger.getLogger(CommandExecutor.class
+                                .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                        Logger.getLogger(CommandExecutor.class
+                                .getName()).log(java.util.logging.Level.SEVERE, null, ex);
                     }
 
                 }
@@ -1070,6 +1111,7 @@ public class CommandExecutor {
 
     private void cancel() {
         extProcessManager.cancelAll();
+
     }
 
     /**
@@ -1241,6 +1283,7 @@ public class CommandExecutor {
             }
             if (executor.isTerminated()) {
                 logger.error("executor terminated");
+
             }
         }
     }
@@ -1476,6 +1519,7 @@ public class CommandExecutor {
         tsk.setRp(rp);
 
         tsk.execute();
+
     }
 
     static class JTableFileEntry {
