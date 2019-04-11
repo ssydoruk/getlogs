@@ -370,30 +370,35 @@ public class CommandExecutor {
         } else {
             lsFiles = new ArrayList<>();
             boolean startFound = false;
+            String savedPrefix = null;
             for (String string : procSSH.getSTDOut()) {
 //                lsTab.addRow(appProfile, ap, theAppHost, string, logsDir.toString(), isLFMT, lcaLog);
                 if (ds.getTimeProfile() == SettingsPanel.TimeProfile.RANGE) {
-                    long utcTime = appProfile.getFileNameTime(string);
+                    Pair<Long, String> utcTime = appProfile.getFileNameTime(string);
                     boolean shouldAdd = true;
-                    if (utcTime > 0) { // was able to parse time name
-                        UTCTimeRange timeRange = ds.getTimeRange();
-                        if (utcTime > timeRange.getEnd()) {
+                    UTCTimeRange timeRange = ds.getTimeRange();
+                    if (utcTime != null) { // was able to parse time name
+                        if (utcTime.getKey() > timeRange.getEnd()) {
                             shouldAdd = false;
                         } else {
-                            if ((utcTime > timeRange.getStart())) {
+                            if ((utcTime.getKey() > timeRange.getStart())) {
                                 shouldAdd = true;
                             } else {
                                 /*so the assumption is that files are always sorted*/
                                 if (startFound == false) {
                                     startFound = true;
+                                    savedPrefix = utcTime.getValue();
                                     shouldAdd = true;
                                 } else {
+                                    if (savedPrefix == null || !savedPrefix.equals(utcTime.getValue())) {
+                                        startFound = false;
+                                    }
                                     shouldAdd = false;
                                 }
                             }
                         }
                     }
-                    logger.debug("file [" + string + "]"
+                    logger.debug("file [" + string + "] range: " + timeRange.toString()
                             //                                +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime > timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime < timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
                             + " shouldadd: " + shouldAdd
                     );
