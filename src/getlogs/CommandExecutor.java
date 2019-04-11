@@ -398,7 +398,7 @@ public class CommandExecutor {
                             }
                         }
                     }
-                    logger.debug("file [" + string + "] range: " + timeRange.toString()
+                    logger.info("file [" + string + "] range: " + timeRange.toString()
                             //                                +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime > timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime < timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
                             + " shouldadd: " + shouldAdd
                     );
