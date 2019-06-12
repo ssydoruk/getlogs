@@ -503,7 +503,6 @@ public class GetLogs {
 
             Configurator.initialize(builder.build());
 //        System.out.println(builder.toXmlConfiguration());
-            logger = logger;
             logger.info("log initialized");
         }
 //        LogWindow.initCustomLogger();

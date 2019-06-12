@@ -5,6 +5,7 @@
  */
 package getlogs;
 
+import Utils.ValuesEditor;
 import Utils.Pair;
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.CheckBoxListSelectionModel;

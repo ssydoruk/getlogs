@@ -5,6 +5,7 @@
  */
 package getlogs;
 
+import Utils.ValuesEditor;
 import Utils.Pair;
 import static Utils.ScreenInfo.CenterWindow;
 import Utils.TDateRange;
