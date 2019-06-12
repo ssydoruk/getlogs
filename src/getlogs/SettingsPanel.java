@@ -368,9 +368,13 @@ public class SettingsPanel extends javax.swing.JPanel {
 //                        clbAppSelectionModel.addSelectionInterval(maxIndex, maxIndex);
         clbAppSelectionModel.clearSelection();
         lmApps.clear();
-        for (DownloadSettings.App app : pr.getApps()) {
+        List<DownloadSettings.App> apps = new ArrayList<>(pr.getApps());
+        Collections.sort(apps);
+        for (DownloadSettings.App app : apps) {
             lmApps.addElement(app);
         }
+//        Collections.sort( lmApps);
+        
         if (!lmApps.isEmpty()) {
             lmApps.insertElementAt(CheckBoxList.ALL_ENTRY, 0);
             for (int i = 1; i < lmApps.getSize(); i++) {

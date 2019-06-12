@@ -491,7 +491,7 @@ public class DownloadSettings {
 
     }
 
-    static public class App {
+    static public class App implements Comparable {
 
         private String name;
         private boolean checked;
@@ -523,6 +523,14 @@ public class DownloadSettings {
         public String toString() {
 //            System.out.println("--"+name);
             return name; //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            if(o instanceof App){
+                return this.getName().compareTo(((App)o).getName());
+            }
+            return 0;
         }
 
     }
