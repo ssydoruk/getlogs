@@ -217,6 +217,12 @@ public class SettingsPanel extends javax.swing.JPanel {
 //            }
 //        });
 //        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        tfGrepText.setMaximumSize(new Dimension(tfGrepText.getMaximumSize().width, tfGrepText.getMinimumSize().height));
+        jtfOutputDir.setMaximumSize(new Dimension(jtfOutputDir.getMaximumSize().width, jtfOutputDir.getMinimumSize().height));
+        tfDateRegex.setMaximumSize(new Dimension(tfDateRegex.getMaximumSize().width, tfDateRegex.getMinimumSize().height));
+        tfTimeRegex.setMaximumSize(new Dimension(tfTimeRegex.getMaximumSize().width, tfTimeRegex.getMinimumSize().height));
+        ftHours.setMaximumSize(new Dimension(ftHours.getMaximumSize().width, ftHours.getMinimumSize().height));
+        jpCommandParams.setMaximumSize(new Dimension(jpCommandParams.getMaximumSize().width, jpCommandParams.getMinimumSize().height));
     }
 
     private void tfFilenameSuffixesChanged() {
@@ -374,7 +380,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             lmApps.addElement(app);
         }
 //        Collections.sort( lmApps);
-        
+
         if (!lmApps.isEmpty()) {
             lmApps.insertElementAt(CheckBoxList.ALL_ENTRY, 0);
             for (int i = 1; i < lmApps.getSize(); i++) {
@@ -573,7 +579,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbTimeProfile = new javax.swing.JComboBox<>();
         jpRangeParams = new javax.swing.JPanel();
         jPanel9 = new javax.swing.JPanel();
-        jPanel19 = new javax.swing.JPanel();
+        jpCommandParams = new javax.swing.JPanel();
         jPanel16 = new javax.swing.JPanel();
         lCommand = new javax.swing.JLabel();
         cbCommand = new javax.swing.JComboBox();
@@ -587,7 +593,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel21 = new javax.swing.JPanel();
         lGrepText = new javax.swing.JLabel();
         tfGrepText = new javax.swing.JTextField();
-        jPanel17 = new javax.swing.JPanel();
+        jpDownloadParams = new javax.swing.JPanel();
         jPanel24 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jtfOutputDir = new javax.swing.JTextField();
@@ -798,28 +804,14 @@ public class SettingsPanel extends javax.swing.JPanel {
         jpRangeSelect.setBorder(javax.swing.BorderFactory.createTitledBorder("Range select"));
         jpRangeSelect.setLayout(new javax.swing.BoxLayout(jpRangeSelect, javax.swing.BoxLayout.LINE_AXIS));
 
+        jPanel11.setLayout(new javax.swing.BoxLayout(jPanel11, javax.swing.BoxLayout.LINE_AXIS));
+
         cbTimeProfile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbTimeProfileActionPerformed(evt);
             }
         });
-
-        javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
-        jPanel11.setLayout(jPanel11Layout);
-        jPanel11Layout.setHorizontalGroup(
-            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel11Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(cbTimeProfile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(197, Short.MAX_VALUE))
-        );
-        jPanel11Layout.setVerticalGroup(
-            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel11Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(cbTimeProfile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
+        jPanel11.add(cbTimeProfile);
 
         jpRangeSelect.add(jPanel11);
 
@@ -832,7 +824,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel9.setLayout(new javax.swing.BoxLayout(jPanel9, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel19.setLayout(new javax.swing.BoxLayout(jPanel19, javax.swing.BoxLayout.LINE_AXIS));
+        jpCommandParams.setLayout(new javax.swing.BoxLayout(jpCommandParams, javax.swing.BoxLayout.LINE_AXIS));
 
         jPanel16.setLayout(new javax.swing.BoxLayout(jPanel16, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -847,7 +839,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         });
         jPanel16.add(cbCommand);
 
-        jPanel19.add(jPanel16);
+        jpCommandParams.add(jPanel16);
 
         jPanel18.setLayout(new javax.swing.BoxLayout(jPanel18, javax.swing.BoxLayout.PAGE_AXIS));
 
@@ -890,11 +882,11 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel18.add(jPanel21);
 
-        jPanel19.add(jPanel18);
+        jpCommandParams.add(jPanel18);
 
-        jPanel9.add(jPanel19);
+        jPanel9.add(jpCommandParams);
 
-        jPanel17.setLayout(new javax.swing.BoxLayout(jPanel17, javax.swing.BoxLayout.PAGE_AXIS));
+        jpDownloadParams.setLayout(new javax.swing.BoxLayout(jpDownloadParams, javax.swing.BoxLayout.PAGE_AXIS));
 
         jPanel24.setLayout(new javax.swing.BoxLayout(jPanel24, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -910,13 +902,13 @@ public class SettingsPanel extends javax.swing.JPanel {
         });
         jPanel24.add(jbSelectDirectory);
 
-        jPanel17.add(jPanel24);
+        jpDownloadParams.add(jPanel24);
 
         pAfterActions.setBorder(javax.swing.BorderFactory.createTitledBorder("Post download actions"));
-        pAfterActions.setLayout(new java.awt.BorderLayout());
-        jPanel17.add(pAfterActions);
+        pAfterActions.setLayout(new javax.swing.BoxLayout(pAfterActions, javax.swing.BoxLayout.LINE_AXIS));
+        jpDownloadParams.add(pAfterActions);
 
-        jPanel9.add(jPanel17);
+        jPanel9.add(jpDownloadParams);
 
         add(jPanel9);
     }// </editor-fold>//GEN-END:initComponents
@@ -1194,9 +1186,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel16;
-    private javax.swing.JPanel jPanel17;
     private javax.swing.JPanel jPanel18;
-    private javax.swing.JPanel jPanel19;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel20;
     private javax.swing.JPanel jPanel21;
@@ -1220,6 +1210,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jpAppProperties;
     private javax.swing.JPanel jpApps;
     private javax.swing.JPanel jpAppsBase;
+    private javax.swing.JPanel jpCommandParams;
+    private javax.swing.JPanel jpDownloadParams;
     private javax.swing.JPanel jpLastFiles;
     private javax.swing.JPanel jpProfile;
     private javax.swing.JPanel jpProfileBase;
@@ -1283,7 +1275,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbLCALogs.setSelected(ds.isLcaLogs());
         jtfOutputDir.setText(ds.getOutputDir());
         cbUseRSync.setSelected(ds.isUseRSync());
-        afterActions.setData(ds.getAfterActions());
+        afterActions.setData(ds.getAfterActions(), true);
+//        afterActions.setMaximumSize(new Dimension(afterActions.getMaximumSize().width, afterActions.getHeight()));
+//        pAfterActions.setMaximumSize(new Dimension(pAfterActions.getMaximumSize().width, afterActions.getHeight()));
 
         initCB(cbTimeProfile, ds.getTimeProfile(), new TimeProfile[]{TimeProfile.VALUE_FILES, TimeProfile.REGEX, TimeProfile.RANGE}, null);
 
@@ -1376,6 +1370,8 @@ public class SettingsPanel extends javax.swing.JPanel {
             jpRangeParams.add(jpToAdd);
 //            jpToAdd.setVisible(true);
 //            jpToAdd.invalidate();
+            jpRangeParams.setMaximumSize(new Dimension(jpRangeParams.getMaximumSize().width, jpRangeParams.getMinimumSize().height));
+
             jpRangeSelect.revalidate();
 //            jpRangeSelect.repaint();
         }

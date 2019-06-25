@@ -10,6 +10,7 @@ import Utils.Pair;
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.CheckBoxListSelectionModel;
 import com.jidesoft.swing.SearchableUtils;
+import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -302,6 +303,12 @@ public class StringListEdit extends JPanel {
         }
         return stringsEditor;
 
+    }
+
+    void setData(ArrayList<Pair<String, Boolean>> afterActions, boolean b) {
+        setData(afterActions);
+        clbItems.setVisibleRowCount(lmItems.getSize());
+        clbItems.setMaximumSize(new Dimension(clbItems.getMaximumSize().width, clbItems.getMinimumSize().height));
     }
 
     public interface IDataChangedFun {
