@@ -404,7 +404,11 @@ public class SettingsPanel extends javax.swing.JPanel {
             DefaultComboBoxModel<DownloadSettings.LFMTHostInstance> mod = (DefaultComboBoxModel<DownloadSettings.LFMTHostInstance>) cbLFMTs.getModel();
             for (int i = 0; i < mod.getSize(); i++) {
                 DownloadSettings.LFMTHostInstance inst = mod.getElementAt(i);
-                if (inst.getHost().equals(lfmtHostInstance.getHost())
+                logger.info(inst);
+                if (inst != null && inst.getHost() != null
+                        && inst.getInstance() != null
+                        && inst.getBaseDir() != null
+                        && inst.getHost().equals(lfmtHostInstance.getHost())
                         && inst.getInstance().equals(lfmtHostInstance.getInstance())
                         && inst.getBaseDir().equals(lfmtHostInstance.getBaseDir())) {
                     sel = i;

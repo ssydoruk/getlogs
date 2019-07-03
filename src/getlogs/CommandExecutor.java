@@ -641,12 +641,36 @@ public class CommandExecutor {
             this.app = ap;
         }
 
+        private String msgPrefix = null;
+
+        private String genLogMsg(String s, boolean isErr) {
+            if (msgPrefix == null) {
+                StringBuilder msg = new StringBuilder();
+                if (profile != null) {
+                    msg.append("[").append(profile).append("]");
+                }
+                if (app != null) {
+
+                    msg.append("/[").append(app.getName()).append("(").append(GetLogs.getHosts().lookupHost(app.getName())).append(")] - ");
+
+                }
+                msgPrefix = msg.toString();
+            }
+            StringBuilder ret = new StringBuilder(msgPrefix);
+            if (isErr) {
+                ret.append(" !ERR! ");
+            }
+            ret.append(s);
+            return ret.toString();
+
+        }
+
         private void initLogBack(boolean logStdin, boolean logStdout) {
             if (logStdin) {
                 setStdinReadProc(new IProcessOutputRead() {
                     @Override
                     public void lineRead(String s) {
-                        logMessage(Level.INFO, s);
+                        logMessage(Level.INFO, genLogMsg(s, false));
                     }
                 });
             }
@@ -655,19 +679,11 @@ public class CommandExecutor {
                 setStderrReadProc(new IProcessOutputRead() {
                     @Override
                     public void lineRead(String s) {
-                        StringBuilder msg = new StringBuilder();
-                        if (profile != null) {
-                            msg.append("[").append(profile).append("]");
-                        }
-                        if (app != null) {
 
-                            msg.append(" a[").append(app.getName()).append("(").append(GetLogs.getHosts().lookupHost(app.getName())).append(")]");
-                            msg.append(" cmd[" + getCmd() + "]");
-                        }
-                        msg.append("! ").append(s);
-                        logMessage(Level.ERROR, msg.toString());
+                        logMessage(Level.ERROR, genLogMsg(s, true));
 
                     }
+
                 });
             }
         }
