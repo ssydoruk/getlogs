@@ -5,6 +5,7 @@
  */
 package getlogs;
 
+import Utils.Pair;
 import Utils.ScreenInfo;
 import Utils.UnixProcess.ExtProcess;
 import static Utils.Util.rSyncAddClause;
@@ -379,15 +380,16 @@ public class GetLogs {
     }
 
     public static void processApp(String ap, Options options) throws IOException, InterruptedException {
-        String theAppHost;
+        Pair<String, String> theAppHost = null;
+
         if (appHost == null || appHost.isEmpty()) {
-            theAppHost = (String) hosts.get(ap); // first for one application only
+            theAppHost = hosts.get(ap); // first for one application only
             if (theAppHost == null) {
                 System.out.println("Host for app [" + ap + "] not found; exiting");
                 return;
             }
         } else {
-            theAppHost = appHost;
+            theAppHost = new Pair(appHost, null);
         }
 
         StringBuilder logsDir = new StringBuilder();
@@ -417,19 +419,19 @@ public class GetLogs {
 
         switch (execCommand) {
             case GREP:
-                executeGrep(ap, theAppHost, logsDir, fileNameClause);
+                executeGrep(ap, theAppHost.getKey(), logsDir, fileNameClause);
                 break;
 
             case GET:
-                executeGet(ap, theAppHost, logsDir, fileNameClause, useRSync);
+                executeGet(ap, theAppHost.getKey(), logsDir, fileNameClause, useRSync);
                 break;
 
             case LS:
-                executeLS(ap, theAppHost, logsDir, fileNameClause);
+                executeLS(ap, theAppHost.getKey(), logsDir, fileNameClause);
                 break;
 
             case GREPGET:
-                executeGrepGet(ap, theAppHost, logsDir, fileNameClause);
+                executeGrepGet(ap, theAppHost.getKey(), logsDir, fileNameClause);
                 break;
 
         }
@@ -754,8 +756,6 @@ public class GetLogs {
         executeRSync(ap, theAppHost, logsDir, rSyncFiles);
     }
 
-
-
     private static void executeRSync(String ap, String theAppHost, StringBuilder logsDir, ArrayList<String> fileNameClause) throws IOException, InterruptedException {
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
@@ -951,12 +951,12 @@ public class GetLogs {
         } else {
             ds = new DownloadSettings();
             HashSet<DownloadSettings.App> apps = ds.addProfile("SIP").getApps();
-            apps.add(new DownloadSettings.App("sip1"));
-            apps.add(new DownloadSettings.App("sip2"));
+            apps.add(new DownloadSettings.App("sip1", null));
+            apps.add(new DownloadSettings.App("sip2", null));
 
             apps = ds.addProfile("Routing").getApps();
-            apps.add(new DownloadSettings.App("URS1"));
-            apps.add(new DownloadSettings.App("ORS2"));
+            apps.add(new DownloadSettings.App("URS1", null));
+            apps.add(new DownloadSettings.App("ORS2", null));
         }
         showGui(ds);
     }
@@ -1034,7 +1034,7 @@ public class GetLogs {
             addProfile.setIsGenesysName(!bIsCloud);
             addProfile.setLFMT(theLFMT);
             for (String app : apps) {
-                DownloadSettings.App theApp = addProfile.addApp(app);
+                DownloadSettings.App theApp = addProfile.addApp(app, null);
                 theApp.setChecked(true);
                 processApp(app, options);
             }

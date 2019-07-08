@@ -206,15 +206,15 @@ public class CommandExecutor {
 
     public void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws IOException, InterruptedException {
         SettingsDialog.info("executing for profile [" + appProfile.toString() + "] ap[" + ap + "] lfmt:" + isLFMT);
-        String theAppHost;
+        HostAppdir theAppHost = null;
         if (GetLogs.appHost == null || GetLogs.appHost.isEmpty()) {
-            theAppHost = (String) GetLogs.getHosts().get(ap.getName()); // first for one application only
+            theAppHost = GetLogs.getHosts().get(ap.getName()); // first for one application only
             if (theAppHost == null) {
                 GetLogs.exitHelp("Host for app [" + ap + "] not found; exiting");
                 return;
             }
         } else {
-            theAppHost = GetLogs.appHost;
+            theAppHost = new HostAppdir(GetLogs.appHost, null);
         }
 
         StringBuilder logsDir = new StringBuilder();
@@ -267,7 +267,7 @@ public class CommandExecutor {
 
     }
 
-    public SavedSearchStorage getStorage(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog) {
+    public SavedSearchStorage getStorage(AppProfile appProfile, App ap, HostAppdir theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog) {
         SavedSearchStorage _ret = new SavedSearchStorage(appProfile, ap, theAppHost, logsDir, lfmt, lcaLog);
 
         synchronized (savedSearch) {
@@ -286,7 +286,7 @@ public class CommandExecutor {
     ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
-    private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir,
+    private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir,
             ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<JTableFileEntry> lsFiles = null;
         ArrayList<String> sshParams = new ArrayList<>();
@@ -303,7 +303,7 @@ public class CommandExecutor {
         if (isLFMT) {
             sshParams.add(appProfile.getLFMT().getHost());
         } else {
-            sshParams.add(theAppHost);
+            sshParams.add(theAppHost.getHost());
         }
 
         StringBuilder sshCmd = new StringBuilder();
@@ -330,7 +330,7 @@ public class CommandExecutor {
         //this is used for testing
 //        sshCmd.append(" pwd; echo \\$ext; echo \\${ext}; ");
         sshCmd.append(" find ")
-                .append((lcaLog) ? "lca" : ap)
+                .append((lcaLog) ? "lca" : ap.getAppDir())
                 .append(" -name \\${ext} ");
 //        sshCmd.append(" -a -type f ");
         if (appProfile.isIsGenesysName()) {
@@ -455,7 +455,7 @@ public class CommandExecutor {
 
     }
 
-    private void executeGrepGet(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+    private void executeGrepGet(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<String> executeGrep = executeGrep(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         ArrayList<String> rSyncFiles = new ArrayList<>();
         for (String fileName : executeGrep) {
@@ -466,7 +466,7 @@ public class CommandExecutor {
     }
 
     private ArrayList<String> executeGrep(AppProfile appProfile, DownloadSettings.App ap,
-            String appHost1, String logsDir, ArrayList<StringBuilder> fileNameClause,
+            HostAppdir appHost1, String logsDir, ArrayList<StringBuilder> fileNameClause,
             boolean isLFMT, boolean isLCA) throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
         sshParams.add("ssh");
@@ -480,7 +480,7 @@ public class CommandExecutor {
             }
             sshParams.add(lfmt1.getHost());
         } else {
-            sshParams.add(appHost1);
+            sshParams.add(appHost1.getHost());
         }
 
         StringBuilder fileClause = new StringBuilder();
@@ -573,7 +573,7 @@ public class CommandExecutor {
      * @throws IOException
      * @throws InterruptedException
      */
-    private void executeRSync(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+    private void executeRSync(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
         rsyncParams.add("-avz");
@@ -598,11 +598,11 @@ public class CommandExecutor {
                 return;
             }
             srcSpec.append(lfmtHostInstance.getHost()).append(":")
-                    .append(logsDir).append("/").append((lcaLog) ? "lca" : ap).append("/").append("");
+                    .append(logsDir).append("/").append((lcaLog) ? "lca" : (theAppHost.getAppDir() != null ? theAppHost.getAppDir() : ap)).append("/").append("");
 
         } else {
-            srcSpec.append(theAppHost).append(":")
-                    .append(logsDir).append("/").append((lcaLog) ? "lca" : ap).append("/").append("");
+            srcSpec.append(theAppHost.getHost()).append(":")
+                    .append(logsDir).append("/").append((lcaLog) ? "lca" : (theAppHost.getAppDir() != null ? theAppHost.getAppDir() : ap)).append("/").append("");
 
         }
 
@@ -611,7 +611,7 @@ public class CommandExecutor {
         StringBuilder dstSpec = new StringBuilder();
         dstSpec.append(ds.getOutputDir()).append("/");
         if (lcaLog) {
-            dstSpec.append(theAppHost).append("/").append("lca");
+            dstSpec.append(theAppHost.getHost()).append("/").append("lca");
         } else {
             dstSpec.append(ap);
         }
@@ -737,7 +737,7 @@ public class CommandExecutor {
 
     }
 
-    private void executeGet(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean useRSync1, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+    private void executeGet(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean useRSync1, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         if (useRSync1) {
             executeRSync(appProfile, ap, theAppHost, logsDir, rSyncAddClause(fileNameClause.toString()), isLFMT, lcaLog);
         } else {
@@ -759,7 +759,7 @@ public class CommandExecutor {
                 sshParams.add(lfmtHostInstance.getHost());
 
             } else {
-                sshParams.add(theAppHost);
+                sshParams.add(theAppHost.getHost());
 
             }
 
@@ -898,7 +898,7 @@ public class CommandExecutor {
         return ret1;
     }
 
-    private ArrayList<JTableFileEntry> executeCmd(AppProfile appProfile, DownloadSettings.App ap, String theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean isLCALog) {
+    private ArrayList<JTableFileEntry> executeCmd(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean isLCALog) {
         try {
             switch (ds.getActionCommand()) {
                 case GREP:
@@ -1608,10 +1608,10 @@ public class CommandExecutor {
         private final boolean lfmt;
         private final String logsDir;
         private final App ap;
-        private final String appHost;
+        private final HostAppdir appHost;
         AppProfile appProfile;
 
-        SavedSearchStorage(AppProfile appProfile, App ap, String theAppHost, String logsDir, boolean lfmt, boolean lcaLog) {
+        SavedSearchStorage(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, boolean lfmt, boolean lcaLog) {
             this.appProfile = appProfile;
             this.ap = ap;
             this.appHost = theAppHost;
@@ -1651,7 +1651,7 @@ public class CommandExecutor {
             return ap;
         }
 
-        public String getAppHost() {
+        public HostAppdir getAppHost() {
             return appHost;
         }
     }

@@ -394,8 +394,8 @@ public class DownloadSettings {
             return Name;
         }
 
-        App addApp(String app) {
-            App ret = new App(app);
+        App addApp(String app, String appDir) {
+            App ret = new App(app, appDir);
             apps.add(ret);
             return ret;
         }
@@ -494,6 +494,19 @@ public class DownloadSettings {
     static public class App implements Comparable {
 
         private String name;
+        private String appDir;
+
+        public String getAppDir() {
+            if (appDir != null && !appDir.isEmpty()) {
+                return appDir;
+            } else {
+                return name;
+            }
+        }
+
+        public void setAppDir(String appDir) {
+            this.appDir = appDir;
+        }
         private boolean checked;
 
         public boolean isChecked() {
@@ -501,7 +514,7 @@ public class DownloadSettings {
         }
 
         public void setChecked(boolean checked) {
-            logger.debug(this.toString() + " set cheked " + checked);
+            logger.debug(this.toString() + " set checked " + checked);
             this.checked = checked;
         }
 
@@ -510,12 +523,13 @@ public class DownloadSettings {
         }
 
         public App(App app) {
-            this(app.getName());
+            this(app.getName(), app.getAppDir());
 
         }
 
-        public App(String n) {
+        public App(String n, String appDir) {
             name = n;
+            this.appDir = appDir;
 
         }
 
@@ -527,8 +541,8 @@ public class DownloadSettings {
 
         @Override
         public int compareTo(Object o) {
-            if(o instanceof App){
-                return this.getName().compareTo(((App)o).getName());
+            if (o instanceof App) {
+                return this.getName().compareTo(((App) o).getName());
             }
             return 0;
         }

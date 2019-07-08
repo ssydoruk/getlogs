@@ -1046,7 +1046,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             for (int selectedRow : selectedRows) {
                 String app = (String) infoTableModel.getValueAt(selectedRow, 0);
 
-                DownloadSettings.App addApp = profile.addApp(app);
+                DownloadSettings.App addApp = profile.addApp(app, GetLogs.getHosts().getAppDir(app));
 //                lmApps.addElement(addApp);
 //                selValues.add((String) infoTableModel.getValueAt(selectedRow, 0));
             }

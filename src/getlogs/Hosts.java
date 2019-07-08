@@ -5,6 +5,7 @@
  */
 package getlogs;
 
+import Utils.Pair;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,9 +16,12 @@ import org.apache.logging.log4j.LogManager;
 
 /**
  *
- * @author stepansydoruk
+ * @author stepansydoruk class contain hosts configuration as read from file.
+ *
+ * Lines in the file: host,app[,applicationDirectory]
+ *
  */
-class Hosts extends HashMap<String, String> {
+class Hosts extends HashMap<String, HostAppdir> {
 
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
@@ -33,7 +37,11 @@ class Hosts extends HashMap<String, String> {
             String[] split = st.split(",");
             if (split.length > 1) {
                 // So expecting first field to be host name and the second to be application
-                put(split[1], split[0]);
+                if (split.length > 2) {
+                    put(split[1], new getlogs.HostAppdir(split[0], split[2]));
+                } else {
+                    put(split[1], new getlogs.HostAppdir(split[0], null));
+                }
                 cnt++;
 
             }
@@ -42,12 +50,28 @@ class Hosts extends HashMap<String, String> {
         logger.debug("Read " + cnt + " records");
     }
 
-    String lookupHost(String app) {
-        String ret = get(app);
-        if (ret == null || ret.isEmpty()) {
-            ret = "(Unknown!!!)";
+    /**
+     * Search host/appDir by App
+     *
+     * @param app - application name
+     * @return Pair<hostName, appDir>
+     */
+    public HostAppdir lookupHost(String app) {
+        HostAppdir ret = get(app);
+        if (ret == null || ret.getKey().isEmpty()) {
+            ret = null;
         }
         return ret;
+    }
+
+    String getAppDir(String app) {
+
+        HostAppdir had = lookupHost(app);
+        if (had != null) {
+            return had.getAppDir();
+        } else {
+            return null;
+        }
     }
 
 }
