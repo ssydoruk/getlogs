@@ -231,7 +231,7 @@ public class CommandExecutor {
                         .append(lfmtHostInstance.getInstance()).append("_cls");
             };
 
-            logsDir.append("/").append(theAppHost) //                    .append("/")
+            logsDir.append("/").append(theAppHost.toString()) //                    .append("/")
                     //                    .append(ap)
                     ;
         } else {
