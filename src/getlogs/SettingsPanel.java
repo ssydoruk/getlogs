@@ -1504,6 +1504,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             this.theTab = tab;
             this.selectedFormat = selectedFormat;
             tca = new TableColumnAdjuster(theTab);
+            tca.setColumnHeaderIncluded(true);
             jScrollPane = new JScrollPane(theTab);
             theTab.getTableHeader().setVisible(true);
             theTab.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
