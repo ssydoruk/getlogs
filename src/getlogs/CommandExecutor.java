@@ -543,7 +543,7 @@ public class CommandExecutor {
 
     }
 
-    private void executeAfterCommand(String key) throws IOException, InterruptedException {
+    private void executeCommand(String key) throws IOException, InterruptedException {
         ArrayList<String> cmdParams = new ArrayList<>();
         String[] split = StringUtils.split(key);
         for (String string : split) {
@@ -995,6 +995,28 @@ public class CommandExecutor {
         }
     }
 
+    private void beforeActions(CountDownLatch latch) throws InterruptedException {
+
+        executor.execute(new CallbackThreadLatched(latch, new ISubTask() {
+            @Override
+            public void task() throws InterruptedException, IOException {
+                for (Pair<String, Boolean> entry : ds.getBeforeActions()) {
+                    if (entry.getValue()) {
+                        executeCommand(entry.getKey());
+                    }
+
+                }
+//                for (int i = 0; i < 10; i++) {
+//                    Thread.sleep(1000);
+//                    SettingsDialog.info(Integer.toString(i));
+//                }
+                latch.countDown();
+            }
+
+        }));
+
+    }
+
     private void afterActions(CountDownLatch latch) throws InterruptedException {
 
         executor.execute(new CallbackThreadLatched(latch, new ISubTask() {
@@ -1002,7 +1024,7 @@ public class CommandExecutor {
             public void task() throws InterruptedException, IOException {
                 for (Pair<String, Boolean> entry : ds.getAfterActions()) {
                     if (entry.getValue()) {
-                        executeAfterCommand(entry.getKey());
+                        executeCommand(entry.getKey());
                     }
 
                 }
@@ -1395,6 +1417,25 @@ public class CommandExecutor {
         private ISubTask finishingTask = null;
         private CountDownLatch finishLatch = null;
 
+        private ISubTask startingTask = null;
+        private CountDownLatch startingLatch = null;
+
+        public ISubTask getStartingTask() {
+            return startingTask;
+        }
+
+        public void setStartingTask(ISubTask startingTask) {
+            this.startingTask = startingTask;
+        }
+
+        public CountDownLatch getStartingLatch() {
+            return startingLatch;
+        }
+
+        public void setStartingLatch(CountDownLatch startingLatch) {
+            this.startingLatch = startingLatch;
+        }
+
         public ISubTask getFinishingTask() {
             return finishingTask;
         }
@@ -1417,9 +1458,18 @@ public class CommandExecutor {
                 if (rp != null) {
                     rp.doShow();
                 }
+                if (startingTask != null) {
+                    logger.info("Starting predownload task(s)");
+                    startingTask.task();
+                    if (startingLatch != null) {
+                        startingLatch.await();
+                    }
+                }
+
                 onBackground();
 
                 if (finishingTask != null) {
+                    logger.info("Starting postdownload task(s)");
                     finishingTask.task();
                     if (finishLatch != null) {
                         finishLatch.await();
@@ -1515,6 +1565,16 @@ public class CommandExecutor {
             }
             );
 
+            CountDownLatch startingLatch = new CountDownLatch(1);
+            tsk.setStartingLatch(startingLatch);
+            tsk.setStartingTask(
+                    new ISubTask() {
+                @Override
+                public void task() throws InterruptedException, IOException {
+                    beforeActions(startingLatch);
+                }
+            }
+            );
         }
         tsk.execute();
     }

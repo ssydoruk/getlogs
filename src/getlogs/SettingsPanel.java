@@ -99,6 +99,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private ValuesEditor lfmtEditor = null;
     private final StringListEdit ext;
     private final StringListEdit afterActions;
+    private final StringListEdit beforeActions;
     private final String profileTitleBase;
     private final String appTitleBase;
     private SettingsDialog dlg;
@@ -200,6 +201,14 @@ public class SettingsPanel extends javax.swing.JPanel {
         });
         pAfterActions.add(afterActions);
 
+        beforeActions = new StringListEdit("Before actions");
+        beforeActions.setUpdatedFun(new StringListEdit.IDataChangedFun() {
+            @Override
+            public void dataChanged(ArrayList<Pair<String, Boolean>> newData) {
+                getDs().setBeforeActions(newData);
+            }
+        });
+        pBeforeActions.add(beforeActions);
 //        tfFilenameSuffixes.getDocument().addDocumentListener(new DocumentListener() {
 //            @Override
 //            public void insertUpdate(DocumentEvent e) {
@@ -602,6 +611,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jtfOutputDir = new javax.swing.JTextField();
         jbSelectDirectory = new javax.swing.JButton();
+        pBeforeActions = new javax.swing.JPanel();
         pAfterActions = new javax.swing.JPanel();
 
         jpLastFiles.setLayout(new javax.swing.BoxLayout(jpLastFiles, javax.swing.BoxLayout.LINE_AXIS));
@@ -907,6 +917,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel24.add(jbSelectDirectory);
 
         jpDownloadParams.add(jPanel24);
+
+        pBeforeActions.setBorder(javax.swing.BorderFactory.createTitledBorder("Before download actions"));
+        pBeforeActions.setLayout(new javax.swing.BoxLayout(pBeforeActions, javax.swing.BoxLayout.LINE_AXIS));
+        jpDownloadParams.add(pBeforeActions);
 
         pAfterActions.setBorder(javax.swing.BorderFactory.createTitledBorder("Post download actions"));
         pAfterActions.setLayout(new javax.swing.BoxLayout(pAfterActions, javax.swing.BoxLayout.LINE_AXIS));
@@ -1230,6 +1244,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lbDateRegex;
     private javax.swing.JLabel lbTimeRegex;
     private javax.swing.JPanel pAfterActions;
+    private javax.swing.JPanel pBeforeActions;
     private javax.swing.JPanel pExtensions;
     private javax.swing.JRadioButton rbCloudLogs;
     private javax.swing.JRadioButton rbGenesysLogs;
@@ -1280,6 +1295,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jtfOutputDir.setText(ds.getOutputDir());
         cbUseRSync.setSelected(ds.isUseRSync());
         afterActions.setData(ds.getAfterActions(), true);
+        beforeActions.setData(ds.getBeforeActions(), true);
 //        afterActions.setMaximumSize(new Dimension(afterActions.getMaximumSize().width, afterActions.getHeight()));
 //        pAfterActions.setMaximumSize(new Dimension(pAfterActions.getMaximumSize().width, afterActions.getHeight()));
 

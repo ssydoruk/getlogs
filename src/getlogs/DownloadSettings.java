@@ -6,11 +6,8 @@
 package getlogs;
 
 import Utils.Pair;
-import Utils.TDateRange;
 import Utils.UTCTimeRange;
-import java.io.Serializable;
 import java.time.DateTimeException;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +36,15 @@ public class DownloadSettings {
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     private ArrayList<Pair<String, Boolean>> afterActions;
+    private ArrayList<Pair<String, Boolean>> beforeActions;
+
+    public ArrayList<Pair<String, Boolean>> getBeforeActions() {
+        return beforeActions;
+    }
+
+    public void setBeforeActions(ArrayList<Pair<String, Boolean>> beforeActions) {
+        this.beforeActions = beforeActions;
+    }
 
     public ArrayList<Pair<String, Boolean>> getAfterActions() {
         return afterActions;

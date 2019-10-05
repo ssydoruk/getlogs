@@ -35,11 +35,11 @@ class JTablePopupMenu extends JPopupMenu {
 
         @Override
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+//            SwingUtilities.invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
                     Point popupPoint = SwingUtilities.convertPoint((Component) e.getSource(), new Point(0, 0), tab);
-//                    inquirer.logger.info("p: " + popupPoint + " row: " + tab.rowAtPoint(popupPoint) + " col: " + tab.columnAtPoint(popupPoint));
+                    logger.info("p: " + popupPoint + " row: " + tab.rowAtPoint(popupPoint) + " col: " + tab.columnAtPoint(popupPoint));
                     int row = tab.rowAtPoint(popupPoint);
                     int col = tab.columnAtPoint(popupPoint);
                     tab.setPopupRow(row);
@@ -52,8 +52,8 @@ class JTablePopupMenu extends JPopupMenu {
 
                     }
                     tab.callingPopup();
-                }
-            });
+//                }
+//            });
 
         }
 
