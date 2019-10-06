@@ -1549,7 +1549,7 @@ public class CommandExecutor {
             }
         });
         if (rp == null) {
-            rp = new RequestProgress(parent1, true, tsk);
+            rp = new RequestProgress(parent1, false, tsk);
         }
         tsk.setRp(rp);
         if (ds.getActionCommand() == GetCommand.GET || ds.getActionCommand() == GetCommand.GREPGET) {

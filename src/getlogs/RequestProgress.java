@@ -5,6 +5,7 @@
  */
 package getlogs;
 
+import java.awt.Window;
 import java.util.List;
 import javax.swing.SwingWorker;
 import javax.swing.text.DefaultCaret;
@@ -19,12 +20,15 @@ public class RequestProgress extends javax.swing.JDialog {
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     private CommandExecutor.QueryTaskBase wrk;
+    private Window theParent;
 
     /**
      * Creates new form RequestProgress
      */
     public RequestProgress(java.awt.Window parent, boolean modal, CommandExecutor.QueryTaskBase wrk) {
         super(parent);
+        this.theParent=parent;
+        
         setModal(modal);
         initComponents();
         this.wrk = wrk;
@@ -113,6 +117,7 @@ public class RequestProgress extends javax.swing.JDialog {
                 //                Thread.sleep(300);
                 //                if (!wrk.isDone() && !wrk.isCancelled()) {
 //                System.out.println(this+" Making visible");
+                theParent.setFocusableWindowState(false);
                 setVisible(false);
                 pack();
                 setLocationRelativeTo(getParent());
@@ -170,6 +175,7 @@ public class RequestProgress extends javax.swing.JDialog {
             elapsedTimer = null;
 //            inquirer.logger.info("Canceling elapsed timer");
         }
+        theParent.setFocusableWindowState(true);
     }//GEN-LAST:event_formWindowClosed
 
     /**

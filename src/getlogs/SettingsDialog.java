@@ -70,6 +70,7 @@ public class SettingsDialog extends StandardDialog {
             }
         });
         setTitle("GetLogs" + "(" + guiProfile + ")");
+        this.setVisible(true);
     }
 
     public CommandExecutor getCe() {

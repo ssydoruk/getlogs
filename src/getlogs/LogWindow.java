@@ -5,6 +5,7 @@
  */
 package getlogs;
 
+import Utils.ScreenInfo;
 import com.jidesoft.dialog.ButtonPanel;
 import com.jidesoft.dialog.StandardDialog;
 import java.awt.BorderLayout;
@@ -21,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -42,7 +45,7 @@ import org.apache.logging.log4j.io.IoBuilder;
  *
  * @author stepan_sydoruk
  */
-public class LogWindow extends StandardDialog {
+public class LogWindow extends JFrame {
 
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
@@ -83,26 +86,27 @@ public class LogWindow extends StandardDialog {
     }
 
     public LogWindow() {
-        setModal(false);
-        setMinimumSize(new Dimension(300, 200));
+        super();
+        add(createContentPanel());
+//        setModal(false);
 //        setMaximumSize(new Dimension(500, 200));
-        setFocusable(true);
+//        setFocusable(true);
 
     }
 
     public void doShow() {
         pack();
+        ScreenInfo.windowOccupyTopThird(this);
+//        setAutoRequestFocus(false);
+//        setAlwaysOnTop(false);
+//        setFocusable(false);
         setVisible(true);
     }
 
-    @Override
-    public JComponent createBannerPanel() {
-        return null;
-    }
+
 
     JTextArea jt;
 
-    @Override
     public JComponent createContentPanel() {
         jt = new JTextArea();
 
@@ -113,22 +117,22 @@ public class LogWindow extends StandardDialog {
         listPane.add(jScrollPane, BorderLayout.CENTER);
 //        jScrollPane.setMinimumSize(new Dimension(300, 200));
 //        jScrollPane.setMaximumSize(new Dimension(500, 200));
-        jScrollPane.setPreferredSize(new Dimension(500, 200));
+//        jScrollPane.setPreferredSize(new Dimension(500, 200));
         return listPane;
 
     }
 
-    @Override
-    public ButtonPanel createButtonPanel() {
-        return null;
-    }
 
     void addMsg(String str) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+//                setVisible(false);
                 jt.append(str + "\n");
-                jt.invalidate();
+                jt.update(jt.getGraphics());
+                jt.setCaretPosition(jt.getText().length() - 1);
+//                setVisible(true);
+//                toBack();
             }
         });
     }
