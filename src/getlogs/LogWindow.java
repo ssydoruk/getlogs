@@ -103,8 +103,6 @@ public class LogWindow extends JFrame {
         setVisible(true);
     }
 
-
-
     JTextArea jt;
 
     public JComponent createContentPanel() {
@@ -122,15 +120,16 @@ public class LogWindow extends JFrame {
 
     }
 
-
     void addMsg(String str) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
 //                setVisible(false);
                 jt.append(str + "\n");
-                jt.update(jt.getGraphics());
+                jt.invalidate();
                 jt.setCaretPosition(jt.getText().length() - 1);
+
+//                jt.update(jt.getGraphics());
 //                setVisible(true);
 //                toBack();
             }
