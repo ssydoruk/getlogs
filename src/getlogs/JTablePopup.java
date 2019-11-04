@@ -5,7 +5,6 @@
  */
 package getlogs;
 
-import Utils.ScreenInfo;
 import Utils.Pair;
 import Utils.ScreenInfo;
 import Utils.SystemClipboard;

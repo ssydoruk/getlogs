@@ -6,25 +6,15 @@
 package getlogs;
 
 import Utils.Pair;
-import Utils.ScreenInfo;
 import Utils.UTCTimeRange;
 import Utils.UnixProcess.ExtProcess;
 import static Utils.Util.rSyncAddClause;
-import static Utils.Util.stripDir;
-import com.jidesoft.dialog.JideOptionPane;
 import com.jidesoft.dialog.StandardDialog;
 import getlogs.DownloadSettings.App;
 import getlogs.DownloadSettings.AppProfile;
-import getlogs.SettingsPanel.InfoPanel;
-import java.awt.Component;
-import java.awt.Rectangle;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,18 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
-import static javax.swing.JOptionPane.ERROR_MESSAGE;
-import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -549,7 +530,7 @@ public class CommandExecutor {
         for (String string : split) {
             cmdParams.add(replacePostActionVars(string));
         }
-
+        logMessage(Level.INFO, "Executing ["+StringUtils.join(cmdParams, " "));
 //        logger.trace("executing: " + rsyncParams);
         ExtProcess procRSync = extProcessManager.addProcess(new ExtProcessFinishing(
                 cmdParams, true, true));
