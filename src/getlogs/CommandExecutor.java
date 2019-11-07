@@ -530,7 +530,7 @@ public class CommandExecutor {
         for (String string : split) {
             cmdParams.add(replacePostActionVars(string));
         }
-        logMessage(Level.INFO, "Executing ["+StringUtils.join(cmdParams, " "));
+        logMessage(Level.INFO, "Executing [" + StringUtils.join(cmdParams, " "));
 //        logger.trace("executing: " + rsyncParams);
         ExtProcess procRSync = extProcessManager.addProcess(new ExtProcessFinishing(
                 cmdParams, true, true));
@@ -950,7 +950,6 @@ public class CommandExecutor {
                     SettingsDialog.info("About to download " + lsTab.getSelectedFiles().size() + " files (" + r.size() + " threads)");
 
                     CountDownLatch latch = new CountDownLatch(r.size());
-                    CountDownLatch finalLatch = new CountDownLatch(1);
 
                     doExecuteCmd(parent, this,
                             latch,
@@ -958,13 +957,6 @@ public class CommandExecutor {
                         @Override
                         public void task() throws InterruptedException, IOException {
                             executeRSync(r, latch);
-                        }
-                    },
-                            finalLatch,
-                            new ISubTask() {
-                        @Override
-                        public void task() throws InterruptedException, IOException {
-                            afterActions(finalLatch);
                         }
                     }
                     );
@@ -976,47 +968,29 @@ public class CommandExecutor {
         }
     }
 
-    private void beforeActions(CountDownLatch latch) throws InterruptedException {
-
-        executor.execute(new CallbackThreadLatched(latch, new ISubTask() {
-            @Override
-            public void task() throws InterruptedException, IOException {
-                for (Pair<String, Boolean> entry : ds.getBeforeActions()) {
-                    if (entry.getValue()) {
-                        executeCommand(entry.getKey());
-                    }
-
+    private ArrayList<String> getActions(ArrayList<Pair<String, Boolean>> acts) {
+        ArrayList<String> r = new ArrayList<>();
+        if (acts != null && !acts.isEmpty()) {
+            for (Pair<String, Boolean> entry : acts) {
+                if (entry.getValue()) {
+                    r.add(entry.getKey());
                 }
-//                for (int i = 0; i < 10; i++) {
-//                    Thread.sleep(1000);
-//                    SettingsDialog.info(Integer.toString(i));
-//                }
-                latch.countDown();
             }
+        }
+        if (r.isEmpty()) {
+            return null;
+        } else {
+            return r;
+        }
+    }
 
-        }));
+    private ArrayList<String> getBeforeActions() {
+        return getActions(ds.getBeforeActions());
 
     }
 
-    private void afterActions(CountDownLatch latch) throws InterruptedException {
-
-        executor.execute(new CallbackThreadLatched(latch, new ISubTask() {
-            @Override
-            public void task() throws InterruptedException, IOException {
-                for (Pair<String, Boolean> entry : ds.getAfterActions()) {
-                    if (entry.getValue()) {
-                        executeCommand(entry.getKey());
-                    }
-
-                }
-//                for (int i = 0; i < 10; i++) {
-//                    Thread.sleep(1000);
-//                    SettingsDialog.info(Integer.toString(i));
-//                }
-                latch.countDown();
-            }
-
-        }));
+    private ArrayList<String> getAfterActions() {
+        return getActions(ds.getAfterActions());
 
     }
 
@@ -1482,6 +1456,58 @@ public class CommandExecutor {
             this.outFile = outFile;
         }
 
+        private void setBeforeActions(ArrayList<String> beforeActions) {
+            if (beforeActions != null) {
+                CountDownLatch startingLatch = new CountDownLatch(1);
+                setStartingLatch(startingLatch);
+                setStartingTask(
+                        new ISubTask() {
+                    @Override
+                    public void task() throws InterruptedException, IOException {
+
+                        executor.execute(new CallbackThreadLatched(startingLatch, new ISubTask() {
+                            @Override
+                            public void task() throws InterruptedException, IOException {
+                                for (String beforeAction : beforeActions) {
+                                    executeCommand(beforeAction);
+                                }
+
+                                startingLatch.countDown();
+                            }
+
+                        }));
+
+                    }
+                }
+                );
+            }
+        }
+
+        private void setAfterActions(ArrayList<String> afterActions) {
+            if (afterActions != null) {
+                CountDownLatch finalLatch = new CountDownLatch(1);
+                setFinishLatch(finalLatch);
+                setFinishingTask(
+                        new ISubTask() {
+                    @Override
+                    public void task() throws InterruptedException, IOException {
+                        executor.execute(new CallbackThreadLatched(finalLatch, new ISubTask() {
+                            @Override
+                            public void task() throws InterruptedException, IOException {
+                                for (String afterAction : afterActions) {
+                                    executeCommand(afterAction);
+                                }
+
+                                finalLatch.countDown();
+                            }
+
+                        }));
+                    }
+                }
+                );
+            }
+        }
+
     };
 
     private void doExecuteCmd(java.awt.Window parent1, CommandExecutor aThis) {
@@ -1534,28 +1560,10 @@ public class CommandExecutor {
         }
         tsk.setRp(rp);
         if (ds.getActionCommand() == GetCommand.GET || ds.getActionCommand() == GetCommand.GREPGET) {
+            tsk.setAfterActions(getAfterActions());
 
-            CountDownLatch finalLatch = new CountDownLatch(1);
-            tsk.setFinishLatch(finalLatch);
-            tsk.setFinishingTask(
-                    new ISubTask() {
-                @Override
-                public void task() throws InterruptedException, IOException {
-                    afterActions(finalLatch);
-                }
-            }
-            );
+            tsk.setBeforeActions(getBeforeActions());
 
-            CountDownLatch startingLatch = new CountDownLatch(1);
-            tsk.setStartingLatch(startingLatch);
-            tsk.setStartingTask(
-                    new ISubTask() {
-                @Override
-                public void task() throws InterruptedException, IOException {
-                    beforeActions(startingLatch);
-                }
-            }
-            );
         }
         tsk.execute();
     }
@@ -1563,23 +1571,15 @@ public class CommandExecutor {
     private void doExecuteCmd(Window parent1, CommandExecutor aThis,
             CountDownLatch latch,
             ISubTask subTask) {
-        doExecuteCmd(parent1, aThis,
-                latch,
-                subTask, null, null);
-    }
 
-    private void doExecuteCmd(Window parent1, CommandExecutor aThis,
-            CountDownLatch latch,
-            ISubTask subTask,
-            CountDownLatch finishLatch,
-            ISubTask finishingTask) {
-
-        QueryTaskBase tsk = new QueryTask(aThis, latch, subTask, finishLatch, finishingTask);
+        QueryTaskBase tsk = new QueryTask(aThis, latch, subTask);
         if (rp == null) {
             rp = new RequestProgress(parent1, true, tsk);
         }
 
         tsk.setRp(rp);
+        tsk.setBeforeActions(getBeforeActions());
+        tsk.setAfterActions(getAfterActions());
 
         tsk.execute();
 
