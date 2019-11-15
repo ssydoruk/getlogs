@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -169,7 +170,6 @@ public class DownloadSettings {
         for (Object[] objects : data) {
             lfmtHostInstances.add(new LFMTHostInstance(objects));
         }
-
     }
 
     public static class LFMTHostInstance {
@@ -185,7 +185,7 @@ public class DownloadSettings {
         }
 
         private LFMTHostInstance(Object[] objects) {
-            this((String) objects[0], (String) objects[1], (String) objects[2]);
+            this(StringUtils.defaultString((String) objects[0]), StringUtils.defaultString((String) objects[1]), StringUtils.defaultString((String) objects[2]));
 
         }
 

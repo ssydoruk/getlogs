@@ -1101,6 +1101,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         );
         if (lfmtEditor.doShow()) {
             ds.loadLFMTs(lfmtEditor.getData());
+            updateLFMTs();
         }
 
 //        if (lfmtPanes == null) {
