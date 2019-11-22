@@ -95,6 +95,7 @@ public class GetLogs {
     private static String sUserName;
     private static Option optRSyncUserName;
     private static String sRSyncUserName;
+    private static boolean hostsVisible;
 
     public static Hosts getHosts() {
         return hosts;
@@ -1063,6 +1064,15 @@ public class GetLogs {
         } else {
             return prodBaseDir;
         }
+    }
+
+    static void setHostsVisible(boolean selected) {
+        hostsVisible=selected;
+       
+    }
+
+    public static boolean isHostsVisible() {
+        return hostsVisible;
     }
 
 }

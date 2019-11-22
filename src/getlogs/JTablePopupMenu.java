@@ -39,7 +39,7 @@ class JTablePopupMenu extends JPopupMenu {
 //                @Override
 //                public void run() {
                     Point popupPoint = SwingUtilities.convertPoint((Component) e.getSource(), new Point(0, 0), tab);
-                    logger.info("p: " + popupPoint + " row: " + tab.rowAtPoint(popupPoint) + " col: " + tab.columnAtPoint(popupPoint));
+                    logger.debug("p: " + popupPoint + " row: " + tab.rowAtPoint(popupPoint) + " col: " + tab.columnAtPoint(popupPoint));
                     int row = tab.rowAtPoint(popupPoint);
                     int col = tab.columnAtPoint(popupPoint);
                     tab.setPopupRow(row);

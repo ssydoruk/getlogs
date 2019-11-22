@@ -29,7 +29,9 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -48,6 +50,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -116,6 +119,26 @@ public class SettingsPanel extends javax.swing.JPanel {
         lmApps = new DefaultListModel<Object>();
         clbApps = new CheckBoxList(lmApps);
         clbApps.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        clbApps.addMouseListener(new MouseAdapter() {
+
+            public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    doPop(e);
+                }
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    doPop(e);
+                }
+            }
+
+            private void doPop(MouseEvent e) {
+
+                jpmAppSettings.show(e.getComponent(), e.getX(), e.getY());
+            }
+
+        });
 
         jpApps.add(new JScrollPane(clbApps));
 
@@ -548,6 +571,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         lbTimeRegex = new javax.swing.JLabel();
         tfTimeRegex = new javax.swing.JTextField();
         jpRange = new javax.swing.JPanel();
+        jpmAppSettings = new javax.swing.JPopupMenu();
+        cbmShowHosts = new javax.swing.JCheckBoxMenuItem();
         jPanel1 = new javax.swing.JPanel();
         jpProfileBase = new javax.swing.JPanel();
         jpProfile = new javax.swing.JPanel();
@@ -628,6 +653,14 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpRange.setLayout(new java.awt.BorderLayout());
 
+        cbmShowHosts.setText("Show host");
+        cbmShowHosts.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbmShowHostsItemStateChanged(evt);
+            }
+        });
+        jpmAppSettings.add(cbmShowHosts);
+
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Application profiles"));
@@ -678,8 +711,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel1.add(jpProfileBase);
 
         jpAppsBase.setBorder(javax.swing.BorderFactory.createTitledBorder("Apps"));
+        jpAppsBase.setMinimumSize(new java.awt.Dimension(250, 53));
         jpAppsBase.setLayout(new javax.swing.BoxLayout(jpAppsBase, javax.swing.BoxLayout.PAGE_AXIS));
 
+        jpApps.setMinimumSize(new java.awt.Dimension(250, 0));
         jpApps.setLayout(new java.awt.BorderLayout());
         jpAppsBase.add(jpApps);
 
@@ -1173,6 +1208,15 @@ public class SettingsPanel extends javax.swing.JPanel {
         updateStartButton();
     }//GEN-LAST:event_cbLCALogsItemStateChanged
 
+    private void cbmShowHostsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbmShowHostsItemStateChanged
+        JCheckBoxMenuItem source = (JCheckBoxMenuItem) evt.getSource();
+        GetLogs.setHostsVisible(source.isSelected());
+        DownloadSettings.AppProfile prof = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
+        if (prof != null) {
+            profileSelectionChanged(prof);
+        }
+    }//GEN-LAST:event_cbmShowHostsItemStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;
@@ -1185,6 +1229,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbProdLog;
     private javax.swing.JComboBox<String> cbTimeProfile;
     private javax.swing.JCheckBox cbUseRSync;
+    private javax.swing.JCheckBoxMenuItem cbmShowHosts;
     private javax.swing.JFormattedTextField ftHours;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1226,6 +1271,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jpRangeParams;
     private javax.swing.JPanel jpRangeSelect;
     private javax.swing.JPanel jpRegEx;
+    private javax.swing.JPopupMenu jpmAppSettings;
     private javax.swing.JTextField jtfOutputDir;
     private javax.swing.JLabel lCommand;
     private javax.swing.JLabel lGrepText;
@@ -1269,6 +1315,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
 
         int[] selectedIndices = clbProfile.getSelectedIndices();
+        Dimension minSize = jpProfileBase.getPreferredSize();
+        Dimension maximumSize = jpProfileBase.getMaximumSize();
+        Dimension maxSize = new Dimension(minSize.width, maximumSize.height);
+        jpProfileBase.setMaximumSize(maxSize);
         profileSelected(selectedIndices.length);
 
     }

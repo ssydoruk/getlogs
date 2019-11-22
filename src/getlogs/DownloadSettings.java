@@ -542,7 +542,15 @@ public class DownloadSettings {
         @Override
         public String toString() {
 //            System.out.println("--"+name);
-            return name; //To change body of generated methods, choose Tools | Templates.
+            try {
+                if (GetLogs.isHostsVisible()) {
+                    return name + " @ " + GetLogs.getHosts().lookupHost(name); //To change body of generated methods, choose Tools | Templates.
+                } else {
+                    return name;
+                }
+            } catch (Exception e) {
+                return name;
+            }
         }
 
         @Override
