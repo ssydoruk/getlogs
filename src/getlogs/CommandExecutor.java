@@ -289,9 +289,19 @@ public class CommandExecutor {
 
         StringBuilder sshCmd = new StringBuilder();
 
+//this is to play with permissions. 
+//        sshCmd.append("sudo -u svc-gsys -s bash -c \"");
+        String u = GetLogs.getsRSyncUserName();
+        if (StringUtils.isBlank(u)) {
+            u = GetLogs.getsUserName();
+        }
+        if (StringUtils.isNotBlank(u)) {
+            sshCmd.append("sudo -u ").append(u).append(" -s ");
+        }
+
         sshCmd.append("bash -c \"");
 
-        sshCmd.append("cd ").append(logsDir).append(";");
+        sshCmd.append("cd ").append(logsDir).append("; ");
 //        sshCmd.append(" declare -a arr=( \\\"-001\\\" \\\"-768\\\" ); for ext in \\\"\\${arr[@]}\\\"; do");
         sshCmd.append(" declare -a arr=(");
         sshCmd.append(" \\\"");
@@ -323,6 +333,8 @@ public class CommandExecutor {
             sshCmd.append(" -o -type d ");
         }
 
+        // below is if need to change permissions on the fly. DO not like the idea though
+//        sshCmd.append(" -execdir chmod g+r,a+r {} \\; -print | sort -r");
         sshCmd.append(" -print | sort -r");
         if (ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES) {
             sshCmd.append(" | head -").append(ds.getHours());
@@ -557,6 +569,16 @@ public class CommandExecutor {
     private void executeRSync(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
+
+        String u = GetLogs.getsRSyncUserName();
+        if (StringUtils.isBlank(u)) {
+            u = GetLogs.getsUserName();
+        }
+        if (StringUtils.isNotBlank(u)) {
+            rsyncParams.add("--rsync-path");
+            rsyncParams.add("sudo -u " + u + " rsync");
+        }
+
         rsyncParams.add("-avz");
 //        rsyncParams.add("--compress-level=8");
         rsyncParams.add("-e");
@@ -569,8 +591,7 @@ public class CommandExecutor {
         StringBuilder srcSpec = new StringBuilder();
         String lfmtHost = null;
 
-        String u = GetLogs.getsUserName();
-        if (u != null && !u.isEmpty()) {
+        if (StringUtils.isNotBlank(u)) {
             srcSpec.append(u).append("@");
         }
         if (isLFMT) {

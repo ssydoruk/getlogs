@@ -93,6 +93,8 @@ public class GetLogs {
     private static String prodBaseDir;
     private static Option optUserName;
     private static String sUserName;
+    private static Option optRSyncUserName;
+    private static String sRSyncUserName;
 
     public static Hosts getHosts() {
         return hosts;
@@ -195,6 +197,14 @@ public class GetLogs {
                 .longOpt("username")
                 .build();
         options.addOption(optUserName);
+
+        optRSyncUserName = Option.builder()
+                .hasArg(true)
+                .required(false)
+                .desc("remote rsync user name")
+                .longOpt("rsync-username")
+                .build();
+        options.addOption(optRSyncUserName);
 
         optLogDirectory = Option.builder("b")
                 .hasArg(true)
@@ -335,6 +345,10 @@ public class GetLogs {
         }
         sshOptions = (String) cmd.getParsedOptionValue(optSSHOptions.getLongOpt());
         sUserName = (String) cmd.getParsedOptionValue(optUserName.getLongOpt());
+        
+        sRSyncUserName= (String) cmd.getParsedOptionValue(optRSyncUserName.getLongOpt());
+                
+                
 
         prodBaseDir = (String) cmd.getParsedOptionValue(optProdBaseDir.getLongOpt());
 
@@ -367,6 +381,10 @@ public class GetLogs {
 
     public static String getsUserName() {
         return sUserName;
+    }
+
+    public static String getsRSyncUserName() {
+        return sRSyncUserName;
     }
 
     public static void processApp(String ap, Options options) throws IOException, InterruptedException {
