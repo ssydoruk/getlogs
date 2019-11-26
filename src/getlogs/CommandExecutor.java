@@ -322,7 +322,8 @@ public class CommandExecutor {
 //        sshCmd.append(" pwd; echo \\$ext; echo \\${ext}; ");
         sshCmd.append(" find ")
                 .append((lcaLog) ? "lca" : ap.getAppDir())
-                .append(" -name \\${ext} ");
+                .append(" -maxdepth 1 ")
+                .append("-name \\${ext} ");
 //        sshCmd.append(" -a -type f ");
         if (appProfile.isIsGenesysName()) {
             sshCmd.append(" -a ! \\( -name \\*snapshot.log \\) ");
@@ -487,7 +488,7 @@ public class CommandExecutor {
         sshCmd.append("cd ").append(logsDir).append("; ");
         sshCmd.append("find ")
                 .append((isLCA) ? "lca" : ap)
-                .append(" ")
+                .append(" -maxdepth 1 ")
                 .append(fileClause);
         sshCmd.append(" ");
 //        sshCmd.append("\\( ")
@@ -783,7 +784,7 @@ public class CommandExecutor {
             sshCmd.append("cd ").append(logsDir).append("; ");
             sshCmd.append("find ")
                     .append((lcaLog) ? "lca" : ap)
-                    .append(" ")
+                    .append(" -maxdepth 1 ")
                     .append(fileClause);
             sshCmd.append(" -exec ");
             sshCmd.append("tar -");

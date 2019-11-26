@@ -613,7 +613,7 @@ public class GetLogs {
             StringBuilder sshCmd = new StringBuilder();
 
             sshCmd.append("cd ").append(logsDir).append("; ");
-            sshCmd.append("find ")
+            sshCmd.append("find -maxdepth 1 ")
                     .append(ap)
                     .append(" ")
                     .append(fileClause);
@@ -665,7 +665,7 @@ public class GetLogs {
         StringBuilder sshCmd = new StringBuilder();
 
         sshCmd.append("cd ").append(logsDir).append("; ");
-        sshCmd.append("find ")
+        sshCmd.append("find -maxdepth 1 ")
                 .append(ap)
                 .append(" ")
                 .append(fileClause);
@@ -702,7 +702,7 @@ public class GetLogs {
         StringBuilder sshCmd = new StringBuilder();
 
         sshCmd.append("cd ").append(logsDir).append("; ");
-        sshCmd.append("find ")
+        sshCmd.append("find -maxdepth 1 ")
                 .append(ap)
                 .append(" ")
                 .append(fileClause);
