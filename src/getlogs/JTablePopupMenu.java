@@ -38,20 +38,20 @@ class JTablePopupMenu extends JPopupMenu {
 //            SwingUtilities.invokeLater(new Runnable() {
 //                @Override
 //                public void run() {
-                    Point popupPoint = SwingUtilities.convertPoint((Component) e.getSource(), new Point(0, 0), tab);
-                    logger.debug("p: " + popupPoint + " row: " + tab.rowAtPoint(popupPoint) + " col: " + tab.columnAtPoint(popupPoint));
-                    int row = tab.rowAtPoint(popupPoint);
-                    int col = tab.columnAtPoint(popupPoint);
-                    tab.setPopupRow(row);
-                    tab.setPopupCol(col);
-                    if (!tab.isRowSelected(row)) {
-                        logger.debug("1isRowSelected: ");
-                        tab.changeSelection(row, col, false, false);
-                    } else {
-                        logger.debug("isRowSelected1: ");
+            Point popupPoint = SwingUtilities.convertPoint((Component) e.getSource(), new Point(0, 0), tab);
+            logger.debug("p: " + popupPoint + " row: " + tab.rowAtPoint(popupPoint) + " col: " + tab.columnAtPoint(popupPoint));
+            int row = tab.rowAtPoint(popupPoint);
+            int col = tab.columnAtPoint(popupPoint);
+            tab.setPopupRow(row);
+            tab.setPopupCol(col);
+            if (!tab.isRowSelected(row)) {
+                logger.debug("1isRowSelected: ");
+                tab.changeSelection(row, col, false, false);
+            } else {
+                logger.debug("isRowSelected1: ");
 
-                    }
-                    tab.callingPopup();
+            }
+            tab.callingPopup();
 //                }
 //            });
 

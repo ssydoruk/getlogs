@@ -24,8 +24,6 @@ class JTableFileModel extends AbstractTableModel {
     public int getRowCount() {
         return tabRows.size();
     }
-    
-    
 
     @Override
     public int getColumnCount() {

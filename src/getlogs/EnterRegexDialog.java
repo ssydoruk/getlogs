@@ -41,7 +41,6 @@ public class EnterRegexDialog extends javax.swing.JDialog {
     private Pattern selectedRegEx = null;
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
-
     /**
      * Creates new form EnterRegexDialog
      */

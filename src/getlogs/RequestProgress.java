@@ -27,8 +27,8 @@ public class RequestProgress extends javax.swing.JDialog {
      */
     public RequestProgress(java.awt.Window parent, boolean modal, CommandExecutor.QueryTaskBase wrk) {
         super(parent);
-        this.theParent=parent;
-        
+        this.theParent = parent;
+
         setModal(modal);
         initComponents();
         this.wrk = wrk;
@@ -177,7 +177,6 @@ public class RequestProgress extends javax.swing.JDialog {
         }
         theParent.setFocusableWindowState(true);
     }//GEN-LAST:event_formWindowClosed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;

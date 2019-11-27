@@ -1005,7 +1005,6 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         }
 
-
     }//GEN-LAST:event_jbProfileDeleteActionPerformed
 
     private void jbProfileRenameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbProfileRenameActionPerformed
@@ -1176,7 +1175,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 //
 //        lfmtPanes.doShow();
 //        updateLFMTs();
-
     }//GEN-LAST:event_btEditLFMTsActionPerformed
 
     private void cbLFMTsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbLFMTsItemStateChanged
@@ -1216,7 +1214,6 @@ public class SettingsPanel extends javax.swing.JPanel {
             profileSelectionChanged(prof);
         }
     }//GEN-LAST:event_cbmShowHostsItemStateChanged
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;

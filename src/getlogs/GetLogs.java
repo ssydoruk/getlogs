@@ -346,10 +346,8 @@ public class GetLogs {
         }
         sshOptions = (String) cmd.getParsedOptionValue(optSSHOptions.getLongOpt());
         sUserName = (String) cmd.getParsedOptionValue(optUserName.getLongOpt());
-        
-        sRSyncUserName= (String) cmd.getParsedOptionValue(optRSyncUserName.getLongOpt());
-                
-                
+
+        sRSyncUserName = (String) cmd.getParsedOptionValue(optRSyncUserName.getLongOpt());
 
         prodBaseDir = (String) cmd.getParsedOptionValue(optProdBaseDir.getLongOpt());
 
@@ -1067,8 +1065,8 @@ public class GetLogs {
     }
 
     static void setHostsVisible(boolean selected) {
-        hostsVisible=selected;
-       
+        hostsVisible = selected;
+
     }
 
     public static boolean isHostsVisible() {
