@@ -538,6 +538,10 @@ public class DownloadSettings {
             this.appDir = appDir;
 
         }
+        
+        public String getHost(){
+            return GetLogs.getHosts().lookupHost(name).getHost();
+        }
 
         @Override
         public String toString() {
