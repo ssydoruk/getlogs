@@ -616,7 +616,7 @@ public class CommandExecutor {
         if (lcaLog) {
             dstSpec.append(theAppHost.getHost()).append("/").append("lca");
         } else {
-            dstSpec.append(ap);
+            dstSpec.append(ap.getName());
         }
         Utils.FileUtils.mkDir(dstSpec.toString());
 
