@@ -1316,7 +1316,7 @@ public class CommandExecutor {
         boolean userCancelling = false;
 
         public boolean isUserCancelling() {
-            return userCancelling;
+            return userCancelling || isCancelled();
         }
 
         public void setUserCancelling(boolean userCancelling) {
@@ -1435,6 +1435,9 @@ public class CommandExecutor {
                 if (rp != null) {
                     rp.doShow();
                 }
+                if (isUserCancelling()) {
+                    return null;
+                }
                 if (startingTask != null) {
                     logger.info("Starting predownload task(s)");
                     startingTask.task();
@@ -1443,8 +1446,14 @@ public class CommandExecutor {
                     }
                 }
 
+                if (isUserCancelling()) {
+                    return null;
+                }
                 onBackground();
 
+                if (isUserCancelling()) {
+                    return null;
+                }
                 if (finishingTask != null) {
                     logger.info("Starting postdownload task(s)");
                     finishingTask.task();
@@ -1467,7 +1476,7 @@ public class CommandExecutor {
             }
             if (isCancelled()) {
 //                JOptionPane.showMessageDialog(null, "Query was cancelled", "Error", JOptionPane.ERROR_MESSAGE);
-                logger.debug("Query was cancelled");
+                logMessage(Level.INFO, "Action was cancelled");
             } else {
                 SettingsDialog.info("Command executed");
                 onDone();
@@ -1751,6 +1760,7 @@ public class CommandExecutor {
                 try {
                     task.task();
                 } catch (InterruptedException interruptedException) {
+                    logMessage(Level.INFO, "Action interrupted");
                 }
 //                logger.debug("Thread " + Thread.currentThread() + " done task");
 
