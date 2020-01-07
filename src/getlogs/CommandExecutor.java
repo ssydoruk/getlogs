@@ -435,6 +435,15 @@ public class CommandExecutor {
 
     }
 
+    private String osSpecificPath(String outputDir) {
+        if (Utils.Util.getOS() == Util.OS.WINDOWS) {
+
+            return "/cygdrive/" + StringUtils.replaceChars(outputDir.replace(":", ""), "\\", "/");
+        } else {
+            return outputDir;
+        }
+    }
+
     private class ExtProcessManager {
 
         HashSet<ExtProcess> processes = new HashSet<>(2);
@@ -530,10 +539,10 @@ public class CommandExecutor {
         while ((m = regPostAction.matcher(word)).find(pos)) {
             ret.append(word.substring(pos, m.start()));
             if (m.group(1).equals("OUTDIR")) {
-                ret.append(ds.getOutputDir());
+                ret.append(osSpecificPath(ds.getOutputDir()));
 
             } else if (m.group(1).equals("OUTDIR")) {
-                ret.append(ds.getOutputDir());
+                ret.append(osSpecificPath(ds.getOutputDir()));
 
             } else {
                 SettingsDialog.error("Incorrect specification [" + m.group(1) + "] "
@@ -626,7 +635,7 @@ public class CommandExecutor {
         rsyncParams.add(srcSpec.toString());
 
         StringBuilder dstSpec = new StringBuilder();
-        dstSpec.append(ds.getOutputDir()).append("/");
+        dstSpec.append(osSpecificPath(ds.getOutputDir())).append("/");
         if (lcaLog) {
             dstSpec.append(theAppHost.getHost()).append("/").append("lca");
         } else {
