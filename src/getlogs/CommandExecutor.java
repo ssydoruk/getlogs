@@ -8,6 +8,7 @@ package getlogs;
 import Utils.Pair;
 import Utils.UTCTimeRange;
 import Utils.UnixProcess.ExtProcess;
+import Utils.Util;
 import static Utils.Util.rSyncAddClause;
 import com.jidesoft.dialog.StandardDialog;
 import getlogs.DownloadSettings.App;
@@ -267,6 +268,18 @@ public class CommandExecutor {
     ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
+    private String preQuoteDouble() {
+        if (Utils.Util.getOS() == Util.OS.WINDOWS) {
+            return "\\";
+        } else {
+            return "";
+        }
+    }
+
+    private String quoteDouble() {
+        return preQuoteDouble() + "\"";
+    }
+
     private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir,
             ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<JTableFileEntry> lsFiles = null;
@@ -299,23 +312,24 @@ public class CommandExecutor {
             sshCmd.append("sudo -u ").append(u).append(" -s ");
         }
 
-        sshCmd.append("bash -c \"");
+        sshCmd.append("bash -c ").append(quoteDouble());
 
         sshCmd.append("cd ").append(logsDir).append("; ");
 //        sshCmd.append(" declare -a arr=( \\\"-001\\\" \\\"-768\\\" ); for ext in \\\"\\${arr[@]}\\\"; do");
         sshCmd.append(" declare -a arr=(");
-        sshCmd.append(" \\\"");
+        sshCmd.append(" \\").append(quoteDouble());
         for (int i = 0; i < fileNameClause.size(); i++) {
             StringBuilder s = fileNameClause.get(i);
             if (i > 0) {
-                sshCmd.append("\\\" \\\"");
+                sshCmd.append("\\").append(quoteDouble()).append(" ").append("\\").append(quoteDouble());
+
             }
             sshCmd.append(s);
         }
 
-        sshCmd.append("\\\" ");
+        sshCmd.append("\\").append(quoteDouble()).append(" ");
 
-        sshCmd.append(" ); for ext in \\\"\\${arr[@]}\\\"; do");
+        sshCmd.append(" ); for ext in ").append(quoteDouble()).append("\\${arr[@]}").append(quoteDouble()).append("; do");
 
 //        sshCmd.append(" echo ").append("\\${ext}").append(" ; ");
         //this is used for testing
@@ -343,7 +357,7 @@ public class CommandExecutor {
 
         sshCmd.append(" ; done");
 
-        sshCmd.append("\"");
+        sshCmd.append(quoteDouble());
         sshParams.add(sshCmd.toString());
         ExtProcess procSSH = null;
         procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, false, true));
