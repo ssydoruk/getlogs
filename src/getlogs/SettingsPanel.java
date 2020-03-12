@@ -69,6 +69,8 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -76,9 +78,9 @@ import org.apache.logging.log4j.LogManager;
  * @author Stepan
  */
 public class SettingsPanel extends javax.swing.JPanel {
-    
+
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
-    
+
     private final CheckBoxList clbProfile;
     private final CheckBoxList clbApps;
     private final DefaultListModel<Object> lmProfile;
@@ -94,7 +96,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private final String profileTitleBase;
     private final String appTitleBase;
     private SettingsDialog dlg;
-    
+
     public DownloadSettings getDs() {
         return ds;
     }
@@ -106,73 +108,73 @@ public class SettingsPanel extends javax.swing.JPanel {
         initComponents();
         dtRange = new TDateRange(true);
         jpRange.add(dtRange);
-        
+
         TitledBorder border = (TitledBorder) jpProfileBase.getBorder();
         profileTitleBase = border.getTitle();
         appTitleBase = ((TitledBorder) jpProfileBase.getBorder()).getTitle();
-        
+
         lmProfile = new DefaultListModel<Object>();
         clbProfile = new CheckBoxList(lmProfile);
         jpProfile.add(new JScrollPane(clbProfile));
         clbProfile.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        
+
         lmApps = new DefaultListModel<Object>();
         clbApps = new CheckBoxList(lmApps);
         clbApps.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         clbApps.addMouseListener(new MouseAdapter() {
-            
+
             public void mousePressed(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     doPop(e);
                 }
             }
-            
+
             public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     doPop(e);
                 }
             }
-            
+
             private void doPop(MouseEvent e) {
                 cbmCopyHostName.setEnabled(clbApps.getSelectedValue() != null);
                 jpmAppSettings.show(e.getComponent(), e.getX(), e.getY());
             }
-            
+
         });
-        
+
         jpApps.add(new JScrollPane(clbApps));
-        
+
         SearchableUtils.installSearchable(clbProfile);
-        
+
         clbProfile.getCheckBoxListSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent evt) {
                 clbProfileCheckedChanged(evt);
             }
-            
+
         });
         clbProfile.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent evt) {
                 clbProfileSelectionChanged(evt);
             }
-            
+
         });
-        
+
         clbApps.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent evt) {
                 clbAppsSelectionChanged(evt);
             }
-            
+
         });
-        
+
         clbApps.getCheckBoxListSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent evt) {
                 clbAppsCheckedChanged(evt);
             }
-            
+
         });
         ext = new StringListEdit("Extention");
         ext.setUpdatedFun(new StringListEdit.IDataChangedFun() {
@@ -184,7 +186,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 }
             }
         });
-        
+
         ext.setAddChoices(new ValuesEditor.IAddChoices() {
             @Override
             public HashSet<String> getAddChoices() {
@@ -198,10 +200,10 @@ public class SettingsPanel extends javax.swing.JPanel {
                     }
                 }
                 return ret;
-                
+
             }
         });
-        
+
         pExtensions.add(ext);
         afterActions = new StringListEdit("After actions");
         afterActions.setUpdatedFun(new StringListEdit.IDataChangedFun() {
@@ -211,7 +213,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
         pAfterActions.add(afterActions);
-        
+
         beforeActions = new StringListEdit("Before actions");
         beforeActions.setUpdatedFun(new StringListEdit.IDataChangedFun() {
             @Override
@@ -244,14 +246,14 @@ public class SettingsPanel extends javax.swing.JPanel {
         ftHours.setMaximumSize(new Dimension(ftHours.getMaximumSize().width, ftHours.getMinimumSize().height));
         jpCommandParams.setMaximumSize(new Dimension(jpCommandParams.getMaximumSize().width, jpCommandParams.getMinimumSize().height));
     }
-    
+
     private void tfFilenameSuffixesChanged() {
         DownloadSettings.AppProfile pr = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
         if (pr != null) {
 //            pr.setNameSuffixes(tfFilenameSuffixes.getText());
         }
     }
-    
+
     private void clbProfileCheckedChanged(ListSelectionEvent evt) {
         if (!evt.getValueIsAdjusting()) {
             CheckBoxListSelectionModel lsm = (CheckBoxListSelectionModel) evt.getSource();
@@ -276,7 +278,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 //            });
         }
     }
-    
+
     private boolean canRunProfiles() {
 //(DownloadSettings.AppProfile) lmProfile.get(minIndex);
 
@@ -293,7 +295,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         return false;
     }
-    
+
     private int getSelectedNum(CheckBoxList clb) {
         int numSelected = 0;
 //(DownloadSettings.AppProfile) lmProfile.get(minIndex);
@@ -308,40 +310,40 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         return numSelected;
     }
-    
+
     private int getAllSize(CheckBoxList clb) {
         DefaultListModel<Object> lm = (DefaultListModel<Object>) clb.getModel();
         return (clb.getCheckBoxListSelectionModel().getAllEntryIndex() >= 0) ? lm.size() - 1 : lm.size();
-        
+
     }
-    
+
     private void updateAppTitle() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                
+
                 int numSelected = getSelectedNum(clbApps);
                 int allSize = getAllSize(clbApps);
-                
+
                 TitledBorder border = (TitledBorder) jpAppsBase.getBorder();
                 if (allSize <= 0) {
                     border.setTitle(appTitleBase);
                 } else {
                     border.setTitle(appTitleBase + " (" + numSelected + "/" + (getAllSize(clbApps)) + ")");
                 }
-                
+
                 jpAppsBase.repaint();
                 updateStartButton();
             }
         });
-        
+
     }
-    
+
     private void updateProfileTitle() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                
+
                 ((TitledBorder) jpProfileBase.getBorder()).setTitle(profileTitleBase + " (" + getSelectedNum(clbProfile) + "/" + (getAllSize(clbProfile)) + ")");
-                
+
                 jpProfileBase.repaint();
             }
         });
@@ -374,16 +376,16 @@ public class SettingsPanel extends javax.swing.JPanel {
                     int numSelected = (minIndex >= 0) ? (maxIndex - minIndex + 1) : 0;
                     profileSelected(numSelected);
                     clbApps.setValueIsAdjusting(false);
-                    
+
                 }
-                
+
             });
-            
+
         }
     }
-    
+
     private void profileSelectionChanged(DownloadSettings.AppProfile pr) {
-        
+
         clbApps.setValueIsAdjusting(true);
         CheckBoxListSelectionModel clbAppSelectionModel = clbApps.getCheckBoxListSelectionModel();
         ListSelectionListener[] listSelectionListeners = clbAppSelectionModel.getListSelectionListeners();
@@ -412,7 +414,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         for (ListSelectionListener listSelectionListener : listSelectionListeners) {
             clbAppSelectionModel.addListSelectionListener(listSelectionListener);
         }
-        
+
         rbGenesysLogs.setSelected(pr.isIsGenesysName());
         rbCloudLogs.setSelected(!pr.isIsGenesysName());
         ext.setData(pr.getNameSuffixes());
@@ -456,23 +458,23 @@ public class SettingsPanel extends javax.swing.JPanel {
         if (!evt.getValueIsAdjusting()) {
 //                    System.out.println("app List item changed - " + evt);
             ListSelectionModel lsm = (ListSelectionModel) evt.getSource();
-            
+
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
 //                    inquirer.logger.info("changing item 1");
                     int minIndex = lsm.getMinSelectionIndex();
                     int maxIndex = lsm.getMaxSelectionIndex();
-                    
+
                     appSelected((minIndex >= 0));
                 }
-                
+
             });
-            
+
         }
     }
-    
+
     private void clbAppsCheckedChanged(ListSelectionEvent evt) {
-        
+
         if (!evt.getValueIsAdjusting()) {
             CheckBoxListSelectionModel lsm = (CheckBoxListSelectionModel) evt.getSource();
             SwingUtilities.invokeLater(new Runnable() {
@@ -491,15 +493,15 @@ public class SettingsPanel extends javax.swing.JPanel {
                                         .setChecked(lsm.isSelectedIndex(i));
                             }
                         }
-                        
+
                     }
                 }
             });
             updateAppTitle();
         }
-        
+
     }
-    
+
     private void appSelected(boolean itemsSelected) {
         jbAppDelete.setEnabled(itemsSelected);
         jpAppProperties.setEnabled(itemsSelected);
@@ -508,7 +510,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 //        cbLFMTs.setEnabled(singleSelection);
 //        btEditLFMTs.setEnabled(singleSelection);
     }
-    
+
     private void profileSelected(int numSelected) {
         jpAppsBase.setEnabled(numSelected == 1);
         jpAppProperties.setEnabled(numSelected == 1);
@@ -521,11 +523,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbLFMTs.setEnabled(numSelected == 1);
         btEditLFMTs.setEnabled(numSelected == 1);
         ext.setEnabled(numSelected == 1);
-        
+
         int[] selectedIndices = clbApps.getSelectedIndices();
         appSelected(selectedIndices != null && selectedIndices.length == 1);
     }
-    
+
     private String getProfileName(String winTitle, String initial) {
         while (true) {
             String showInputDialog = JOptionPane.showInputDialog(this, winTitle, initial);
@@ -542,7 +544,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         return null;
     }
-    
+
     SettingsPanel(DownloadSettings ds, SettingsDialog dlg) {
         this();
         this.ds = ds;
@@ -627,6 +629,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         jbSelectDirectory = new javax.swing.JButton();
         pBeforeActions = new javax.swing.JPanel();
         pAfterActions = new javax.swing.JPanel();
+        jpStatusScript = new javax.swing.JPanel();
+        jPanel27 = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        jtfStatusScript = new javax.swing.JTextField();
+        jbSelectScript = new javax.swing.JButton();
 
         jpLastFiles.setLayout(new javax.swing.BoxLayout(jpLastFiles, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -965,12 +972,32 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel9.add(jpDownloadParams);
 
+        jpStatusScript.setLayout(new javax.swing.BoxLayout(jpStatusScript, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jPanel27.setLayout(new javax.swing.BoxLayout(jPanel27, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabel4.setText("App status script");
+        jPanel27.add(jLabel4);
+        jPanel27.add(jtfStatusScript);
+
+        jbSelectScript.setText("...");
+        jbSelectScript.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbSelectScriptActionPerformed(evt);
+            }
+        });
+        jPanel27.add(jbSelectScript);
+
+        jpStatusScript.add(jPanel27);
+
+        jPanel9.add(jpStatusScript);
+
         add(jPanel9);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jbProfileAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbProfileAddActionPerformed
         String name = getProfileName("Enter new profile name", null);
-        
+
         if (name != null) {
             addProfile(name);
         }
@@ -979,13 +1006,13 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void jbSelectDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSelectDirectoryActionPerformed
         JFileChooser fc = null;
         String curDir = jtfOutputDir.getText();
-        
+
         if (curDir != null && !curDir.isEmpty()) {
             File f = new File(curDir);
             if (f.isDirectory()) {
                 fc = new FolderChooser(f);
             }
-            
+
         }
         if (fc == null) {
             fc = new FolderChooser();
@@ -1009,7 +1036,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             } else {
                 sPrompt.append(selectedValuesList.size()).append(" profiles ");
             };
-            
+
             if (JOptionPane.showConfirmDialog((Window) this.getRootPane().getParent(),
                     sPrompt.toString(), "Confirmation", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 for (DownloadSettings.AppProfile appProfile : selectedValuesList) {
@@ -1062,7 +1089,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_rbGenesysLogsStateChanged
 
     private void jbAppAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAppAddActionPerformed
-        
+
         if (p == null) {
             tab = getJTablePopup();
             p = new InfoPanel((Window) this.getRootPane().getParent(), "Select applications", tab,
@@ -1086,16 +1113,16 @@ public class SettingsPanel extends javax.swing.JPanel {
             infoTableModel.addRow(new Object[]{app});
         }
         tab.setModel(infoTableModel);
-        
+
         p.doShow();
-        
+
         if (p.getCloseCause() == JOptionPane.OK_OPTION) {
             int[] selectedRows = tab.getSelectedRows();
 //            HashSet<String> selValues = new HashSet<>(selectedRows.length);
             DownloadSettings.AppProfile profile = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
             for (int selectedRow : selectedRows) {
                 String app = (String) infoTableModel.getValueAt(selectedRow, 0);
-                
+
                 DownloadSettings.App addApp = profile.addApp(app, GetLogs.getHosts().getAppDir(app));
 //                lmApps.addElement(addApp);
 //                selValues.add((String) infoTableModel.getValueAt(selectedRow, 0));
@@ -1127,18 +1154,18 @@ public class SettingsPanel extends javax.swing.JPanel {
                     if (lmApps.size() == 1 && (lmApps.getElementAt(0).equals(CheckBoxList.ALL_ENTRY))) {
                         lmApps.remove(0);
                     }
-                    
+
                 }
             }
         }
     }//GEN-LAST:event_jbAppDeleteActionPerformed
 
     private void btEditLFMTsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btEditLFMTsActionPerformed
-        
+
         if (lfmtEditor == null) {
             lfmtEditor = new ValuesEditor((Window) this.getRootPane().getParent(), "List of LFMTs",
                     "Select %d LFMTs");
-            
+
         }
         ArrayList<Object[]> values = new ArrayList<>();
         for (DownloadSettings.LFMTHostInstance hi : ds.getLfmtHostInstances()) {
@@ -1192,7 +1219,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btEditLFMTsActionPerformed
 
     private void cbLFMTsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbLFMTsItemStateChanged
-        
+
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             Object item = evt.getItem();
             DownloadSettings.AppProfile prof = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
@@ -1238,6 +1265,10 @@ public class SettingsPanel extends javax.swing.JPanel {
             Utils.SystemClipboard.copy(selectedApp.getHost());
         }    }//GEN-LAST:event_cbmCopyHostNameActionPerformed
 
+    private void jbSelectScriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSelectScriptActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jbSelectScriptActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;
     private javax.swing.JButton btEditLFMTs;
@@ -1254,6 +1285,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JFormattedTextField ftHours;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
@@ -1268,6 +1300,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel24;
     private javax.swing.JPanel jPanel25;
     private javax.swing.JPanel jPanel26;
+    private javax.swing.JPanel jPanel27;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
@@ -1280,6 +1313,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JButton jbProfileRename;
     private javax.swing.JButton jbProfileSaveAs;
     private javax.swing.JButton jbSelectDirectory;
+    private javax.swing.JButton jbSelectScript;
     private javax.swing.JPanel jpAppProperties;
     private javax.swing.JPanel jpApps;
     private javax.swing.JPanel jpAppsBase;
@@ -1292,8 +1326,10 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jpRangeParams;
     private javax.swing.JPanel jpRangeSelect;
     private javax.swing.JPanel jpRegEx;
+    private javax.swing.JPanel jpStatusScript;
     private javax.swing.JPopupMenu jpmAppSettings;
     private javax.swing.JTextField jtfOutputDir;
+    private javax.swing.JTextField jtfStatusScript;
     private javax.swing.JLabel lCommand;
     private javax.swing.JLabel lGrepText;
     private javax.swing.JLabel lHours;
@@ -1334,16 +1370,16 @@ public class SettingsPanel extends javax.swing.JPanel {
         if (selIdx >= 0) {
             clbProfile.setSelectedIndex(selIdx);
         }
-        
+
         int[] selectedIndices = clbProfile.getSelectedIndices();
         Dimension minSize = jpProfileBase.getPreferredSize();
         Dimension maximumSize = jpProfileBase.getMaximumSize();
         Dimension maxSize = new Dimension(minSize.width, maximumSize.height);
         jpProfileBase.setMaximumSize(maxSize);
         profileSelected(selectedIndices.length);
-        
+
     }
-    
+
     private void loadConfig() {
         loadProfile(null);
 
@@ -1356,11 +1392,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbUseRSync.setSelected(ds.isUseRSync());
         afterActions.setData(ds.getAfterActions(), true);
         beforeActions.setData(ds.getBeforeActions(), true);
+        jtfStatusScript.setText(ds.getStatusScript());
 //        afterActions.setMaximumSize(new Dimension(afterActions.getMaximumSize().width, afterActions.getHeight()));
 //        pAfterActions.setMaximumSize(new Dimension(pAfterActions.getMaximumSize().width, afterActions.getHeight()));
 
         initCB(cbTimeProfile, ds.getTimeProfile(), new TimeProfile[]{TimeProfile.VALUE_FILES, TimeProfile.REGEX, TimeProfile.RANGE}, null);
-        
+
         ftHours.setText(ds.getHours());
         dtRange.setTimeRange(ds.getTimeRange());
         timeProfileChanged((TimeProfile) cbTimeProfile.getSelectedItem());
@@ -1376,21 +1413,21 @@ public class SettingsPanel extends javax.swing.JPanel {
         updateLFMTs();
         updateProfileTitle();
     }
-    
+
     private void addProfile(String showInputDialog) {
 //        DownloadSettings.AppProfile addProfile = ds.addProfile(showInputDialog); //To change body of generated methods, choose Tools | Templates.
 //        lmProfile.addElement(addProfile);
         DownloadSettings.AppProfile addProfile = ds.addProfile(showInputDialog);
         loadProfile(addProfile);
     }
-    
+
     private void addProfile(String showInputDialog, DownloadSettings.AppProfile appPr) {
 //        DownloadSettings.AppProfile addProfile = ds.addProfile(showInputDialog, appPr); //To change body of generated methods, choose Tools | Templates.
 //        lmProfile.addElement(addProfile);
         DownloadSettings.AppProfile addProfile = ds.addProfile(showInputDialog, appPr);
         loadProfile(addProfile);
     }
-    
+
     public void saveConfig() {
         ds.setUseRSync(cbUseRSync.isSelected());
 //        ds.setListFiles(cbListFiles.isSelected());
@@ -1407,7 +1444,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         ds.setTimeRange(dtRange.getTimeRangeAlways());
         ds.setCMDDate(tfDateRegex.getText());
         ds.setCMDTime(tfTimeRegex.getText());
-        
+        ds.setStatusScript(jtfStatusScript.getText());
+
         Gson gson = new GsonBuilder()
                 .enableComplexMapKeySerialization()
                 .serializeNulls()
@@ -1416,20 +1454,20 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .setPrettyPrinting()
                 .setVersion(1.0)
                 .create();
-        
+
         try {
             OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(GetLogs.getsGUIProfile()));
             gson.toJson(ds, writer);
-            
+
             writer.close();
         } catch (FileNotFoundException ex) {
             logger.log(org.apache.logging.log4j.Level.FATAL, ex);
         } catch (IOException ex) {
             logger.log(org.apache.logging.log4j.Level.FATAL, ex);
         }
-        
+
     }
-    
+
     private void timeProfileChanged(TimeProfile timeProfile) {
         jpRangeParams.removeAll();
         JPanel jpToAdd = null;
@@ -1439,7 +1477,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 break;
             case RANGE:
                 jpToAdd = jpRange;
-                
+
                 break;
             case VALUE_FILES:
                 jpToAdd = jpLastFiles;
@@ -1451,7 +1489,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 //            jpToAdd.setVisible(true);
 //            jpToAdd.invalidate();
             jpRangeParams.setMaximumSize(new Dimension(jpRangeParams.getMaximumSize().width, jpRangeParams.getMinimumSize().height));
-            
+
             jpRangeSelect.revalidate();
 //            jpRangeSelect.repaint();
         }
@@ -1463,21 +1501,21 @@ public class SettingsPanel extends javax.swing.JPanel {
 //        tfDateRegex.setEnabled(timeProfile == TimeProfile.REGEX);
 //        tfTimeRegex.setEnabled(timeProfile == TimeProfile.REGEX);
     }
-    
+
     private void updateLFMTs() {
         DefaultComboBoxModel<DownloadSettings.LFMTHostInstance> cb
                 = new DefaultComboBoxModel(ds.getLfmtHostInstances().toArray());
         cbLFMTs.setModel(cb);
     }
-    
+
     private void cbCommandSelectionChanged(GetCommand getCommand) {
         cbUseRSync.setEnabled(getCommand == GetCommand.GET || getCommand == GetCommand.GREPGET);
 //        cbListFiles.setEnabled(getCommand == GetCommand.LS);
         tfGrepText.setEnabled(getCommand == GetCommand.GREP || getCommand == GetCommand.GREPGET);
         lGrepText.setEnabled(getCommand == GetCommand.GREP || getCommand == GetCommand.GREPGET);
-        
+
     }
-    
+
     private void initCB(JComboBox cbCommand, Object selectedObject, Object[] values, Object[] exceptValues) {
         ActionListener[] itemListeners = cbCommand.getActionListeners();
         for (ActionListener itemListener : itemListeners) {
@@ -1503,18 +1541,18 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         cbCommand.setSelectedItem(selectedObject);
     }
-    
+
     private void updateStartButton() {
         dlg.setJBRunEnabled(
                 canRun()
         );
     }
-    
+
     boolean canRun() {
         return canRunProfiles()
                 && (cbAppLogs.isSelected() || cbLCALogs.isSelected());
     }
-    
+
     private boolean hasCheckedApp(DownloadSettings.AppProfile elementAt) {
         for (DownloadSettings.App app : elementAt.getApps()) {
             if (app.isChecked()) {
@@ -1523,16 +1561,53 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         return false;
     }
-    
+
+    void setUncheckNonPrimary(Pair<ArrayList<String>, ArrayList<String>> cmdOuts) {
+        if (cmdOuts != null) {
+            for (String string : cmdOuts.getKey()) {
+                String[] split = StringUtils.split(string, ",", 3);
+                logger.debug(StringUtils.join(split, " - "));
+                boolean appFound = false;
+                for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
+                    for (DownloadSettings.App app : appProfile.getApps()) {
+                        if (app.getName().equals(StringUtils.trimToEmpty(split[0]))) {
+                            appFound = true;
+                            if (!StringUtils.trimToEmpty(split[1]).equals("PRIMARY")) {
+                                SettingsDialog.info("Unchecking " + appProfile.getName() + "\\" + app.getName());
+                                app.setChecked(false);
+                            }
+                        }
+
+                    }
+
+                }
+                if (!appFound) {
+                    SettingsDialog.info("Not found app for " + string);
+                }
+            }
+            int idx = clbProfile.getSelectedIndex();
+            if (idx >= 0) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        clbProfile.clearSelection();
+                        clbProfile.setSelectedIndex(idx);
+                    }
+                });
+            }
+        }
+
+    }
+
     public enum TimeProfile {
-        
+
         VALUE_HOURS("Last hours:"),
         VALUE_FILES("Last files:"),
         REGEX("Date/Time shell regex"),
         RANGE("Should cover range");
-        
+
         private final String name;
-        
+
         private TimeProfile(String s) {
             name = s;
         }
@@ -1543,29 +1618,29 @@ public class SettingsPanel extends javax.swing.JPanel {
         public boolean equalsName(String otherName) {
             return (otherName == null) ? false : name.toLowerCase().equals(otherName.toLowerCase());
         }
-        
+
         public String toString() {
             return this.name;
         }
-        
+
     }
-    
+
     public static class InfoPanel extends StandardDialog {
-        
+
         private int closeCause = JOptionPane.CANCEL_OPTION;
         private JTable theTab;
         private ArrayList<JButton> addButtons;
         private final String selectedFormat;
         private TableColumnAdjuster tca;
-        
+
         public int getCloseCause() {
             return closeCause;
         }
-        
+
         public void setCloseCause(int closeCause) {
             this.closeCause = closeCause;
         }
-        
+
         private void selectionChanged(JButton bt, JTable tab) {
             int rowsSelected = tab.getSelectedRows().length;
             bt.setEnabled(rowsSelected > 0);
@@ -1573,7 +1648,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     ? "Empty selection"
                     : String.format(selectedFormat, rowsSelected));
         }
-        
+
         InfoPanel(Window parent, String title, JTable tab, String selectedFormat) {
             super(parent, title);
             this.addButtons = new ArrayList<>();
@@ -1584,22 +1659,22 @@ public class SettingsPanel extends javax.swing.JPanel {
             jScrollPane = new JScrollPane(theTab);
             theTab.getTableHeader().setVisible(true);
             theTab.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            
+
         }
-        
+
         public void doShow() {
             this.setLocationRelativeTo(getParent());
             tca.adjustColumns();
-            
+
             Dimension d = theTab.getPreferredSize();
-            
+
             d.height = 500;
             d.width += jScrollPane.getVerticalScrollBar().getMaximumSize().width + 4;
             jScrollPane.setPreferredSize(d);
             pack();
-            
+
             CenterWindow(this);
-            
+
             if (logger.isTraceEnabled()) {
                 logger.trace("Show info PanelDialog; title=" + getTitle() + "; tab cols:" + theTab.getColumnCount() + " rows: " + theTab.getRowCount());
                 StringBuilder s = new StringBuilder(512);
@@ -1610,18 +1685,18 @@ public class SettingsPanel extends javax.swing.JPanel {
                     }
                     logger.trace(s);
                 }
-                
+
             }
-            
+
             setVisible(true);
         }
-        
+
         @Override
         public JComponent createBannerPanel() {
             return null;
         }
         JScrollPane jScrollPane;
-        
+
         @Override
         public JComponent createContentPanel() {
 //                        JPanel panel = new JPanel(new BorderLayout(10, 10));
@@ -1630,15 +1705,15 @@ public class SettingsPanel extends javax.swing.JPanel {
 //            panel.add(mainPanel, BorderLayout.CENTER);
 //            return panel;
             JPanel listPane = new JPanel(new BorderLayout());
-            
+
             listPane.add(jScrollPane, BorderLayout.CENTER);
-            
+
             return listPane;
         }
-        
+
         JButton jbFilter;
         ButtonPanel buttonPanel;
-        
+
         @Override
         public ButtonPanel createButtonPanel() {
             buttonPanel = new ButtonPanel();
@@ -1647,7 +1722,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
             JButton cancelButton = new JButton();
             buttonPanel.addButton(cancelButton);
-            
+
             cancelButton.setAction(new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     setDialogResult(RESULT_CANCELLED);
@@ -1657,7 +1732,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 }
             });
             cancelButton.setText("Close");
-            
+
             jbFilter = new JButton("Use as filter");
             buttonPanel.addButton(jbFilter);
             theTab.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -1677,62 +1752,62 @@ public class SettingsPanel extends javax.swing.JPanel {
                     dispose();
                 }
             });
-            
+
             String act = "ApplyFilter";
-            
+
             theTab.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0), act);
             theTab.getActionMap().put(act, jbFilter.getAction());
-            
+
             setDefaultCancelAction(cancelButton.getAction());
             setDefaultAction(jbFilter.getAction());
             getRootPane().setDefaultButton(jbFilter);
-            
+
             buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             buttonPanel.setSizeConstraint(ButtonPanel.NO_LESS_THAN); // since the checkbox is quite wide, we don't want all of them have the same size.
             return buttonPanel;
         }
-        
+
         private void doShow(String theTitle) {
             this.setTitle(theTitle);
             doShow();
         }
-        
+
         private void addButton(JButton jButton) {
             addButtons.add(jButton);
         }
     }
-    
+
     private JTablePopup uniquePopup;
-    
+
     private JTablePopup getJTablePopup() {
         if (uniquePopup == null) {
-            
+
             uniquePopup = new JTablePopup() {
                 @Override
                 void theMousePressed(MouseEvent e) {
-                    
+
                 }
-                
+
                 @Override
                 void callingPopup() {
-                    
+
                 }
             };
             uniquePopup.getTableHeader().setVisible(false);
             JPopupMenu popupMenu1 = uniquePopup.getPopupMenu();
-            
+
             String act = "Search (Ctrl-F)";
             uniquePopup.getInputMap().put(KeyStroke.getKeyStroke('F', java.awt.event.InputEvent.CTRL_DOWN_MASK), act);
             uniquePopup.getActionMap().put(act, new FindKeys(uniquePopup));
-            
+
             act = "SearchForward (F3)";
             uniquePopup.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F3, 0), act);
             uniquePopup.getActionMap().put(act, new FindForward(uniquePopup));
-            
+
             act = "SearchBack (Shift-F3)";
             uniquePopup.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F3, java.awt.event.InputEvent.SHIFT_DOWN_MASK), act);
             uniquePopup.getActionMap().put(act, new FindBack(uniquePopup));
-            
+
             popupMenu1.add(new Find());
             popupMenu1.add(new FindNext());
             popupMenu1.add(new FindPrevius());
@@ -1740,191 +1815,191 @@ public class SettingsPanel extends javax.swing.JPanel {
             popupMenu1.add(new FindAndSelect());
             popupMenu1.add(new ReverseSelection());
             popupMenu1.addSeparator();
-            
+
         }
         return uniquePopup;
     }
-    
+
     protected class FindBack extends AbstractAction {
-        
+
         private final JTablePopup tab;
-        
+
         public FindBack(JTablePopup aThis) {
             tab = aThis;
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
             tab.showFindDialog();
         }
     }
-    
+
     protected class FindForward extends AbstractAction {
-        
+
         private final JTablePopup tab;
-        
+
         public FindForward(JTablePopup aThis) {
             tab = aThis;
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
             tab.showFindDialog();
-            
+
         }
     }
-    
+
     class FindKeys extends AbstractAction {
-        
+
         private final JTablePopup tab;
-        
+
         public FindKeys(JTablePopup tab) {
             super();
             this.tab = tab;
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
             tab.showFindDialog();
         }
-        
+
     }
-    
+
     class Find extends AbstractAction {
-        
+
         public Find() {
             super("Find (Ctrl-F)");
             putValue(SHORT_DESCRIPTION, "Search in the table (Ctrl-F)");
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
 
 //            Frame theParent = getTheParent(e);
             Component c = (Component) e.getSource();
             JPopupMenu popup = (JPopupMenu) c.getParent();
-            
+
             ((JTablePopup) popup.getInvoker()).showFindDialog();
-            
+
         }
-        
+
         private Frame getTheParent(ActionEvent e) {
             Component c = (Component) e.getSource();
             JPopupMenu popup = (JPopupMenu) c.getParent();
             return (Frame) ((JTable) popup.getInvoker()).getRootPane().getParent();
         }
-        
+
     }
-    
+
     class FindAndSelect extends AbstractAction {
-        
+
         public FindAndSelect() {
             super("Find and select");
             putValue(SHORT_DESCRIPTION, "Find and select");
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
 
 //            Frame theParent = getTheParent(e);
             Component c = (Component) e.getSource();
             JPopupMenu popup = (JPopupMenu) c.getParent();
-            
+
             ((JTablePopup) popup.getInvoker()).findAndSelect();
-            
+
         }
-        
+
         private Frame getTheParent(ActionEvent e) {
             Component c = (Component) e.getSource();
             JPopupMenu popup = (JPopupMenu) c.getParent();
             return (Frame) ((JTable) popup.getInvoker()).getRootPane().getParent();
         }
-        
+
     }
-    
+
     class ReverseSelection extends AbstractAction {
-        
+
         public ReverseSelection() {
             super("Reverse selection");
             putValue(SHORT_DESCRIPTION, "Find and select");
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
 
 //            Frame theParent = getTheParent(e);
             Component c = (Component) e.getSource();
             JPopupMenu popup = (JPopupMenu) c.getParent();
-            
+
             ((JTablePopup) popup.getInvoker()).reverseSelection();
-            
+
         }
-        
+
         private Frame getTheParent(ActionEvent e) {
             Component c = (Component) e.getSource();
             JPopupMenu popup = (JPopupMenu) c.getParent();
             return (Frame) ((JTable) popup.getInvoker()).getRootPane().getParent();
         }
-        
+
     }
-    
+
     class FindNext extends AbstractAction {
-        
+
         public FindNext() {
             super("Find next (F3)");
             putValue(SHORT_DESCRIPTION, "Find next (F3)");
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
     }
-    
+
     class FindPrevius extends AbstractAction {
-        
+
         public FindPrevius() {
             super("Find previous (Shift-F3)");
             putValue(SHORT_DESCRIPTION, "Find previous (Shift-F3)");
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
     }
-    
+
     JTablePopup tab;
     JTablePopup tabLFMT;
-    
+
     class EditLFMTDialog extends StandardDialog {
-        
+
         private EnterPanel lfmtBaseDir;
-        
+
         public EditLFMTDialog() {
             super();
             setTitle("Edit LFMT host");
         }
-        
+
         class EnterPanel {
-            
+
             public JPanel getEnterPanel() {
                 return enterPanel;
             }
-            
+
             private final JTextField tbValue;
             private JPanel enterPanel;
-            
+
             public String getText() {
                 return tbValue.getText();
             }
-            
+
             public void setText(String txt) {
                 tbValue.setText(txt);
             }
-            
+
             EnterPanel(String title) {
                 enterPanel = new JPanel();
                 enterPanel.setLayout(new BoxLayout(enterPanel, BoxLayout.LINE_AXIS));
@@ -1933,27 +2008,27 @@ public class SettingsPanel extends javax.swing.JPanel {
                 enterPanel.add(tbValue);
             }
         }
-        
+
         EnterPanel lfmt;
         EnterPanel lfmtInstance;
-        
+
         public EnterPanel getLfmt() {
             return lfmt;
         }
-        
+
         public EnterPanel getLfmtInstance() {
             return lfmtInstance;
         }
-        
+
         public EnterPanel getBaseDir() {
             return lfmtBaseDir;
         }
-        
+
         @Override
         public JComponent createBannerPanel() {
             return null;
         }
-        
+
         @Override
         public JComponent createContentPanel() {
             JPanel content = new JPanel();
@@ -1966,13 +2041,13 @@ public class SettingsPanel extends javax.swing.JPanel {
             content.add(lfmtBaseDir.getEnterPanel());
             return content;
         }
-        
+
         @Override
         public ButtonPanel createButtonPanel() {
             ButtonPanel buttonPanel = new ButtonPanel();
             JButton cancelButton = new JButton();
             buttonPanel.addButton(cancelButton);
-            
+
             cancelButton.setAction(new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     setDialogResult(RESULT_CANCELLED);
@@ -1981,7 +2056,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 }
             });
             cancelButton.setText("Close");
-            
+
             JButton jbOK = new JButton("OK");
             buttonPanel.addButton(jbOK);
 
@@ -1993,22 +2068,22 @@ public class SettingsPanel extends javax.swing.JPanel {
                     dispose();
                 }
             });
-            
+
             String act = "OK";
-            
+
             setDefaultCancelAction(cancelButton.getAction());
             setDefaultAction(jbOK.getAction());
             getRootPane().setDefaultButton(jbOK);
-            
+
             buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             buttonPanel.setSizeConstraint(ButtonPanel.NO_LESS_THAN); // since the checkbox is quite wide, we don't want all of them have the same size.
             return buttonPanel;
         }
-        
+
         public boolean doShow() {
-            
+
             setModal(true);
-            
+
             pack();
 
 //            ScreenInfo.CenterWindow(this);

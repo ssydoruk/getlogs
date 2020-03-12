@@ -1,0 +1,137 @@
+#!/bin/bash
+
+
+CSHOST=$1
+ shift
+CSPORT=$1
+ shift
+CSHOST2=$1
+ shift
+CSPORT2=$1 
+shift
+SCSHOST=$1
+ shift
+SCSPORT=$1
+ shift
+SCSHOST2=$1
+ shift
+SCSPORT2=$1
+ shift
+CSAPP=$1
+ shift
+CSUSER=$1
+ shift
+CSPWD=$1
+ shift
+CERT=$1
+ shift
+KEY=$1
+ shift
+CACERT=$1
+ shift
+REMOTEUSER=$1
+ shift
+SCSAPP=$1
+ shift
+
+if [ -z $1 ]
+then
+	echo "
+usage: $0 <param1>
+will restart snmpd on host <param1>
+"
+	exit 1
+
+fi
+
+/Users/stepan_sydoruk/bin/s1 $SCSHOST "perl -X -e \" 
+no warnings;
+my \\\$cshost=\\\$ARGV[0]; shift @ARGV; 
+my \\\$csport=\\\$ARGV[0]; shift @ARGV; 
+my \\\$csapp=\\\$ARGV[0]; shift @ARGV; 
+my \\\$csuser=\\\$ARGV[0]; shift @ARGV; 
+my \\\$cspwd=\\\$ARGV[0]; shift @ARGV; 
+my \\\$scshost=\\\$ARGV[0]; shift @ARGV; 
+my \\\$scsport=\\\$ARGV[0]; shift @ARGV; 
+my \\\$cert=\\\$ARGV[0]; shift @ARGV; 
+my \\\$key=\\\$ARGV[0]; shift @ARGV; 
+my \\\$cacert=\\\$ARGV[0]; shift @ARGV; 
+my \\\$remoteuser=\\\$ARGV[0]; shift @ARGV; 
+my \\\$scsapp=\\\$ARGV[0]; shift @ARGV; 
+my \\\$cshost2=\\\$ARGV[0]; shift @ARGV; 
+my \\\$csport2=\\\$ARGV[0]; shift @ARGV; 
+my \\\$scshost2=\\\$ARGV[0]; shift @ARGV; 
+my \\\$scsport2=\\\$ARGV[0]; shift @ARGV; 
+my \\\$curCSHost=\\\$cshost;
+my \\\$curCSPort=\\\$csport;
+my \\\$curSCSHost=\\\$scshost;
+my \\\$curSCSPort=\\\$scsport;
+MAINLOOP: foreach my \\\$app(@ARGV) {
+	while(1) { 
+		my \\\$cmd=qq{ sudo -u \\\$remoteuser bash -l -c \\\" \\\$scsapp -cshost \\\$curCSHost -csport \\\$curCSPort -csappname \\\$csapp 
+ 			-csuser \\\$csuser -cspassword \\\$cspwd -secure -scshost \\\$curSCSHost 
+			-scsport \\\$curSCSPort -cert \\\$cert -key \\\$key -ca-cert \\\$cacert -getappstatus \\\$app 2>&1 \\\" 
+			}; 
+		my \\\$v=qx(\\\$cmd); 
+		my \\\$exCode=\\\$? >> 8; 
+		my \\\$ret = \\\$app.\\\",\\\"; 
+		if( \\\$exCode == 6 ) { 
+			my @ar = split (/^/, \\\$v); 
+			my \\\$status;
+			if( defined \\\$ar[0] && defined \\\$ar[1] ) { 
+ 				if( \\\$ar[1] =~ /has status \\\"([^\\\"]+)\\\", runmode \\\"([^\\\"]+)\\\"/ ){ 
+	  				\\\$status=\\\$2; 
+ 				} 
+			} 
+			if( !defined \\\$status ) { 
+				\\\$status=qq{undefined}; 
+			} 
+			\\\$ret=\\\$ret.\\\$status; 
+			print qq{ \\\$ret \n};
+			last; 
+		 }
+		 elsif( \\\$exCode==252) {
+			\\\$ret=\\\$ret.qq{ERROR}.qq{,}.\\\$v; 
+			
+			print qq{ \\\$ret \n};
+			last;
+		 }
+		 else {
+			if( \\\$curCSHost eq \\\$cshost ) {
+				\\\$curCSHost = \\\$cshost2;
+				\\\$curCSPort = \\\$csport2;
+			}
+			elsif( \\\$curSCSHost eq  \\\$scshost ) {
+				\\\$curSCSHost = \\\$scshost2;
+				\\\$curSCSPort=  \\\$scsport2;
+			} 
+			else {
+				print qq{ --------------- error: tried all configservers and scss -----------\n};
+				last MAINLOOP;
+			}
+		 }
+		  
+	}
+} 
+\" 
+$CSHOST \
+$CSPORT \ 
+$CSAPP \
+$CSUSER \
+$CSPWD \
+$SCSHOST \
+$SCSPORT \
+$CERT \
+$KEY \
+$CACERT \
+$REMOTEUSER \ 
+$SCSAPP \
+$CSHOST2 \
+$CSPORT2 \
+$SCSHOST2 \
+$SCSPORT2 \
+$* \ 
+"
+
+exit 0
+

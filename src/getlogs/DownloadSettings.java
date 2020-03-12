@@ -7,9 +7,11 @@ package getlogs;
 
 import Utils.Pair;
 import Utils.UTCTimeRange;
+import java.io.IOException;
 import java.time.DateTimeException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -35,9 +37,34 @@ public class DownloadSettings {
     private boolean appLogs;
     private boolean lcaLogs;
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
+    private String statusScript = "/Users/stepan_sydoruk/bin/getAppStatus";
+
+    public String getStatusScript() {
+        return statusScript;
+    }
+
+    public void setStatusScript(String statusScript) {
+        this.statusScript = statusScript;
+    }
 
     private ArrayList<Pair<String, Boolean>> afterActions;
     private ArrayList<Pair<String, Boolean>> beforeActions;
+
+    public Collection<App> getCheckedApps() {
+        ArrayList<App> ret = new ArrayList<>();
+        for (DownloadSettings.AppProfile appProfile : getAppProfiles()) {
+            if (appProfile.isSelected()) {
+                GetLogs.logger.debug("processing command for profile " + appProfile);
+                for (DownloadSettings.App app : appProfile.getApps()) {
+                    GetLogs.logger.debug("processing app  " + app + ": " + app.isChecked());
+                    if (app.isChecked()) {
+                        ret.add(app);
+                    }
+                }
+            }
+        }
+        return (ret.isEmpty()) ? null : ret;
+    }
 
     public ArrayList<Pair<String, Boolean>> getBeforeActions() {
         return beforeActions;
@@ -538,8 +565,8 @@ public class DownloadSettings {
             this.appDir = appDir;
 
         }
-        
-        public String getHost(){
+
+        public String getHost() {
             return GetLogs.getHosts().lookupHost(name).getHost();
         }
 

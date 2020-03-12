@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -444,6 +445,33 @@ public class CommandExecutor {
         }
     }
 
+    Pair<ArrayList<String>, ArrayList<String>> uncheckNonPrimary() {
+        Collection<App> checkedApps = ds.getCheckedApps();
+        if (checkedApps != null) {
+            ArrayList<String> appNames = new ArrayList<>(checkedApps.size());
+            for (App checkedApp : checkedApps) {
+                appNames.add("\"" + checkedApp.getName() + "\"");
+            }
+            try {
+                Pair<ArrayList<String>, ArrayList<String>> cmdOuts = executeCommand(StringUtils.join(new String[]{ds.getStatusScript(), StringUtils.join(appNames, " ")}, " "), true, true);
+                logger.log(Level.INFO, StringUtils.join(cmdOuts));
+                if (cmdOuts != null) {
+                    for (String string : cmdOuts.getKey()) {
+                        String[] split = StringUtils.split(string, ",", 3);
+                        logger.log(Level.INFO, StringUtils.join(split, " - "));
+
+                    }
+                }
+                return cmdOuts;
+            } catch (IOException ex) {
+                Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
+        }
+        return null;
+    }
+
     private class ExtProcessManager {
 
         HashSet<ExtProcess> processes = new HashSet<>(2);
@@ -560,7 +588,7 @@ public class CommandExecutor {
 
     }
 
-    private void executeCommand(String key) throws IOException, InterruptedException {
+    private Pair<ArrayList<String>, ArrayList<String>> executeCommand(String key, boolean saveStdOut, boolean saveStdErr) throws IOException, InterruptedException {
         ArrayList<String> cmdParams = new ArrayList<>();
         String[] split = StringUtils.split(key);
         for (String string : split) {
@@ -568,13 +596,20 @@ public class CommandExecutor {
         }
         logMessage(Level.INFO, "Executing [" + StringUtils.join(cmdParams, " "));
 //        logger.trace("executing: " + rsyncParams);
-        ExtProcess procRSync = extProcessManager.addProcess(new ExtProcessFinishing(
+        ExtProcess proc = extProcessManager.addProcess(new ExtProcessFinishing(
                 cmdParams, true, true));
-        procRSync.startProcess();
-        int waitFor = procRSync.waitFor();
+        proc.startProcess(saveStdOut, saveStdErr);
+        int waitFor = proc.waitFor();
         logger.debug("process terminated, result: " + waitFor);
 
-        extProcessManager.doneProcess(procRSync);
+        extProcessManager.doneProcess(proc);
+        return (proc.getExitCode() != 255 && (saveStdOut || saveStdErr))
+                ? new Pair(proc.getSTDOut(), proc.getErrBuf()) : null;
+
+    }
+
+    private Pair<ArrayList<String>, ArrayList<String>> executeCommand(String key) throws IOException, InterruptedException {
+        return executeCommand(key, false, false);
 
     }
 

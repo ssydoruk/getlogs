@@ -5,6 +5,7 @@
  */
 package getlogs;
 
+import Utils.Pair;
 import com.jidesoft.dialog.ButtonPanel;
 import com.jidesoft.dialog.StandardDialog;
 import static com.jidesoft.dialog.StandardDialog.RESULT_CANCELLED;
@@ -12,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -116,6 +118,21 @@ public class SettingsDialog extends StandardDialog {
         });
         buttonPanel.addButton(lastLSButton);
 
+        JButton uncheckBackup = new JButton(new AbstractAction("Uncheck backup") {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    uncheckBackup();
+//                    cancelButtonAction(e);
+                } catch (IOException ex) {
+                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+        });
+        buttonPanel.addButton(uncheckBackup);
+
         jbRun = new JButton(new AbstractAction("Start!") {
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -140,14 +157,30 @@ public class SettingsDialog extends StandardDialog {
         return buttonPanel;
     }
 
-    private void executeCommand(ActionEvent e) throws IOException, InterruptedException {
+    private void prepareDS() {
         settingsPanel.saveConfig();
         ce.setDs(settingsPanel.getDs());
+
+    }
+
+    private void executeCommand(ActionEvent e) throws IOException, InterruptedException {
+        prepareDS();
         ce.executeCmd(this);
     }
 
     private void showRecent() throws IOException, InterruptedException {
+        prepareDS();
         ce.showRecent();
+    }
+
+    private void uncheckBackup() throws IOException, InterruptedException {
+        prepareDS();
+//        Pair<ArrayList<String>, ArrayList<String>> tst = new Pair<>(new ArrayList(), null);
+//        ArrayList<String> key = tst.getKey();
+//        key.add("esv1_sip_agent_1_b,PRIMARY");
+//        key.add("esv1_sip_agent_1_p,BACKUP");
+//        settingsPanel.setUncheckNonPrimary(tst);
+        settingsPanel.setUncheckNonPrimary(ce.uncheckNonPrimary());
     }
 
     private void closeDialog(int dialogResult) {
