@@ -6,14 +6,18 @@
 package getlogs;
 
 import Utils.Pair;
+import static Utils.SystemClipboard.getSystemClipboard;
 import Utils.UTCTimeRange;
 import Utils.UnixProcess.ExtProcess;
 import Utils.Util;
 import static Utils.Util.rSyncAddClause;
 import com.jidesoft.dialog.StandardDialog;
-import getlogs.DownloadSettings.App;
-import getlogs.DownloadSettings.AppProfile;
+import getlogs.App;
+import getlogs.AppProfile;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -186,20 +190,9 @@ public class CommandExecutor {
     }
 
     SettingsPanel.InfoPanel lsOutput;
+    SettingsPanel.InfoPanel lsPasteOutput;
 
-    public void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws IOException, InterruptedException {
-        SettingsDialog.info("executing for profile [" + appProfile.toString() + "] ap[" + ap + "] lfmt:" + isLFMT);
-        HostAppdir theAppHost = null;
-        if (GetLogs.appHost == null || GetLogs.appHost.isEmpty()) {
-            theAppHost = GetLogs.getHosts().get(ap.getName()); // first for one application only
-            if (theAppHost == null) {
-                GetLogs.exitHelp("Host for app [" + ap + "] not found; exiting");
-                return;
-            }
-        } else {
-            theAppHost = new HostAppdir(GetLogs.appHost, null);
-        }
-
+    private String getLogDir(AppProfile appProfile, App ap, boolean isLFMT, String h) {
         StringBuilder logsDir = new StringBuilder();
 
         if (isLFMT) {
@@ -214,13 +207,30 @@ public class CommandExecutor {
                         .append(lfmtHostInstance.getInstance()).append("_cls");
             };
 
-            logsDir.append("/").append(theAppHost.toString()) //                    .append("/")
+            logsDir.append("/").append(h) //                    .append("/")
                     //                    .append(ap)
                     ;
         } else {
             logsDir.append(GetLogs.getProdBaseDir());
 
         }
+        return logsDir.toString();
+    }
+
+    public void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws IOException, InterruptedException {
+        SettingsDialog.info("executing for profile [" + appProfile.toString() + "] ap[" + ap + "] lfmt:" + isLFMT);
+        HostAppdir theAppHost = null;
+        if (GetLogs.appHost == null || GetLogs.appHost.isEmpty()) {
+            theAppHost = GetLogs.getHosts().get(ap.getName()); // first for one application only
+            if (theAppHost == null) {
+                GetLogs.exitHelp("Host for app [" + ap + "] not found; exiting");
+                return;
+            }
+        } else {
+            theAppHost = new HostAppdir(GetLogs.appHost, null);
+        }
+
+        String logsDir = getLogDir(appProfile, ap, isLFMT, theAppHost.toString());
 
         if (ds.isAppLogs()) {
             ArrayList<StringBuilder> fileNameClause = getFileNameClause(appProfile, ap, false);
@@ -281,7 +291,7 @@ public class CommandExecutor {
         return preQuoteDouble() + "\"";
     }
 
-    private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir,
+    private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
             ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<JTableFileEntry> lsFiles = null;
         ArrayList<String> sshParams = new ArrayList<>();
@@ -472,6 +482,74 @@ public class CommandExecutor {
         return null;
     }
 
+    private void lsPastedFiles(HashMap<FilesToGet, ArrayList<String>> r) {
+        QueryTaskBase tsk = null;
+        lsFilesAll.clear();
+        if (!isText) {
+            if (lsTab == null) {
+                lsTab = new JTableFileList();
+            }
+            lsTab.clearTable();
+
+        }
+
+        tsk = new QueryThreadingTask(this, new IThreadingSubTask() {
+            @Override
+            public ArrayList<ISubTask> task() throws InterruptedException, IOException {
+
+                ArrayList<ISubTask> ret1 = new ArrayList<>();
+
+                for (Map.Entry<FilesToGet, ArrayList<String>> entry : r.entrySet()) {
+                    FilesToGet key = entry.getKey();
+                    ArrayList<String> value1 = entry.getValue();
+                    ArrayList<StringBuilder> value = new ArrayList<>();
+                    for (String string : value1) {
+                        value.add(new StringBuilder(string));
+
+                    }
+
+                    if (getDs().isLfmt()) {
+                        ret1.add(new ISubTask() {
+                            @Override
+                            public void task() throws InterruptedException, IOException {
+                                HostAppdir hh = GetLogs.getHosts().lookupHost(key.getApp().getName());
+
+                                ArrayList<JTableFileEntry> lsFiles = executeLS(key.getProfile(), key.getApp(), hh,
+                                        getLogDir(key.getProfile(), key.getApp(), true, hh.toString()), value, true, false);
+                                if (lsFiles != null && !lsFiles.isEmpty()) {
+                                    synchronized (lsFilesAll) {
+                                        lsFilesAll.addAll(lsFiles);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    if(getDs().isProd())
+                    ret1.add(new ISubTask() {
+                        @Override
+                        public void task() throws InterruptedException, IOException {
+                            HostAppdir hh = GetLogs.getHosts().lookupHost(key.getApp().getName());
+
+                            ArrayList<JTableFileEntry> lsFiles = executeLS(key.getProfile(), key.getApp(), hh,
+                                    getLogDir(key.getProfile(), key.getApp(), false, hh.toString()), value, false, false);
+                            if (lsFiles != null && !lsFiles.isEmpty()) {
+                                synchronized (lsFilesAll) {
+                                    lsFilesAll.addAll(lsFiles);
+                                }
+                            }
+                        }
+                    });
+                }
+                return ret1;
+            }
+        });
+        if (rp == null) {
+            rp = new RequestProgress(parent, false, tsk);
+        }
+        tsk.setRp(rp);
+        tsk.execute();
+    }
+
     private class ExtProcessManager {
 
         HashSet<ExtProcess> processes = new HashSet<>(2);
@@ -500,7 +578,7 @@ public class CommandExecutor {
 
     }
 
-    private void executeGrepGet(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+    private void executeGrepGet(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<String> executeGrep = executeGrep(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         ArrayList<String> rSyncFiles = new ArrayList<>();
         for (String fileName : executeGrep) {
@@ -510,7 +588,7 @@ public class CommandExecutor {
         executeRSync(appProfile, ap, theAppHost, logsDir, rSyncFiles, isLFMT, lcaLog);
     }
 
-    private ArrayList<String> executeGrep(AppProfile appProfile, DownloadSettings.App ap,
+    private ArrayList<String> executeGrep(AppProfile appProfile, App ap,
             HostAppdir appHost1, String logsDir, ArrayList<StringBuilder> fileNameClause,
             boolean isLFMT, boolean isLCA) throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
@@ -625,7 +703,7 @@ public class CommandExecutor {
      * @throws IOException
      * @throws InterruptedException
      */
-    private void executeRSync(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+    private void executeRSync(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
 
@@ -798,7 +876,7 @@ public class CommandExecutor {
 
     }
 
-    private void executeGet(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean useRSync1, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+    private void executeGet(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean useRSync1, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         if (useRSync1) {
             executeRSync(appProfile, ap, theAppHost, logsDir, rSyncAddClause(fileNameClause.toString()), isLFMT, lcaLog);
         } else {
@@ -959,7 +1037,7 @@ public class CommandExecutor {
         return ret1;
     }
 
-    private ArrayList<JTableFileEntry> executeCmd(AppProfile appProfile, DownloadSettings.App ap, HostAppdir theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean isLCALog) {
+    private ArrayList<JTableFileEntry> executeCmd(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean isLCALog) {
         try {
             switch (ds.getActionCommand()) {
                 case GREP:
@@ -1000,6 +1078,124 @@ public class CommandExecutor {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    private static final Pattern ptFullFileName = Pattern.compile("([^/]+)/([^/]+)$");
+
+    void pasteFiles(java.awt.Window parent, DownloadSettings ds) {
+        Clipboard clipboard = getSystemClipboard();
+        String data = null;
+        boolean errorReading = false;
+        FilesToDownload ftd = new FilesToDownload();
+        lsFilesAll.clear();
+        ds.setActionCommand(GetCommand.LS);
+        try {
+            data = (String) clipboard.getData(DataFlavor.stringFlavor);
+            data = "#	_sourcename 	_count \n"
+                    + "1	/applog/gcti/esv1_sip_agent_1_p/esv1_sip_agent_1_p_sip-001.20200429_172154_086.log	2\n"
+                    + "2	/applog/gcti/esv1_sip_agent_1_p/esv1_sip_agent_1_p_sip-001.20200429_171214_695.log	55\n"
+                    + "3	/applog/gcti/edn1_sip_routing_1_p/edn1_sip_routing_1_p_sip-001.20200429_163320_805.log\n"
+                    + "";
+        } catch (UnsupportedFlavorException ex) {
+            Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            errorReading = true;
+        } catch (IOException ex) {
+            Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            errorReading = true;
+        }
+        if (errorReading) {
+            JOptionPane.showMessageDialog(parent, "Error reading clipboard", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (data == null) {
+            JOptionPane.showMessageDialog(parent, "Nothing in clipboard", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        for (String wrd : StringUtils.split(data)) {
+            Matcher m;
+            String app = null;
+            String file = null;
+            if ((m = ptFullFileName.matcher(wrd)).find()) {
+                app = m.group(1);
+                file = m.group(2);
+            }
+            if (file != null) {
+                Pair<AppProfile, App> findAppProfile = ds.findAppProfile(app, file, wrd);
+                if (findAppProfile != null) {
+                    ftd.addDownloadFile(findAppProfile, file);
+                }
+            }
+        }
+        if (ftd != null && !ftd.isEmpty()) {
+            if (lsGeneralTab == null) {
+                lsGeneralTab = new JTablePasteFileList();
+            }
+            if (lsPasteOutput == null) {
+                lsPasteOutput = new SettingsPanel.InfoPanel(parent, "List of pasted", lsGeneralTab,
+                        "Download %d files");
+            }
+            ArrayList<JTableFileEntryGeneral> lsPasteFiles = new ArrayList<JTableFileEntryGeneral>();
+            for (FilesToGet filesToGet : ftd) {
+                for (String fileName : filesToGet.getFileNames()) {
+                    lsPasteFiles.add(new JTableFileEntryGeneral(filesToGet, fileName));
+                }
+            }
+            lsGeneralTab.setFiles(lsPasteFiles);
+            lsPasteOutput.doShow();
+            if (lsPasteOutput.getCloseCause() == JOptionPane.OK_OPTION) {
+                if (lsGeneralTab.getSelectedFiles().size() > 0) {
+
+                    HashMap<FilesToGet, ArrayList<String>> r = new HashMap<>();
+
+                    for (JTableFileEntryGeneral row : lsGeneralTab.getSelectedFiles()) {
+                        FilesToGet fToGet = row.getFilesToGet();
+                        ArrayList<String> rSyncFiles = r.get(fToGet);
+                        if (rSyncFiles == null) {
+                            rSyncFiles = new ArrayList<>();
+                            r.put(fToGet, rSyncFiles);
+                        }
+
+                        rSyncFiles.add(row.getFileName() + "*");
+                    }
+                    SettingsDialog.info("About to download " + lsGeneralTab.getSelectedFiles().size() + " files (" + r.size() + " threads)");
+
+                    lsPastedFiles(r);
+
+//                    CountDownLatch latch = new CountDownLatch(r.size());
+//
+//                    doExecuteCmd(parent, this,
+//                            latch,
+//                            new ISubTask() {
+//                        @Override
+//                        public void task() throws InterruptedException, IOException {
+//                            executeRSyncFilesToGet(r, latch);
+//                        }
+//                    }
+//                    );
+                }
+            }
+
+        }
+        System.out.println(ftd);
+    }
+
+    private class FilesToDownload extends ArrayList<FilesToGet> {
+
+        public FilesToDownload() {
+            super();
+        }
+
+        private void addDownloadFile(Pair<AppProfile, App> findAppProfile, String file) {
+            for (FilesToGet ftg : this) {
+                if (ftg.getProfile().equals(findAppProfile.getKey())
+                        && ftg.getApp().equals(findAppProfile.getValue())) {
+                    ftg.addFile(file);
+                    return;
+                }
+            }
+            add(new FilesToGet(findAppProfile.getKey(), findAppProfile.getValue(), file));
+        }
+
+    }
+
     void showRecent() throws IOException, InterruptedException {
         if (lsFilesLast != null && !lsFilesLast.isEmpty()) {
             if (lsTab == null) {
@@ -1018,14 +1214,14 @@ public class CommandExecutor {
                     HashMap<SavedSearchStorage, ArrayList<String>> r = new HashMap<>();
 
                     for (JTableFileEntry row : lsTab.getSelectedFiles()) {
-                        SavedSearchStorage storage = row.storage;
+                        SavedSearchStorage storage = row.getStorage();
                         ArrayList<String> rSyncFiles = r.get(storage);
                         if (rSyncFiles == null) {
                             rSyncFiles = new ArrayList<>();
                             r.put(storage, rSyncFiles);
                         }
 
-                        rSyncFiles.addAll(rSyncAddClause(FilenameUtils.getName(row.fileName)));
+                        rSyncFiles.addAll(rSyncAddClause(FilenameUtils.getName(row.getFileName())));
                     }
                     SettingsDialog.info("About to download " + lsTab.getSelectedFiles().size() + " files (" + r.size() + " threads)");
 
@@ -1091,6 +1287,38 @@ public class CommandExecutor {
 
     }
 
+    private void executeRSyncFilesToGet(HashMap<FilesToGet, ArrayList<String>> r,
+            CountDownLatch latch) {
+
+        for (Map.Entry<FilesToGet, ArrayList<String>> entry : r.entrySet()) {
+            FilesToGet key = entry.getKey();
+            ArrayList<String> value1 = entry.getValue();
+            ArrayList<StringBuilder> value = new ArrayList<>();
+            for (String string : value1) {
+                value.add(new StringBuilder(string));
+
+            }
+            executor.execute(new CallbackThreadLatched(latch, new ISubTask() {
+                @Override
+                public void task() throws InterruptedException, IOException {
+                    HostAppdir hh = GetLogs.getHosts().lookupHost(key.getApp().getName());
+
+                    ArrayList<JTableFileEntry> lsFiles = executeLS(key.getProfile(), key.getApp(), hh,
+                            getLogDir(key.getProfile(), key.getApp(), getDs().isLfmt(), hh.toString()), value, getDs().isLfmt(), false);
+
+                    if (lsFiles != null && !lsFiles.isEmpty()) {
+                        synchronized (lsFilesAll) {
+                            lsFilesAll.addAll(lsFiles);
+                        }
+                    }
+
+                }
+            }));
+
+        }
+
+    }
+
     private void executeRSync(ArrayList<JTableFileEntry> selectedRows) {
         if (selectedRows == null || selectedRows.size() == 0) {
             SettingsDialog.info("No rows selected");
@@ -1098,14 +1326,14 @@ public class CommandExecutor {
             HashMap<SavedSearchStorage, ArrayList<String>> r = new HashMap<>();
 
             for (JTableFileEntry row : selectedRows) {
-                SavedSearchStorage storage = row.storage;
+                SavedSearchStorage storage = row.getStorage();
                 ArrayList<String> rSyncFiles = r.get(storage);
                 if (rSyncFiles == null) {
                     rSyncFiles = new ArrayList<>();
                     r.put(storage, rSyncFiles);
                 }
 
-                rSyncFiles.addAll(rSyncAddClause(FilenameUtils.getName(row.fileName)));
+                rSyncFiles.addAll(rSyncAddClause(FilenameUtils.getName(row.getFileName())));
             }
             if (r.size() > 0) {
                 for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
@@ -1615,10 +1843,10 @@ public class CommandExecutor {
                 }
 
                 ArrayList<ISubTask> ret1 = new ArrayList<>();
-                for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
+                for (AppProfile appProfile : ds.getAppProfiles()) {
                     if (appProfile.isSelected()) {
                         GetLogs.logger.debug("processing command for profile " + appProfile);
-                        for (DownloadSettings.App app : appProfile.getApps()) {
+                        for (App app : appProfile.getApps()) {
                             GetLogs.logger.debug("processing app  " + app + ": " + app.isChecked());
                             if (app.isChecked()) {
                                 if (ds.isProd()) {
@@ -1674,119 +1902,8 @@ public class CommandExecutor {
 
     }
 
-    static class JTableFileEntry {
-
-        private final AppProfile appProfile;
-        private final String fileName;
-        private Object errorMsg;
-        private final SavedSearchStorage storage;
-
-        private JTableFileEntry(AppProfile appProfile, SavedSearchStorage s, String fileName) {
-            this.appProfile = appProfile;
-            this.storage = s;
-            this.fileName = fileName;
-        }
-
-        private JTableFileEntry(AppProfile appProfile, SavedSearchStorage s, String fileName, String errMessage) {
-            this(appProfile, s, fileName);
-            errorMsg = errMessage;
-        }
-
-        public Object getColumn(int columnIndex) {
-            switch (columnIndex) {
-                case 0:
-                    return appProfile.getName();
-
-                case 1:
-                    return storage.ap.getName();
-
-                case 2:
-                    return storage.isLfmt();
-
-                case 3:
-                    return storage.getAppHost();
-
-                case 4:
-                    return fileName;
-
-            }
-            return null;
-        }
-
-    }
-
-    private static HashMap<Integer, String> initCalls() {
-        HashMap<Integer, String> ret1 = new HashMap<>();
-        ret1.put(0, "Profile");
-        ret1.put(1, "application");
-        ret1.put(2, "LFMT?");
-        ret1.put(3, "host");
-        ret1.put(4, "file");
-
-        return ret1;
-    }
-
-    public static final HashMap<Integer, String> fileTableColls = initCalls();
-
-    class SavedSearchStorage {
-
-        public AppProfile getAppProfile() {
-            return appProfile;
-        }
-
-        private final boolean lcaLog;
-        private final boolean lfmt;
-        private final String logsDir;
-        private final App ap;
-        private final HostAppdir appHost;
-        AppProfile appProfile;
-
-        SavedSearchStorage(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, boolean lfmt, boolean lcaLog) {
-            this.appProfile = appProfile;
-            this.ap = ap;
-            this.appHost = theAppHost;
-            this.logsDir = logsDir;
-            this.lfmt = lfmt;
-            this.lcaLog = lcaLog;
-
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof SavedSearchStorage) {
-                SavedSearchStorage obj1 = (SavedSearchStorage) obj;
-                return obj1.getAp().equals(ap)
-                        && obj1.getAppHost().equals(appHost)
-                        && obj1.isLcaLog() == lcaLog
-                        && obj1.isLfmt() == lfmt;
-
-            } else {
-                return super.equals(obj); //To change body of generated methods, choose Tools | Templates.
-            }
-        }
-
-        public boolean isLcaLog() {
-            return lcaLog;
-        }
-
-        public boolean isLfmt() {
-            return lfmt;
-        }
-
-        public String getLogsDir() {
-            return logsDir;
-        }
-
-        public App getAp() {
-            return ap;
-        }
-
-        public HostAppdir getAppHost() {
-            return appHost;
-        }
-    }
-
-    JTableFileList lsTab = null;
+    JTableFileList lsTab = new JTableFileList();
+    JTablePasteFileList lsGeneralTab = null;
 
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 

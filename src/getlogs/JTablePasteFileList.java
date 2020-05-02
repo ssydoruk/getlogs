@@ -9,10 +9,10 @@ package getlogs;
  *
  * @author stepan_sydoruk
  */
-class JTableFileList extends JTableFileListBase<JTableFileEntry> {
+class JTablePasteFileList extends JTableFileListBase<JTableFileEntryGeneral> {
 
-    public JTableFileList() {
-        super(new <JTableFileEntry>JTableFileModel());
+    public JTablePasteFileList() {
+        super(new <JTableFileEntryGeneral>JTablePasteFileModel());
     }
 
 }

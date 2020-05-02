@@ -448,6 +448,10 @@ public class GetLogs {
     static ArrayList<String> apps = null;
     static Logger logger;
 
+    public static Logger getLogger() {
+        return logger;
+    }
+
     public static void initLogger(String par, String sLoaderLog1) {
         Level level = Level.INFO;
         if (par != null) {
@@ -957,13 +961,13 @@ public class GetLogs {
             }
         } else {
             ds = new DownloadSettings();
-            HashSet<DownloadSettings.App> apps = ds.addProfile("SIP").getApps();
-            apps.add(new DownloadSettings.App("sip1", null));
-            apps.add(new DownloadSettings.App("sip2", null));
+            HashSet<App> apps = ds.addProfile("SIP").getApps();
+            apps.add(new App("sip1", null));
+            apps.add(new App("sip2", null));
 
             apps = ds.addProfile("Routing").getApps();
-            apps.add(new DownloadSettings.App("URS1", null));
-            apps.add(new DownloadSettings.App("ORS2", null));
+            apps.add(new App("URS1", null));
+            apps.add(new App("ORS2", null));
         }
         showGui(ds);
     }
@@ -1030,7 +1034,7 @@ public class GetLogs {
             }
         } else {
             DownloadSettings ds = new DownloadSettings();
-            DownloadSettings.AppProfile addProfile = ds.addProfile("default");
+            AppProfile addProfile = ds.addProfile("default");
             DownloadSettings.LFMTHostInstance theLFMT = new DownloadSettings.LFMTHostInstance(lfmtHost, lfmtInstance, "/Logs");
             ds.setOutputDir(sLogDirectory);
             ds.setProd((lfmtHost == null));
@@ -1041,7 +1045,7 @@ public class GetLogs {
             addProfile.setIsGenesysName(!bIsCloud);
             addProfile.setLFMT(theLFMT);
             for (String app : apps) {
-                DownloadSettings.App theApp = addProfile.addApp(app, null);
+                App theApp = addProfile.addApp(app, null);
                 theApp.setChecked(true);
                 processApp(app, options);
             }

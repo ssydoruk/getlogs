@@ -180,7 +180,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         ext.setUpdatedFun(new StringListEdit.IDataChangedFun() {
             @Override
             public void dataChanged(ArrayList<Pair<String, Boolean>> newData) {
-                DownloadSettings.AppProfile sel = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
+                AppProfile sel = (AppProfile) clbProfile.getSelectedValue();
                 if (sel != null) {
                     sel.setNameSuffixes(newData);
                 }
@@ -191,7 +191,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             @Override
             public HashSet<String> getAddChoices() {
                 HashSet<String> ret = new HashSet<>();
-                for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
+                for (AppProfile appProfile : ds.getAppProfiles()) {
                     HashMap<String, Boolean> sfx = appProfile.getNameSuffixes();
                     if (sfx != null) {
                         for (String key : sfx.keySet()) {
@@ -248,7 +248,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     }
 
     private void tfFilenameSuffixesChanged() {
-        DownloadSettings.AppProfile pr = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
+        AppProfile pr = (AppProfile) clbProfile.getSelectedValue();
         if (pr != null) {
 //            pr.setNameSuffixes(tfFilenameSuffixes.getText());
         }
@@ -268,7 +268,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 //                    );
             for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
                 if (i < lmProfile.getSize()) {
-                    ((DownloadSettings.AppProfile) lmProfile.getElementAt(i))
+                    ((AppProfile) lmProfile.getElementAt(i))
                             .setSelected(lsm.isSelectedIndex(i));
                 }
             }
@@ -280,14 +280,14 @@ public class SettingsPanel extends javax.swing.JPanel {
     }
 
     private boolean canRunProfiles() {
-//(DownloadSettings.AppProfile) lmProfile.get(minIndex);
+//(AppProfile) lmProfile.get(minIndex);
 
         CheckBoxListSelectionModel lsm = clbProfile.getCheckBoxListSelectionModel();
         DefaultListModel<Object> lm = (DefaultListModel<Object>) clbProfile.getModel();
         int allEntryIndex = lsm.getAllEntryIndex();
         for (int i = 0; i < lm.getSize(); i++) {
             if (lsm.isSelectedIndex(i) && i != allEntryIndex) {
-                DownloadSettings.AppProfile elementAt = (DownloadSettings.AppProfile) lm.getElementAt(i);
+                AppProfile elementAt = (AppProfile) lm.getElementAt(i);
                 if (elementAt != null && hasCheckedApp(elementAt)) {
                     return true;
                 }
@@ -298,7 +298,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private int getSelectedNum(CheckBoxList clb) {
         int numSelected = 0;
-//(DownloadSettings.AppProfile) lmProfile.get(minIndex);
+//(AppProfile) lmProfile.get(minIndex);
 
         CheckBoxListSelectionModel lsm = clb.getCheckBoxListSelectionModel();
         DefaultListModel<Object> lm = (DefaultListModel<Object>) clb.getModel();
@@ -365,7 +365,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     int maxIndex = lsm.getMaxSelectionIndex();
                     boolean singleSelection = (minIndex == maxIndex && minIndex >= 0);
                     if (singleSelection) { //one item selected
-                        profileSelectionChanged((DownloadSettings.AppProfile) lmProfile.get(minIndex));
+                        profileSelectionChanged((AppProfile) lmProfile.get(minIndex));
                     } else {
                         clbApps.setValueIsAdjusting(true);
                         DefaultListModel lm = (DefaultListModel) clbApps.getModel();
@@ -384,7 +384,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
     }
 
-    private void profileSelectionChanged(DownloadSettings.AppProfile pr) {
+    private void profileSelectionChanged(AppProfile pr) {
 
         clbApps.setValueIsAdjusting(true);
         CheckBoxListSelectionModel clbAppSelectionModel = clbApps.getCheckBoxListSelectionModel();
@@ -396,9 +396,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 //                        clbAppSelectionModel.addSelectionInterval(maxIndex, maxIndex);
         clbAppSelectionModel.clearSelection();
         lmApps.clear();
-        List<DownloadSettings.App> apps = new ArrayList<>(pr.getApps());
+        List<App> apps = new ArrayList<>(pr.getApps());
         Collections.sort(apps);
-        for (DownloadSettings.App app : apps) {
+        for (App app : apps) {
             lmApps.addElement(app);
         }
 //        Collections.sort( lmApps);
@@ -406,7 +406,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         if (!lmApps.isEmpty()) {
             lmApps.insertElementAt(CheckBoxList.ALL_ENTRY, 0);
             for (int i = 1; i < lmApps.getSize(); i++) {
-                if (((DownloadSettings.App) lmApps.getElementAt(i)).isChecked()) {
+                if (((App) lmApps.getElementAt(i)).isChecked()) {
                     clbAppSelectionModel.addSelectionInterval(i, i);
                 }
             }
@@ -488,8 +488,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 //                    );
                     for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
                         if (!lmApps.isEmpty() && i < lmApps.getSize()) {
-                            if (lmApps.getElementAt(i) instanceof DownloadSettings.App) {
-                                ((DownloadSettings.App) lmApps.getElementAt(i))
+                            if (lmApps.getElementAt(i) instanceof App) {
+                                ((App) lmApps.getElementAt(i))
                                         .setChecked(lsm.isSelectedIndex(i));
                             }
                         }
@@ -1027,7 +1027,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jbSelectDirectoryActionPerformed
 
     private void jbProfileDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbProfileDeleteActionPerformed
-        List<DownloadSettings.AppProfile> selectedValuesList = clbProfile.getSelectedValuesList();
+        List<AppProfile> selectedValuesList = clbProfile.getSelectedValuesList();
         if (selectedValuesList != null && !selectedValuesList.isEmpty()) {
             StringBuilder sPrompt = new StringBuilder();
             sPrompt.append("Do you really want to delete ");
@@ -1039,7 +1039,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
             if (JOptionPane.showConfirmDialog((Window) this.getRootPane().getParent(),
                     sPrompt.toString(), "Confirmation", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                for (DownloadSettings.AppProfile appProfile : selectedValuesList) {
+                for (AppProfile appProfile : selectedValuesList) {
                     ds.removeProfile(appProfile);
                 }
                 loadProfile(null);
@@ -1049,7 +1049,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jbProfileDeleteActionPerformed
 
     private void jbProfileRenameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbProfileRenameActionPerformed
-        DownloadSettings.AppProfile appPr = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
+        AppProfile appPr = (AppProfile) clbProfile.getSelectedValue();
         if (appPr != null) {
             String name = getProfileName("Edit the profile name", appPr.getName());
             if (name != null) {
@@ -1060,7 +1060,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jbProfileRenameActionPerformed
 
     private void jbProfileSaveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbProfileSaveAsActionPerformed
-        DownloadSettings.AppProfile appPr = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
+        AppProfile appPr = (AppProfile) clbProfile.getSelectedValue();
         if (appPr != null) {
             String name = getProfileName("Enter new profile name", appPr.getName());
             if (name != null) {
@@ -1070,7 +1070,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jbProfileSaveAsActionPerformed
 
     private void rbGenesysLogsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbGenesysLogsItemStateChanged
-        DownloadSettings.AppProfile prof = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
+        AppProfile prof = (AppProfile) clbProfile.getSelectedValue();
         if (prof != null) {
             prof.setIsGenesysName(evt.getStateChange() == ItemEvent.SELECTED);
         }
@@ -1119,11 +1119,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         if (p.getCloseCause() == JOptionPane.OK_OPTION) {
             int[] selectedRows = tab.getSelectedRows();
 //            HashSet<String> selValues = new HashSet<>(selectedRows.length);
-            DownloadSettings.AppProfile profile = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
+            AppProfile profile = (AppProfile) clbProfile.getSelectedValue();
             for (int selectedRow : selectedRows) {
                 String app = (String) infoTableModel.getValueAt(selectedRow, 0);
 
-                DownloadSettings.App addApp = profile.addApp(app, GetLogs.getHosts().getAppDir(app));
+                App addApp = profile.addApp(app, GetLogs.getHosts().getAppDir(app));
 //                lmApps.addElement(addApp);
 //                selValues.add((String) infoTableModel.getValueAt(selectedRow, 0));
             }
@@ -1134,8 +1134,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jbAppAddActionPerformed
 
     private void jbAppDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAppDeleteActionPerformed
-        DownloadSettings.AppProfile appPr = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
-        List<DownloadSettings.App> selectedValuesList = clbApps.getSelectedValuesList();
+        AppProfile appPr = (AppProfile) clbProfile.getSelectedValue();
+        List<App> selectedValuesList = clbApps.getSelectedValuesList();
         if (appPr != null && selectedValuesList != null) {
             StringBuilder sPrompt = new StringBuilder();
             sPrompt.append("Do you really want to delete ");
@@ -1148,7 +1148,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .append(appPr.getName())
                     .append("]");
             if (JOptionPane.showConfirmDialog(this, sPrompt, "Please confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                for (DownloadSettings.App app : selectedValuesList) {
+                for (App app : selectedValuesList) {
                     appPr.removeApp(app);
                     lmApps.removeElement(app);
                     if (lmApps.size() == 1 && (lmApps.getElementAt(0).equals(CheckBoxList.ALL_ENTRY))) {
@@ -1222,7 +1222,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             Object item = evt.getItem();
-            DownloadSettings.AppProfile prof = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
+            AppProfile prof = (AppProfile) clbProfile.getSelectedValue();
             if (prof != null) {
                 prof.setLFMT((DownloadSettings.LFMTHostInstance) item);
             }
@@ -1250,7 +1250,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void cbmShowHostsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbmShowHostsItemStateChanged
         JCheckBoxMenuItem source = (JCheckBoxMenuItem) evt.getSource();
         GetLogs.setHostsVisible(source.isSelected());
-        DownloadSettings.AppProfile prof = (DownloadSettings.AppProfile) clbProfile.getSelectedValue();
+        AppProfile prof = (AppProfile) clbProfile.getSelectedValue();
         if (prof != null) {
             profileSelectionChanged(prof);
         }
@@ -1260,7 +1260,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_cbmCopyHostNameItemStateChanged
 
     private void cbmCopyHostNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbmCopyHostNameActionPerformed
-        DownloadSettings.App selectedApp = (DownloadSettings.App) clbApps.getSelectedValue();
+        App selectedApp = (App) clbApps.getSelectedValue();
         if (selectedApp != null) {
             Utils.SystemClipboard.copy(selectedApp.getHost());
         }    }//GEN-LAST:event_cbmCopyHostNameActionPerformed
@@ -1345,7 +1345,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JTextField tfTimeRegex;
     // End of variables declaration//GEN-END:variables
 
-    private void loadProfile(DownloadSettings.AppProfile activeProfile) {
+    private void loadProfile(AppProfile activeProfile) {
         CheckBoxListSelectionModel checkBoxListSelectionModel = clbProfile.getCheckBoxListSelectionModel();
         ListSelectionListener[] listSelectionListeners = checkBoxListSelectionModel.getListSelectionListeners();
         for (ListSelectionListener listSelectionListener : listSelectionListeners) {
@@ -1353,7 +1353,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         lmProfile.clear();
         int selIdx = -1;
-        for (DownloadSettings.AppProfile appProfile : ds.getAppProfilesSorted()) {
+        for (AppProfile appProfile : ds.getAppProfilesSorted()) {
             lmProfile.addElement(appProfile);
             int idx = lmProfile.size() - 1;
             if (activeProfile == appProfile) {
@@ -1415,16 +1415,16 @@ public class SettingsPanel extends javax.swing.JPanel {
     }
 
     private void addProfile(String showInputDialog) {
-//        DownloadSettings.AppProfile addProfile = ds.addProfile(showInputDialog); //To change body of generated methods, choose Tools | Templates.
+//        AppProfile addProfile = ds.addProfile(showInputDialog); //To change body of generated methods, choose Tools | Templates.
 //        lmProfile.addElement(addProfile);
-        DownloadSettings.AppProfile addProfile = ds.addProfile(showInputDialog);
+        AppProfile addProfile = ds.addProfile(showInputDialog);
         loadProfile(addProfile);
     }
 
-    private void addProfile(String showInputDialog, DownloadSettings.AppProfile appPr) {
-//        DownloadSettings.AppProfile addProfile = ds.addProfile(showInputDialog, appPr); //To change body of generated methods, choose Tools | Templates.
+    private void addProfile(String showInputDialog, AppProfile appPr) {
+//        AppProfile addProfile = ds.addProfile(showInputDialog, appPr); //To change body of generated methods, choose Tools | Templates.
 //        lmProfile.addElement(addProfile);
-        DownloadSettings.AppProfile addProfile = ds.addProfile(showInputDialog, appPr);
+        AppProfile addProfile = ds.addProfile(showInputDialog, appPr);
         loadProfile(addProfile);
     }
 
@@ -1553,8 +1553,8 @@ public class SettingsPanel extends javax.swing.JPanel {
                 && (cbAppLogs.isSelected() || cbLCALogs.isSelected());
     }
 
-    private boolean hasCheckedApp(DownloadSettings.AppProfile elementAt) {
-        for (DownloadSettings.App app : elementAt.getApps()) {
+    private boolean hasCheckedApp(AppProfile elementAt) {
+        for (App app : elementAt.getApps()) {
             if (app.isChecked()) {
                 return true;
             }
@@ -1568,8 +1568,8 @@ public class SettingsPanel extends javax.swing.JPanel {
                 String[] split = StringUtils.split(string, ",", 3);
                 logger.debug(StringUtils.join(split, " - "));
                 boolean appFound = false;
-                for (DownloadSettings.AppProfile appProfile : ds.getAppProfiles()) {
-                    for (DownloadSettings.App app : appProfile.getApps()) {
+                for (AppProfile appProfile : ds.getAppProfiles()) {
+                    for (App app : appProfile.getApps()) {
                         if (app.getName().equals(StringUtils.trimToEmpty(split[0]))) {
                             appFound = true;
                             if (!StringUtils.trimToEmpty(split[1]).equals("PRIMARY")) {

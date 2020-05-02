@@ -52,10 +52,10 @@ public class DownloadSettings {
 
     public Collection<App> getCheckedApps() {
         ArrayList<App> ret = new ArrayList<>();
-        for (DownloadSettings.AppProfile appProfile : getAppProfiles()) {
+        for (AppProfile appProfile : getAppProfiles()) {
             if (appProfile.isSelected()) {
                 GetLogs.logger.debug("processing command for profile " + appProfile);
-                for (DownloadSettings.App app : appProfile.getApps()) {
+                for (App app : appProfile.getApps()) {
                     GetLogs.logger.debug("processing app  " + app + ": " + app.isChecked());
                     if (app.isChecked()) {
                         ret.add(app);
@@ -245,6 +245,16 @@ public class DownloadSettings {
 
     private ArrayList<AppProfile> appProfiles;
 
+    public Pair<AppProfile, App> findAppProfile(String app, String file, String fullFileName) {
+        for (AppProfile appProfile : appProfiles) {
+            App app1 = appProfile.getApp(app, file, fullFileName);
+            if (app1 != null) {
+                return new Pair<>(appProfile, app1);
+            }
+        }
+        return null;
+    }
+
     public ArrayList<AppProfile> getAppProfiles() {
         return appProfiles;
     }
@@ -351,247 +361,6 @@ public class DownloadSettings {
     void setTimeRange(UTCTimeRange timeRange) {
         rangeStart = timeRange.getStart();
         rangeEnd = timeRange.getEnd();
-    }
-
-    static public class AppProfile {
-
-        private String Name;
-        private boolean selected;
-        private LFMTHostInstance lftm;
-        private boolean isGenesysName;
-        private HashMap<String, Boolean> nameSuffixes;
-
-        public LFMTHostInstance getLFMT() {
-            return lftm;
-        }
-
-        public void setLFMT(LFMTHostInstance lftm) {
-            this.lftm = lftm;
-        }
-
-        public boolean isIsGenesysName() {
-            return isGenesysName;
-        }
-
-        public void setIsGenesysName(boolean isGenesysName) {
-            this.isGenesysName = isGenesysName;
-        }
-
-        public HashMap<String, Boolean> getNameSuffixes() {
-            return nameSuffixes;
-        }
-
-        public void setNameSuffixes(ArrayList<Pair<String, Boolean>> nameSuffixes) {
-            this.nameSuffixes = new HashMap<>(nameSuffixes.size());
-            for (Pair<String, Boolean> sfx : nameSuffixes) {
-                this.nameSuffixes.put(sfx.getKey(), sfx.getValue());
-            }
-        }
-
-        public boolean isSelected() {
-            return selected;
-        }
-
-        public void setSelected(boolean selected) {
-            this.selected = selected;
-        }
-
-        private AppProfile(String newName, AppProfile appPr) {
-            this(newName);
-            setSelected(selected);
-            for (App app : appPr.getApps()) {
-                apps.add(new App(app));
-            }
-        }
-
-        public void setName(String Name) {
-            this.Name = Name;
-        }
-
-        public String getName() {
-            return Name;
-        }
-        HashSet<App> apps = new HashSet<>();
-
-        public HashSet<App> getApps() {
-            return apps;
-        }
-
-        public AppProfile(String Name) {
-            this.Name = Name;
-            selected = true;
-        }
-
-        @Override
-        public String toString() {
-            return Name;
-        }
-
-        App addApp(String app, String appDir) {
-            App ret = new App(app, appDir);
-            apps.add(ret);
-            return ret;
-        }
-
-        void removeApp(App app) {
-            boolean ret = apps.remove(app);
-            if (!ret) {
-                System.out.println("not removed: " + app);
-            }
-
-        }
-
-        private void checkLFMT(ArrayList<LFMTHostInstance> lfmtHostInstances) {
-            LFMTHostInstance lfmt1 = getLFMT();
-            if (lfmt1 != null) {
-                for (LFMTHostInstance lfmtHostInstance : lfmtHostInstances) {
-                    if (lfmtHostInstance.getHost() != null && lfmt1.getHost() != null
-                            && lfmtHostInstance.getInstance() != null && lfmt1.getInstance() != null
-                            && lfmtHostInstance.getHost().equalsIgnoreCase(lfmt1.getHost())
-                            && lfmtHostInstance.getInstance().equalsIgnoreCase(lfmt1.getInstance())) {
-                        return;
-                    }
-                }
-
-            }
-            LFMTHostInstance newLFMT = null;
-            if (lfmtHostInstances != null && !lfmtHostInstances.isEmpty()) {
-                newLFMT = lfmtHostInstances.get(0);
-            }
-            logger.error("Incorrect LFMT setting for " + this.toString() + "; was: " + ((lfmt1 == null) ? "null" : lfmt1) + " changed to "
-                    + ((newLFMT == null) ? "null" : newLFMT));
-            setLFMT(newLFMT);
-
-        }
-
-        private final static Pattern ptGenesysTimestamp = Pattern.compile("^(.+)\\.(\\d{4})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})(\\d{2})_(\\d{3})");
-
-        public boolean fitsTimeRange(String string, UTCTimeRange timeRange) {
-            if (!isGenesysName) {
-                return true;
-            } else {
-                Matcher m;
-                if ((m = ptGenesysTimestamp.matcher(string)).find()) {
-                    ZonedDateTime fileZoneDateTime = ZonedDateTime.of(
-                            Integer.parseInt(m.group(2)),
-                            Integer.parseInt(m.group(3)),
-                            Integer.parseInt(m.group(4)),
-                            Integer.parseInt(m.group(5)),
-                            Integer.parseInt(m.group(6)),
-                            Integer.parseInt(m.group(7)),
-                            Integer.parseInt(m.group(8)) * 1000000,
-                            Utils.UTCTimeRange.zoneId);
-                    long utcTime = Utils.UTCTimeRange.getUtcTime(fileZoneDateTime.toLocalDateTime(), 0);
-                    logger.debug("file [" + string + "] utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime > timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime < timeRange.getEnd()):" + (utcTime < timeRange.getEnd()));
-                    if ((utcTime <= timeRange.getStart()) || (utcTime >= timeRange.getEnd())) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
-
-        public Pair<Long, String> getFileNameTime(String string) {
-            if (isGenesysName) {
-                Matcher m;
-                try {
-                    if ((m = ptGenesysTimestamp.matcher(string)).find()) {
-                        ZonedDateTime fileZoneDateTime = ZonedDateTime.of(
-                                Integer.parseInt(m.group(2)),
-                                Integer.parseInt(m.group(3)),
-                                Integer.parseInt(m.group(4)),
-                                Integer.parseInt(m.group(5)),
-                                Integer.parseInt(m.group(6)),
-                                Integer.parseInt(m.group(7)),
-                                Integer.parseInt(m.group(8)) * 1000000,
-                                Utils.UTCTimeRange.zoneId);
-                        return new Pair(Utils.UTCTimeRange.getUtcTime(fileZoneDateTime.toLocalDateTime(), 0), m.group(1));
-                    }
-                } catch (DateTimeException e) {
-                    logger.error("error parsing timestamp name for [" + string + "]", e);
-                }
-
-            }
-            return null;
-        }
-
-        public static class SortByName implements Comparator<AppProfile> {
-
-            public int compare(AppProfile a, AppProfile b) {
-                return a.getName().compareToIgnoreCase(b.getName());
-            }
-        }
-
-    }
-
-    static public class App implements Comparable {
-
-        private String name;
-        private String appDir;
-
-        public String getAppDir() {
-            if (appDir != null && !appDir.isEmpty()) {
-                return appDir;
-            } else {
-                return name;
-            }
-        }
-
-        public void setAppDir(String appDir) {
-            this.appDir = appDir;
-        }
-        private boolean checked;
-
-        public boolean isChecked() {
-            return checked;
-        }
-
-        public void setChecked(boolean checked) {
-            logger.debug(this.toString() + " set checked " + checked);
-            this.checked = checked;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public App(App app) {
-            this(app.getName(), app.getAppDir());
-
-        }
-
-        public App(String n, String appDir) {
-            name = n;
-            this.appDir = appDir;
-
-        }
-
-        public String getHost() {
-            return GetLogs.getHosts().lookupHost(name).getHost();
-        }
-
-        @Override
-        public String toString() {
-//            System.out.println("--"+name);
-            try {
-                if (GetLogs.isHostsVisible()) {
-                    return name + " @ " + GetLogs.getHosts().lookupHost(name); //To change body of generated methods, choose Tools | Templates.
-                } else {
-                    return name;
-                }
-            } catch (Exception e) {
-                return name;
-            }
-        }
-
-        @Override
-        public int compareTo(Object o) {
-            if (o instanceof App) {
-                return this.getName().compareTo(((App) o).getName());
-            }
-            return 0;
-        }
-
     }
 
 }

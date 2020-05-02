@@ -11,19 +11,17 @@ import java.util.ArrayList;
  *
  * @author stepan_sydoruk
  */
-class JTableFileModel extends JTableFileBaseModel<JTableFileEntry> {
+class JTablePasteFileModel extends JTableFileBaseModel<JTableFileEntryGeneral> {
 
     @Override
     public int getColumnCount() {
-        return JTableFileEntry.fileTableColls.size();
+        return JTableFileEntryGeneral.fileTableColls.size();
 
     }
-    
-    
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        JTableFileEntry get = get(rowIndex);
+        JTableFileEntryGeneral get = get(rowIndex);
         if (get != null) {
             return get.getColumn(columnIndex);
         } else {
@@ -32,8 +30,8 @@ class JTableFileModel extends JTableFileBaseModel<JTableFileEntry> {
     }
 
     @Override
-    public ArrayList<JTableFileEntry> getSelectedRows(int[] selectedRows) {
-        ArrayList<JTableFileEntry> ret1 = new ArrayList<>(selectedRows.length);
+    public ArrayList<JTableFileEntryGeneral> getSelectedRows(int[] selectedRows) {
+        ArrayList<JTableFileEntryGeneral> ret1 = new ArrayList<>(selectedRows.length);
         for (int row : selectedRows) {
             ret1.add(get(row));
         }
@@ -42,8 +40,7 @@ class JTableFileModel extends JTableFileBaseModel<JTableFileEntry> {
 
     @Override
     public String getColumnName(int column) {
-        return JTableFileEntry.getColumnName(column);
-
+        return JTableFileEntryGeneral.getColumnName(column);
     }
 
 }
