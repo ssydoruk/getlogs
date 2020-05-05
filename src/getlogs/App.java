@@ -34,8 +34,6 @@ class App implements Comparable {
     public boolean isChecked() {
         return checked;
     }
-
-    Logger logger=GetLogs.getLogger();
     
     public void setChecked(boolean checked) {
         logger.debug(this.toString() + " set checked " + checked);

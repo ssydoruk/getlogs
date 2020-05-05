@@ -9,7 +9,7 @@ import java.awt.Window;
 import java.util.List;
 import javax.swing.SwingWorker;
 import javax.swing.text.DefaultCaret;
-import org.apache.logging.log4j.LogManager;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -17,7 +17,6 @@ import org.apache.logging.log4j.LogManager;
  */
 public class RequestProgress extends javax.swing.JDialog {
 
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     private CommandExecutor.QueryTaskBase wrk;
     private Window theParent;

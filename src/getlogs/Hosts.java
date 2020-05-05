@@ -11,7 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import org.apache.logging.log4j.LogManager;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -22,7 +22,6 @@ import org.apache.logging.log4j.LogManager;
  */
 class Hosts extends HashMap<String, HostAppdir> {
 
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     Hosts(String fileName) throws FileNotFoundException, IOException {
         File file = new File(fileName);

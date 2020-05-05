@@ -22,7 +22,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import org.apache.logging.log4j.LogManager;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -39,7 +39,6 @@ public class EnterRegexDialog extends javax.swing.JDialog {
      */
     public static final int RET_OK = 1;
     private Pattern selectedRegEx = null;
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     /**
      * Creates new form EnterRegexDialog

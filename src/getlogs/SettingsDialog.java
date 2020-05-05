@@ -18,7 +18,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import org.apache.logging.log4j.LogManager;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -26,7 +26,6 @@ import org.apache.logging.log4j.LogManager;
  */
 public class SettingsDialog extends StandardDialog {
 
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     static void info(String str) {
         logger.info(str);
@@ -131,6 +130,21 @@ public class SettingsDialog extends StandardDialog {
 
         });
         buttonPanel.addButton(lastLSButton);
+
+        JButton uncheckBackup = new JButton(new AbstractAction("Uncheck backup") {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    uncheckBackup();
+//                    cancelButtonAction(e);
+                } catch (IOException ex) {
+                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+        });
+        buttonPanel.addButton(uncheckBackup);
 
         jbRun = new JButton(new AbstractAction("Start!") {
             public void actionPerformed(ActionEvent e) {

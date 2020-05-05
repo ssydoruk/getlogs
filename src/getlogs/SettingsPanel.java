@@ -70,8 +70,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -79,7 +78,6 @@ import org.apache.logging.log4j.LogManager;
  */
 public class SettingsPanel extends javax.swing.JPanel {
 
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     private final CheckBoxList clbProfile;
     private final CheckBoxList clbApps;
@@ -477,26 +475,27 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         if (!evt.getValueIsAdjusting()) {
             CheckBoxListSelectionModel lsm = (CheckBoxListSelectionModel) evt.getSource();
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
+//            SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {
                     int maxSelectionIndex = lsm.getMaxSelectionIndex();
                     int minSelectionIndex = lsm.getMinSelectionIndex();
-//                    System.out.println("-1-" + evt
-//                            + " f: " + evt.getFirstIndex()
-//                            + " l: " + evt.getLastIndex()
-//                            + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
-//                    );
+                    logger.debug("-1-" + evt
+                            + " f: " + evt.getFirstIndex()
+                            + " l: " + evt.getLastIndex()
+                            + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
+                    );
                     for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
                         if (!lmApps.isEmpty() && i < lmApps.getSize()) {
                             if (lmApps.getElementAt(i) instanceof App) {
+                                logger.debug("lmApps: "+lmApps);
                                 ((App) lmApps.getElementAt(i))
                                         .setChecked(lsm.isSelectedIndex(i));
                             }
                         }
 
                     }
-                }
-            });
+//                }
+//            });
             updateAppTitle();
         }
 

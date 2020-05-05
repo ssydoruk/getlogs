@@ -41,7 +41,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -277,7 +277,6 @@ public class CommandExecutor {
     }
 
     ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     private String preQuoteDouble() {
         if (Utils.Util.getOS() == Util.OS.WINDOWS) {
@@ -1089,11 +1088,11 @@ public class CommandExecutor {
         ds.setActionCommand(GetCommand.LS);
         try {
             data = (String) clipboard.getData(DataFlavor.stringFlavor);
-            data = "#	_sourcename 	_count \n"
-                    + "1	/applog/gcti/esv1_sip_agent_1_p/esv1_sip_agent_1_p_sip-001.20200429_172154_086.log	2\n"
-                    + "2	/applog/gcti/esv1_sip_agent_1_p/esv1_sip_agent_1_p_sip-001.20200429_171214_695.log	55\n"
-                    + "3	/applog/gcti/edn1_sip_routing_1_p/edn1_sip_routing_1_p_sip-001.20200429_163320_805.log\n"
-                    + "";
+//            data = "#	_sourcename 	_count \n"
+//                    + "1	/applog/gcti/esv1_sip_agent_1_p/esv1_sip_agent_1_p_sip-001.20200429_172154_086.log	2\n"
+//                    + "2	/applog/gcti/esv1_sip_agent_1_p/esv1_sip_agent_1_p_sip-001.20200429_171214_695.log	55\n"
+//                    + "3	/applog/gcti/edn1_sip_routing_1_p/edn1_sip_routing_1_p_sip-001.20200429_163320_805.log\n"
+//                    + "";
         } catch (UnsupportedFlavorException ex) {
             Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             errorReading = true;

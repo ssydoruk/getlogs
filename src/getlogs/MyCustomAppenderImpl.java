@@ -11,7 +11,6 @@ package getlogs;
  */
 import java.io.Serializable;
 import java.util.concurrent.locks.*;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
@@ -22,12 +21,12 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import static getlogs.GetLogs.logger;
 
 // note: class name need not match the @Plugin name.
 @Plugin(name = "MyCustomAppender", category = "Core", elementType = "appender", printObject = true)
 public final class MyCustomAppenderImpl extends AbstractAppender {
 
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final Lock readLock = rwLock.readLock();

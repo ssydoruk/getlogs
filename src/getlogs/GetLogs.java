@@ -446,7 +446,7 @@ public class GetLogs {
     }
 
     static ArrayList<String> apps = null;
-    static Logger logger;
+    static Logger logger = LogManager.getLogger();
 
     public static Logger getLogger() {
         return logger;

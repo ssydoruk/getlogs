@@ -11,7 +11,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import org.apache.logging.log4j.LogManager;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -20,7 +20,6 @@ import org.apache.logging.log4j.LogManager;
 class JTablePopupMenu extends JPopupMenu {
 
     private final JTablePopup tab;
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     JTablePopupMenu(JTablePopup aThis) {
         tab = aThis;

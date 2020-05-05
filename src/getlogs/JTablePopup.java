@@ -24,7 +24,7 @@ import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableModel;
-import org.apache.logging.log4j.LogManager;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -32,7 +32,6 @@ import org.apache.logging.log4j.LogManager;
  */
 public abstract class JTablePopup extends JTable {
 
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     protected final JTablePopupMenu popupMenu;
 

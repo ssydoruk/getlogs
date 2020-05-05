@@ -7,19 +7,11 @@ package getlogs;
 
 import Utils.Pair;
 import Utils.UTCTimeRange;
-import java.io.IOException;
-import java.time.DateTimeException;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -36,7 +28,6 @@ public class DownloadSettings {
     private boolean useRSync;
     private boolean appLogs;
     private boolean lcaLogs;
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
     private String statusScript = "/Users/stepan_sydoruk/bin/getAppStatus";
 
     public String getStatusScript() {

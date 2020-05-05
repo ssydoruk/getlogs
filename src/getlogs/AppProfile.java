@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.logging.log4j.Logger;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -159,7 +159,6 @@ public class AppProfile {
         }
     }
     
-    Logger logger=GetLogs.getLogger();
 
     public Pair<Long, String> getFileNameTime(String string) {
         if (isGenesysName) {

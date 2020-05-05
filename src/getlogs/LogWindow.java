@@ -27,6 +27,7 @@ import org.apache.logging.log4j.core.config.AbstractConfiguration;
 import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -34,7 +35,6 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
  */
 public class LogWindow extends JFrame {
 
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     static void info(String command_executed) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

@@ -25,7 +25,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.apache.logging.log4j.LogManager;
+import static getlogs.GetLogs.logger;
 
 /**
  *
@@ -33,7 +33,6 @@ import org.apache.logging.log4j.LogManager;
  */
 public class StringListEdit extends JPanel {
 
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     private ValuesEditor.IAddChoices addChoices;
 
