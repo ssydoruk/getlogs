@@ -14,7 +14,7 @@ import java.util.HashMap;
 class JTableFileEntryGeneral {
 
     private final String fileName;
-    private FilesToGet filesToGet;
+    private final FilesToGet filesToGet;
 
     JTableFileEntryGeneral(FilesToGet filesToGet, String fileName) {
         this.fileName = fileName;
@@ -62,9 +62,13 @@ class JTableFileEntryGeneral {
         return ret1;
     }
 
-    public static final HashMap<Integer, String> fileTableColls = initCalls();
+    private static final HashMap<Integer, String> fileTableColls = initCalls();
 
-    public static String getColumnName(Object key) {
+    public static HashMap<Integer, String> getFileTableColls() {
+        return fileTableColls;
+    }
+
+    public static String getColumnName(Integer key) {
         return fileTableColls.get(key);
     }
 

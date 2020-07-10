@@ -67,16 +67,6 @@ abstract class AColumnFilter {
         }
     }
 
-    static public double convertDouble(Object val) throws NumberFormatException {
-        double l;
-        if (val instanceof Integer) {
-            l = ((Integer) val).doubleValue();
-        } else {
-            l = Double.parseDouble((String) val.toString());
-        }
-        return l;
-    }
-
     static public abstract class NumberFilter extends AColumnFilter {
 
         private String name;

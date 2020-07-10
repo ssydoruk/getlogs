@@ -121,12 +121,14 @@ public class SettingsPanel extends javax.swing.JPanel {
         clbApps.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         clbApps.addMouseListener(new MouseAdapter() {
 
+            @Override
             public void mousePressed(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     doPop(e);
                 }
             }
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     doPop(e);
@@ -239,6 +241,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 //        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         tfGrepText.setMaximumSize(new Dimension(tfGrepText.getMaximumSize().width, tfGrepText.getMinimumSize().height));
         jtfOutputDir.setMaximumSize(new Dimension(jtfOutputDir.getMaximumSize().width, jtfOutputDir.getMinimumSize().height));
+        jtfStatusScript.setMaximumSize(new Dimension(jtfStatusScript.getMaximumSize().width, jtfStatusScript.getMinimumSize().height));
         tfDateRegex.setMaximumSize(new Dimension(tfDateRegex.getMaximumSize().width, tfDateRegex.getMinimumSize().height));
         tfTimeRegex.setMaximumSize(new Dimension(tfTimeRegex.getMaximumSize().width, tfTimeRegex.getMinimumSize().height));
         ftHours.setMaximumSize(new Dimension(ftHours.getMaximumSize().width, ftHours.getMinimumSize().height));
@@ -317,6 +320,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void updateAppTitle() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
 
                 int numSelected = getSelectedNum(clbApps);
@@ -338,6 +342,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void updateProfileTitle() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
 
                 ((TitledBorder) jpProfileBase.getBorder()).setTitle(profileTitleBase + " (" + getSelectedNum(clbProfile) + "/" + (getAllSize(clbProfile)) + ")");
@@ -357,6 +362,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 //            System.out.println("clbProfileSelectionChanged List item changed - " + evt);
             ListSelectionModel lsm = (ListSelectionModel) evt.getSource();
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     clbApps.setValueIsAdjusting(true);
                     int minIndex = lsm.getMinSelectionIndex();
@@ -458,6 +464,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             ListSelectionModel lsm = (ListSelectionModel) evt.getSource();
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
 //                    inquirer.logger.info("changing item 1");
                     int minIndex = lsm.getMinSelectionIndex();
@@ -1618,6 +1625,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             return (otherName == null) ? false : name.toLowerCase().equals(otherName.toLowerCase());
         }
 
+        @Override
         public String toString() {
             return this.name;
         }
@@ -1627,10 +1635,10 @@ public class SettingsPanel extends javax.swing.JPanel {
     public static class InfoPanel extends StandardDialog {
 
         private int closeCause = JOptionPane.CANCEL_OPTION;
-        private JTable theTab;
-        private ArrayList<JButton> addButtons;
+        private final JTable theTab;
+        private final ArrayList<JButton> addButtons;
         private final String selectedFormat;
-        private TableColumnAdjuster tca;
+        private final TableColumnAdjuster tca;
 
         public int getCloseCause() {
             return closeCause;
@@ -1723,6 +1731,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             buttonPanel.addButton(cancelButton);
 
             cancelButton.setAction(new AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     setDialogResult(RESULT_CANCELLED);
                     setCloseCause(JOptionPane.CANCEL_OPTION);
@@ -1989,7 +1998,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
 
             private final JTextField tbValue;
-            private JPanel enterPanel;
+            private final JPanel enterPanel;
 
             public String getText() {
                 return tbValue.getText();
@@ -2048,6 +2057,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             buttonPanel.addButton(cancelButton);
 
             cancelButton.setAction(new AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     setDialogResult(RESULT_CANCELLED);
                     setVisible(false);

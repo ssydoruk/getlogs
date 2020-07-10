@@ -13,8 +13,8 @@ import java.util.ArrayList;
  */
 class FilesToGet {
 
-    private AppProfile profile;
-    private App app;
+    private final AppProfile profile;
+    private final App app;
 
     public FilesToGet(AppProfile key, App value, String file) {
         profile = key;
@@ -30,7 +30,7 @@ class FilesToGet {
     public App getApp() {
         return app;
     }
-    private ArrayList<String> fileNames;
+    private final ArrayList<String> fileNames;
 
     public ArrayList<String> getFileNames() {
         return fileNames;

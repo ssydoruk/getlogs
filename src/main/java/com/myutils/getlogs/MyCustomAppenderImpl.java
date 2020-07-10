@@ -22,6 +22,7 @@ import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import static com.myutils.getlogs.GetLogs.logger;
+import java.io.IOException;
 
 // note: class name need not match the @Plugin name.
 @Plugin(name = "MyCustomAppender", category = "Core", elementType = "appender", printObject = true)
@@ -48,7 +49,7 @@ public final class MyCustomAppenderImpl extends AbstractAppender {
         try {
             final byte[] bytes = getLayout().toByteArray(event);
             System.out.write(bytes);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.error(ex);
             if (!ignoreExceptions()) {
                 throw new AppenderLoggingException(ex);

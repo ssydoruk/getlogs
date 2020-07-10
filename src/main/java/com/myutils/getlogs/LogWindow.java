@@ -126,7 +126,7 @@ public class LogWindow extends JFrame {
 
     public static class CustomAppender extends AbstractAppender {
 
-        private List<String> list = new ArrayList<>();
+        final private List<String> list = new ArrayList<>();
 
         public CustomAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
             super(name, filter, layout);

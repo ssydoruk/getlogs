@@ -21,7 +21,7 @@ import static com.myutils.getlogs.GetLogs.logger;
  *
  * @author stepan_sydoruk
  */
-public class AppProfile {
+public final class AppProfile {
 
     private String Name;
     private boolean selected;
@@ -184,7 +184,7 @@ public class AppProfile {
         return null;
     }
 
-    public App getApp(String app, String file, String fullFileName) {
+    protected App getApp(String app, String file, String fullFileName) {
         for (App app1 : apps) {
             if (app1.correspondTo(app, file, fullFileName)) {
                 return app1;
@@ -195,6 +195,7 @@ public class AppProfile {
 
     public static class SortByName implements Comparator<AppProfile> {
 
+        @Override
         public int compare(AppProfile a, AppProfile b) {
             return a.getName().compareToIgnoreCase(b.getName());
         }

@@ -15,7 +15,7 @@ class JTablePasteFileModel extends JTableFileBaseModel<JTableFileEntryGeneral> {
 
     @Override
     public int getColumnCount() {
-        return JTableFileEntryGeneral.fileTableColls.size();
+        return JTableFileEntryGeneral.getFileTableColls().size();
 
     }
 

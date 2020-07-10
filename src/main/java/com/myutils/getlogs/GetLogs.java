@@ -631,7 +631,7 @@ public class GetLogs {
             sshParams.add(sshCmd.toString());
             ExtProcess procSSH = new ExtProcess(sshParams);
 
-            ExtProcess procTar = null;
+            ExtProcess procTar ;
             ArrayList<String> tarParams = new ArrayList<>();
             tarParams.add("tar");
             tarParams.add("-x");
@@ -834,9 +834,8 @@ public class GetLogs {
         StringBuilder fileNameClause = new StringBuilder();
 
         if (bIsCloud) {
-            String backSlash = "";
             if (!useRSync) {
-                backSlash = "\\";
+                String backSlash = "\\";
                 fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
             } else {
                 fileNameClause.append("*cloud*").append("-");
@@ -954,9 +953,9 @@ public class GetLogs {
                     .create();
 
             try {
-                InputStreamReader reader = new InputStreamReader(new FileInputStream(f));
-                ds = gson.fromJson(reader, DownloadSettings.class);
-                reader.close();
+                try (InputStreamReader reader = new InputStreamReader(new FileInputStream(f))) {
+                    ds = gson.fromJson(reader, DownloadSettings.class);
+                }
                 ds.checkLFMT();
             } catch (JsonSyntaxException | JsonIOException | IOException ex) {
                 logger.error(ex);
@@ -977,17 +976,12 @@ public class GetLogs {
     static void showGui(DownloadSettings ds) throws InterruptedException, InvocationTargetException {
 
         java.awt.EventQueue.invokeAndWait(new Runnable() {
+            @Override
             public void run() {
                 try {
                     UIManager.setLookAndFeel(
                             UIManager.getCrossPlatformLookAndFeelClassName());
-                } catch (ClassNotFoundException ex) {
-                    java.util.logging.Logger.getLogger(GetLogs.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                } catch (InstantiationException ex) {
-                    java.util.logging.Logger.getLogger(GetLogs.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                } catch (IllegalAccessException ex) {
-                    java.util.logging.Logger.getLogger(GetLogs.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                } catch (UnsupportedLookAndFeelException ex) {
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
                     java.util.logging.Logger.getLogger(GetLogs.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                 }
   
@@ -1008,9 +1002,7 @@ public class GetLogs {
         }
         apps = new ArrayList<>();
         String[] split = appsOpt.split(",");
-        for (String string : split) {
-            apps.add(string);
-        }
+        apps.addAll(Arrays.asList(split));
 
         bIsCloud = cmd.hasOption(optIsCloud.getLongOpt());
 

@@ -26,25 +26,25 @@ class Hosts extends HashMap<String, HostAppdir> {
     Hosts(String fileName) throws FileNotFoundException, IOException {
         File file = new File(fileName);
 
-        BufferedReader br = new BufferedReader(new FileReader(file));
-
-        logger.debug("Reading host/app settings from file [" + fileName + "]");
-        String st;
-        int cnt = 0;
-        while ((st = br.readLine()) != null) {
-            String[] split = st.split(",");
-            if (split.length > 1) {
-                // So expecting first field to be host name and the second to be application
-                if (split.length > 2) {
-                    put(split[1], new HostAppdir(split[0], split[2]));
-                } else {
-                    put(split[1], new HostAppdir(split[0], null));
+        int cnt;
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            logger.debug("Reading host/app settings from file [" + fileName + "]");
+            String st;
+            cnt = 0;
+            while ((st = br.readLine()) != null) {
+                String[] split = st.split(",");
+                if (split.length > 1) {
+                    // So expecting first field to be host name and the second to be application
+                    if (split.length > 2) {
+                        put(split[1], new HostAppdir(split[0], split[2]));
+                    } else {
+                        put(split[1], new HostAppdir(split[0], null));
+                    }
+                    cnt++;
+                    
                 }
-                cnt++;
-
             }
         }
-        br.close();
         logger.debug("Read " + cnt + " records");
     }
 

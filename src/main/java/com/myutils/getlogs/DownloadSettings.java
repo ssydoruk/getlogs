@@ -115,11 +115,11 @@ public class DownloadSettings {
         this.grepText = grepText;
     }
 
-    public GetCommand getActionCommand() {
+    protected GetCommand getActionCommand() {
         return actionCommand;
     }
 
-    public void setActionCommand(GetCommand actionCommand) {
+    protected void setActionCommand(GetCommand actionCommand) {
         this.actionCommand = actionCommand;
     }
 

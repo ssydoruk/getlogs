@@ -30,7 +30,7 @@ enum GetCommand {
         return ret.toString();
     }
 
-    private String name;
+    private final String name;
 
     private static final Map<String, GetCommand> ENUM_MAP;
 
@@ -45,7 +45,7 @@ enum GetCommand {
     // Build an immutable map of String name to enum pairs.
     // Any Map impl can be used.
     static {
-        Map<String, GetCommand> map = new ConcurrentHashMap<String, GetCommand>();
+        Map<String, GetCommand> map = new ConcurrentHashMap<>();
         for (GetCommand instance : GetCommand.values()) {
             map.put(instance.getName(), instance);
         }

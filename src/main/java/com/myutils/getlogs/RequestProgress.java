@@ -110,6 +110,7 @@ public class RequestProgress extends javax.swing.JDialog {
 
     public void doShow() {
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 //        synchronized (dialogStarted) {
                 //            try {

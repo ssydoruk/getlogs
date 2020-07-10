@@ -23,21 +23,20 @@ public class LogFiles extends HashMap<String, ArrayList<LogFile>> {
     LogFiles(String fileName) throws FileNotFoundException, IOException {
         File file = new File(fileName);
 
-        BufferedReader br = new BufferedReader(new FileReader(file));
-
-        String st;
-        while ((st = br.readLine()) != null) {
-            if (st != null && !st.isEmpty()) {
-                LogFile logFile = new LogFile(st);
-                ArrayList<LogFile> get = get(logFile.getAppName());
-                if (get == null) {
-                    get = new ArrayList<>();
-                    put(logFile.getAppName(), get);
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String st;
+            while ((st = br.readLine()) != null) {
+                if (st != null && !st.isEmpty()) {
+                    LogFile logFile = new LogFile(st);
+                    ArrayList<LogFile> get = get(logFile.getAppName());
+                    if (get == null) {
+                        get = new ArrayList<>();
+                        put(logFile.getAppName(), get);
+                    }
+                    get.add(logFile);
                 }
-                get.add(logFile);
             }
         }
-        br.close();
     }
 
     public static class LogFile {

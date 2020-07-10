@@ -43,7 +43,7 @@ import javax.swing.table.TableRowSorter;
  */
 abstract class JTableFileListBase<EntryType> extends JTablePopup {
 
-    private HashMap<Integer, AColumnFilter> columnFilters = new HashMap<>();
+    private final HashMap<Integer, AColumnFilter> columnFilters = new HashMap<>();
     private final JMenuItem miCancelFilters;
     private final JMenuItem miCancelColumnFilter;
 
@@ -399,14 +399,12 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
                         setRowSelectionInterval(selRow, selRow);
                         scrollRectToVisible(new Rectangle(getCellRect(selRow, 0, true)));
                     }
-                } else {
-                    selRow = -1;
-                }
+                } 
             }
         }
     }
 
-    private TableCellRenderer savedHeaderRenderer;
+    private final TableCellRenderer savedHeaderRenderer;
 
     protected class CancelFilters extends AbstractAction {
 
@@ -452,9 +450,7 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
         if (sel >= 0) {
             setRowSelectionInterval(sel, sel);
             scrollRectToVisible(new Rectangle(getCellRect(sel, 0, true)));
-        } else {
-            sel = -1;
-        }
+        } 
     }
 
     public boolean isEmpty() {

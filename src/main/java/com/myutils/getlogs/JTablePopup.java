@@ -132,10 +132,12 @@ public abstract class JTablePopup extends JTable {
 
     class MyMouseAdapter extends MouseAdapter {
 
+        @Override
         public void mousePressed(MouseEvent e) {
             theMousePressed(e);
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
 
         }

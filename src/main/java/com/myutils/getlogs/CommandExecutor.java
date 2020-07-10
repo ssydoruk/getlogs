@@ -45,7 +45,7 @@ import org.apache.commons.io.FilenameUtils;
  *
  * @author stepan_sydoruk
  */
-public class CommandExecutor {
+public final class CommandExecutor {
 
 //    public static void main(String[] args) throws Exception {
 //        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190", "1"));
@@ -63,29 +63,32 @@ public class CommandExecutor {
         StringBuilder ret = new StringBuilder();
         while ((m = regVariable.matcher(fileNameRegex)).find(pos)) {
             ret.append(fileNameRegex.substring(pos, m.start()));
-            if (m.group(1).equals("YYYY")) {
-                ret.append(fillPattern(datePattern, 0, 4));
-            } else if (m.group(1).equals("MM")) {
-                ret.append(fillPattern(datePattern, 4, 2));
-
-            } else if (m.group(1).equals("DD")) {
-                ret.append(fillPattern(datePattern, 6, 2));
-
-            } else if (m.group(1).equals("HH")) {
-                ret.append(fillPattern(timePattern, 0, 2));
-
-            } else if (m.group(1).equals("MI")) {
-                ret.append(fillPattern(timePattern, 2, 2));
-
-            } else if (m.group(1).equals("SS")) {
-                ret.append(fillPattern(timePattern, 4, 4));
-            } else if (m.group(1).equals("NAME")) {
-                ret.append(ap.getName());
-
-            } else {
-                SettingsDialog.error("Incorrect specification [" + m.group(1) + "] "
-                        + "in pattern [" + fileNameRegex + "]. Allowed: YYYY MM DD HH MI SS");
-                return null;
+            switch (m.group(1)) {
+                case "YYYY":
+                    ret.append(fillPattern(datePattern, 0, 4));
+                    break;
+                case "MM":
+                    ret.append(fillPattern(datePattern, 4, 2));
+                    break;
+                case "DD":
+                    ret.append(fillPattern(datePattern, 6, 2));
+                    break;
+                case "HH":
+                    ret.append(fillPattern(timePattern, 0, 2));
+                    break;
+                case "MI":
+                    ret.append(fillPattern(timePattern, 2, 2));
+                    break;
+                case "SS":
+                    ret.append(fillPattern(timePattern, 4, 4));
+                    break;
+                case "NAME":
+                    ret.append(ap.getName());
+                    break;
+                default:
+                    SettingsDialog.error("Incorrect specification [" + m.group(1) + "] "
+                            + "in pattern [" + fileNameRegex + "]. Allowed: YYYY MM DD HH MI SS");
+                    return null;
             }
 
 //            ret.append(StringUtils.repeat("^", m.end() - m.start()));
@@ -132,7 +135,7 @@ public class CommandExecutor {
 
     private boolean isText;
     private Window parent;
-    private ArrayList<JTableFileEntry> lsFilesAll = new ArrayList<>();
+    final private ArrayList<JTableFileEntry> lsFilesAll = new ArrayList<>();
     private ArrayList<JTableFileEntry> lsFilesLast = new ArrayList<>();
     private RequestProgress rp = null;
     private final ExtProcessManager extProcessManager;
@@ -190,6 +193,7 @@ public class CommandExecutor {
     SettingsPanel.InfoPanel lsOutput;
     SettingsPanel.InfoPanel lsPasteOutput;
 
+    @SuppressWarnings("null")
     private String getLogDir(AppProfile appProfile, App ap, boolean isLFMT, String h) {
         StringBuilder logsDir = new StringBuilder();
 
@@ -215,9 +219,9 @@ public class CommandExecutor {
         return logsDir.toString();
     }
 
-    public void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws IOException, InterruptedException {
+    protected void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws IOException, InterruptedException {
         SettingsDialog.info("executing for profile [" + appProfile.toString() + "] ap[" + ap + "] lfmt:" + isLFMT);
-        HostAppdir theAppHost = null;
+        HostAppdir theAppHost;
         if (GetLogs.appHost == null || GetLogs.appHost.isEmpty()) {
             theAppHost = GetLogs.getHosts().get(ap.getName()); // first for one application only
             if (theAppHost == null) {
@@ -232,7 +236,7 @@ public class CommandExecutor {
 
         if (ds.isAppLogs()) {
             ArrayList<StringBuilder> fileNameClause = getFileNameClause(appProfile, ap, false);
-            ArrayList<JTableFileEntry> lsFiles = executeCmd(appProfile, ap, theAppHost, logsDir.toString(), fileNameClause, isLFMT, false);
+            ArrayList<JTableFileEntry> lsFiles = executeCmd(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, false);
             if (lsFiles != null && !lsFiles.isEmpty()) {
                 synchronized (lsFilesAll) {
                     lsFilesAll.addAll(lsFiles);
@@ -245,7 +249,7 @@ public class CommandExecutor {
         }
         if (ds.isLcaLogs()) {
             ArrayList<StringBuilder> fileNameClause = getFileNameClause(appProfile, ap, true);
-            ArrayList<JTableFileEntry> lsFiles = executeCmd(appProfile, ap, theAppHost, logsDir.toString(), fileNameClause, isLFMT, true);
+            ArrayList<JTableFileEntry> lsFiles = executeCmd(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, true);
             if (lsFiles != null && !lsFiles.isEmpty()) {
                 synchronized (lsFilesAll) {
                     lsFilesAll.addAll(lsFiles);
@@ -258,7 +262,7 @@ public class CommandExecutor {
 
     }
 
-    public SavedSearchStorage getStorage(AppProfile appProfile, App ap, HostAppdir theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog) {
+    protected SavedSearchStorage getStorage(AppProfile appProfile, App ap, HostAppdir theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog) {
         SavedSearchStorage _ret = new SavedSearchStorage(appProfile, ap, theAppHost, logsDir, lfmt, lcaLog);
 
         synchronized (savedSearch) {
@@ -274,7 +278,7 @@ public class CommandExecutor {
 
     }
 
-    ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
+    final ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
 
     private String preQuoteDouble() {
         if (Utils.Util.getOS() == Util.OS.WINDOWS) {
@@ -367,7 +371,7 @@ public class CommandExecutor {
 
         sshCmd.append(quoteDouble());
         sshParams.add(sshCmd.toString());
-        ExtProcess procSSH = null;
+        ExtProcess procSSH;
         procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, false, true));
         procSSH.startProcess(true, true);
 
@@ -470,9 +474,7 @@ public class CommandExecutor {
                     }
                 }
                 return cmdOuts;
-            } catch (IOException ex) {
-                Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-            } catch (InterruptedException ex) {
+            } catch (IOException | InterruptedException ex) {
                 Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             }
         }
@@ -480,7 +482,7 @@ public class CommandExecutor {
     }
 
     private void lsPastedFiles(HashMap<FilesToGet, ArrayList<String>> r) {
-        QueryTaskBase tsk = null;
+        QueryTaskBase tsk;
         lsFilesAll.clear();
         if (!isText) {
             if (lsTab == null) {
@@ -521,21 +523,22 @@ public class CommandExecutor {
                             }
                         });
                     }
-                    if(getDs().isProd())
-                    ret1.add(new ISubTask() {
-                        @Override
-                        public void task() throws InterruptedException, IOException {
-                            HostAppdir hh = GetLogs.getHosts().lookupHost(key.getApp().getName());
+                    if (getDs().isProd()) {
+                        ret1.add(new ISubTask() {
+                            @Override
+                            public void task() throws InterruptedException, IOException {
+                                HostAppdir hh = GetLogs.getHosts().lookupHost(key.getApp().getName());
 
-                            ArrayList<JTableFileEntry> lsFiles = executeLS(key.getProfile(), key.getApp(), hh,
-                                    getLogDir(key.getProfile(), key.getApp(), false, hh.toString()), value, false, false);
-                            if (lsFiles != null && !lsFiles.isEmpty()) {
-                                synchronized (lsFilesAll) {
-                                    lsFilesAll.addAll(lsFiles);
+                                ArrayList<JTableFileEntry> lsFiles = executeLS(key.getProfile(), key.getApp(), hh,
+                                        getLogDir(key.getProfile(), key.getApp(), false, hh.toString()), value, false, false);
+                                if (lsFiles != null && !lsFiles.isEmpty()) {
+                                    synchronized (lsFilesAll) {
+                                        lsFilesAll.addAll(lsFiles);
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
                 return ret1;
             }
@@ -638,14 +641,11 @@ public class CommandExecutor {
     private String replacePostActionVars(String word) {
         int pos = 0;
         Matcher m;
-        StringBuilder ret = new StringBuilder();
+        StringBuilder _ret = new StringBuilder();
         while ((m = regPostAction.matcher(word)).find(pos)) {
-            ret.append(word.substring(pos, m.start()));
+            _ret.append(word.substring(pos, m.start()));
             if (m.group(1).equals("OUTDIR")) {
-                ret.append(osSpecificPath(ds.getOutputDir()));
-
-            } else if (m.group(1).equals("OUTDIR")) {
-                ret.append(osSpecificPath(ds.getOutputDir()));
+                _ret.append(osSpecificPath(ds.getOutputDir()));
 
             } else {
                 SettingsDialog.error("Incorrect specification [" + m.group(1) + "] "
@@ -657,9 +657,9 @@ public class CommandExecutor {
             pos = m.end();
         }
         if (pos < word.length()) {
-            ret.append(word.substring(pos));
+            _ret.append(word.substring(pos));
         }
-        return ret.toString();
+        return _ret.toString();
 
     }
 
@@ -929,7 +929,7 @@ public class CommandExecutor {
             sshParams.add(sshCmd.toString());
             ExtProcess procSSH = extProcessManager.addProcess(new ExtProcessApp(sshParams, false, true));
 
-            ExtProcess procTar = null;
+            ExtProcess procTar;
             ArrayList<String> tarParams = new ArrayList<>();
             tarParams.add("tar");
             tarParams.add("-x");
@@ -1091,10 +1091,7 @@ public class CommandExecutor {
 //                    + "2	/applog/gcti/esv1_sip_agent_1_p/esv1_sip_agent_1_p_sip-001.20200429_171214_695.log	55\n"
 //                    + "3	/applog/gcti/edn1_sip_routing_1_p/edn1_sip_routing_1_p_sip-001.20200429_163320_805.log\n"
 //                    + "";
-        } catch (UnsupportedFlavorException ex) {
-            Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-            errorReading = true;
-        } catch (IOException ex) {
+        } catch (UnsupportedFlavorException | IOException ex) {
             Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             errorReading = true;
         }
@@ -1129,7 +1126,7 @@ public class CommandExecutor {
                 lsPasteOutput = new SettingsPanel.InfoPanel(parent, "List of pasted", lsGeneralTab,
                         "Download %d files");
             }
-            ArrayList<JTableFileEntryGeneral> lsPasteFiles = new ArrayList<JTableFileEntryGeneral>();
+            ArrayList<JTableFileEntryGeneral> lsPasteFiles = new ArrayList<>();
             for (FilesToGet filesToGet : ftd) {
                 for (String fileName : filesToGet.getFileNames()) {
                     lsPasteFiles.add(new JTableFileEntryGeneral(filesToGet, fileName));
@@ -1317,7 +1314,7 @@ public class CommandExecutor {
     }
 
     private void executeRSync(ArrayList<JTableFileEntry> selectedRows) {
-        if (selectedRows == null || selectedRows.size() == 0) {
+        if (selectedRows == null || selectedRows.isEmpty()) {
             SettingsDialog.info("No rows selected");
         } else {
             HashMap<SavedSearchStorage, ArrayList<String>> r = new HashMap<>();
@@ -1339,13 +1336,10 @@ public class CommandExecutor {
                     try {
                         executeRSync(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value, key.isLfmt(), key.isLcaLog());
 
-                    } catch (IOException ex) {
+                    } catch (IOException | InterruptedException ex) {
                         Logger.getLogger(CommandExecutor.class
                                 .getName()).log(java.util.logging.Level.SEVERE, null, ex);
 
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(CommandExecutor.class
-                                .getName()).log(java.util.logging.Level.SEVERE, null, ex);
                     }
 
                 }
@@ -1436,7 +1430,7 @@ public class CommandExecutor {
         ThreadGroup task() throws InterruptedException, IOException;
     }
 
-    public class QueryTask extends QueryTaskBase {
+    public final class QueryTask extends QueryTaskBase {
 
         private CountDownLatch latch;
         private ISubTask subTask;
@@ -1528,9 +1522,7 @@ public class CommandExecutor {
                 lsFilesLast = saveLS(lsFilesAll);
                 try {
                     showRecent();
-                } catch (IOException ex) {
-                    Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                } catch (InterruptedException ex) {
+                } catch (IOException | InterruptedException ex) {
                     Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                 }
             }
@@ -1825,7 +1817,7 @@ public class CommandExecutor {
     };
 
     private void doExecuteCmd(java.awt.Window parent1, CommandExecutor aThis) {
-        QueryTaskBase tsk = null;
+        QueryTaskBase tsk ;
 
         tsk = new QueryThreadingTask(aThis, new IThreadingSubTask() {
             @Override

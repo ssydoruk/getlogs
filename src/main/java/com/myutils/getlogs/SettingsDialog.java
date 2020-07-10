@@ -59,10 +59,12 @@ public class SettingsDialog extends StandardDialog {
         setModal(false);
 
         addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosed(WindowEvent e) {
                 closeDialog(RESULT_CANCELLED);
             }
 
+            @Override
             public void windowClosing(WindowEvent e) {
 
             }
@@ -89,6 +91,7 @@ public class SettingsDialog extends StandardDialog {
     public ButtonPanel createButtonPanel() {
         ButtonPanel buttonPanel = new ButtonPanel();
         JButton cancelButton = new JButton(new AbstractAction("Close") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 settingsPanel.saveConfig();
 
@@ -101,6 +104,7 @@ public class SettingsDialog extends StandardDialog {
         buttonPanel.addButton(cancelButton);
 
         JButton pasteFiles = new JButton(new AbstractAction("Paste files") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     pasteFiles();
@@ -117,6 +121,7 @@ public class SettingsDialog extends StandardDialog {
         buttonPanel.addButton(pasteFiles);
 
         JButton lastLSButton = new JButton(new AbstractAction("recent list") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     showRecent();
@@ -132,6 +137,7 @@ public class SettingsDialog extends StandardDialog {
         buttonPanel.addButton(lastLSButton);
 
         JButton uncheckBackup = new JButton(new AbstractAction("Uncheck backup") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     uncheckBackup();
@@ -147,6 +153,7 @@ public class SettingsDialog extends StandardDialog {
         buttonPanel.addButton(uncheckBackup);
 
         jbRun = new JButton(new AbstractAction("Start!") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     executeCommand(e);

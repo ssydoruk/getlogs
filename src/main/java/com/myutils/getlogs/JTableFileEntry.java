@@ -24,6 +24,7 @@ class JTableFileEntry extends JTableFileEntryGeneral {
         this.storage = s;
     }
 
+    @Override
     public Object getColumn(int columnIndex) {
         switch (columnIndex) {
             case 0:
@@ -58,7 +59,7 @@ class JTableFileEntry extends JTableFileEntryGeneral {
 
     public static final HashMap<Integer, String> fileTableColls = initCalls();
 
-    public static String getColumnName(Object key) {
+    public static String getColumnName(Integer key) {
         return fileTableColls.get(key);
     }
 
