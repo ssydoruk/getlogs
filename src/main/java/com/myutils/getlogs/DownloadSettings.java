@@ -190,6 +190,16 @@ public class DownloadSettings {
         }
     }
 
+    int getTotalApps() {
+        int ret=0;
+        for (AppProfile appProfile : getAppProfiles()) {
+            for (App app : appProfile.getApps()) {
+                ret++;
+            }
+        }
+        return ret;
+    }
+
     public static class LFMTHostInstance {
 
         private String host;
