@@ -1,5 +1,0 @@
-h1,confserv
-h2,sip_server
-h3,sip_server2
-h2,sip_server3
-h3,urs3
