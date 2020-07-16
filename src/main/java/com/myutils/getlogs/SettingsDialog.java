@@ -8,6 +8,7 @@ package com.myutils.getlogs;
 import com.jidesoft.dialog.ButtonPanel;
 import com.jidesoft.dialog.StandardDialog;
 import static com.jidesoft.dialog.StandardDialog.RESULT_CANCELLED;
+import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -18,7 +19,6 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import static com.myutils.getlogs.GetLogs.logger;
 
 /**
  *
@@ -26,6 +26,7 @@ import static com.myutils.getlogs.GetLogs.logger;
  */
 public class SettingsDialog extends StandardDialog {
 
+    private static LogWindow lw;
 
     static void info(String str) {
         logger.info(str);
@@ -40,15 +41,7 @@ public class SettingsDialog extends StandardDialog {
 
     private final SettingsPanel settingsPanel;
     private final CommandExecutor ce;
-    private static LogWindow lw;
     private JButton jbRun;
-
-    public void setJBRunEnabled(boolean b) {
-        if (jbRun != null) {
-            jbRun.setEnabled(b);
-            jbRun.repaint();
-        }
-    }
 
     public SettingsDialog(DownloadSettings ds, String guiProfile) {
         super();
@@ -71,6 +64,13 @@ public class SettingsDialog extends StandardDialog {
         });
         setTitle("GetLogs" + "(" + guiProfile + ")");
         this.setVisible(true);
+    }
+
+    public void setJBRunEnabled(boolean b) {
+        if (jbRun != null) {
+            jbRun.setEnabled(b);
+            jbRun.repaint();
+        }
     }
 
     public CommandExecutor getCe() {

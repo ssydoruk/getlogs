@@ -9,6 +9,8 @@ package com.myutils.getlogs;
  *
  * @author stepan_sydoruk
  */
+import static com.myutils.getlogs.GetLogs.logger;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.locks.*;
 import org.apache.logging.log4j.core.Filter;
@@ -21,13 +23,30 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import static com.myutils.getlogs.GetLogs.logger;
-import java.io.IOException;
 
 // note: class name need not match the @Plugin name.
 @Plugin(name = "MyCustomAppender", category = "Core", elementType = "appender", printObject = true)
 public final class MyCustomAppenderImpl extends AbstractAppender {
 
+    // Your custom appender needs to declare a factory method
+    // annotated with `@PluginFactory`. Log4j will parse the configuration
+    // and call this factory method to construct an appender instance with
+    // the configured attributes.
+    @PluginFactory
+    public static MyCustomAppenderImpl createAppender(
+            @PluginAttribute("name") String name,
+            @PluginElement("Layout") Layout<? extends Serializable> layout,
+            @PluginElement("Filter") final Filter filter,
+            @PluginAttribute("otherAttribute") String otherAttribute) {
+        if (name == null) {
+            LOGGER.error("No name provided for MyCustomAppenderImpl");
+            return null;
+        }
+        if (layout == null) {
+            layout = PatternLayout.createDefaultLayout();
+        }
+        return new MyCustomAppenderImpl(name, filter, layout, true);
+    }
 
     private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final Lock readLock = rwLock.readLock();
@@ -57,26 +76,6 @@ public final class MyCustomAppenderImpl extends AbstractAppender {
         } finally {
             readLock.unlock();
         }
-    }
-
-    // Your custom appender needs to declare a factory method
-    // annotated with `@PluginFactory`. Log4j will parse the configuration
-    // and call this factory method to construct an appender instance with
-    // the configured attributes.
-    @PluginFactory
-    public static MyCustomAppenderImpl createAppender(
-            @PluginAttribute("name") String name,
-            @PluginElement("Layout") Layout<? extends Serializable> layout,
-            @PluginElement("Filter") final Filter filter,
-            @PluginAttribute("otherAttribute") String otherAttribute) {
-        if (name == null) {
-            LOGGER.error("No name provided for MyCustomAppenderImpl");
-            return null;
-        }
-        if (layout == null) {
-            layout = PatternLayout.createDefaultLayout();
-        }
-        return new MyCustomAppenderImpl(name, filter, layout, true);
     }
 
 }

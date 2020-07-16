@@ -15,6 +15,7 @@ class FilesToGet {
 
     private final AppProfile profile;
     private final App app;
+    private final ArrayList<String> fileNames;
 
     public FilesToGet(AppProfile key, App value, String file) {
         profile = key;
@@ -30,7 +31,6 @@ class FilesToGet {
     public App getApp() {
         return app;
     }
-    private final ArrayList<String> fileNames;
 
     public ArrayList<String> getFileNames() {
         return fileNames;

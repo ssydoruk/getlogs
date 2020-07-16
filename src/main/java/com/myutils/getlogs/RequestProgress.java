@@ -5,18 +5,17 @@
  */
 package com.myutils.getlogs;
 
+import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.Window;
 import java.util.List;
 import javax.swing.SwingWorker;
 import javax.swing.text.DefaultCaret;
-import static com.myutils.getlogs.GetLogs.logger;
 
 /**
  *
  * @author ssydoruk
  */
 public class RequestProgress extends javax.swing.JDialog {
-
 
     private CommandExecutor.QueryTaskBase wrk;
     private Window theParent;
@@ -157,9 +156,7 @@ public class RequestProgress extends javax.swing.JDialog {
         protected void process(List<Integer> chunks) {
             for (Integer chunk : chunks) {
 //                    tfSecondsElapsed.t
-//                tfSecondsElapsed.setText(sipspanindexer.Main.pDuration(chunk.intValue() * 1000, false));
                 tfSecondsElapsed.invalidate();
-//                    inquirer.logger.info("Elapsed timer: " + sipspanindexer.Main.pDuration(chunk.intValue() * 1000, false));
             }
             tfSecondsElapsed.repaint();
         }

@@ -99,9 +99,6 @@ public class GetLogs {
     private static String sRSyncUserName;
     private static boolean hostsVisible;
 
-    public static Hosts getHosts() {
-        return hosts;
-    }
     private static Hosts hosts;
     public static GetCommand execCommand;
     private static String sGrep = null;
@@ -110,10 +107,21 @@ public class GetLogs {
     private static boolean bIsCloud = false;
     private static String sGUIProfile;
 
+    private static Options options;
+    static ArrayList<String> apps = null;
+    static Logger logger = LogManager.getLogger();
+    private static final Pattern regCountDigitsCovered = Pattern.compile("(\\d|\\[[\\d\\-]+\\])");
+    public static final HashMap<String, String> extUnpacker = getextUnpacker();
+    final static public String filePrefix = "!file!";
+    public static final Pattern regRegDigits = Pattern.compile("(\\d|\\[[\\-\\d]*\\])");
+
+    public static Hosts getHosts() {
+        return hosts;
+    }
+
     public static String getsGUIProfile() {
         return sGUIProfile;
     }
-    private static Options options;
 
     public static void main(String[] args) throws Exception {
 // set the name of the application menu item
@@ -447,9 +455,6 @@ public class GetLogs {
 
     }
 
-    static ArrayList<String> apps = null;
-    static Logger logger = LogManager.getLogger();
-
     public static Logger getLogger() {
         return logger;
     }
@@ -564,8 +569,6 @@ public class GetLogs {
 
     }
 
-    private static final Pattern regCountDigitsCovered = Pattern.compile("(\\d|\\[[\\d\\-]+\\])");
-
     private static int countDigits(String dateSpec1) {
 
         int pos = 0;
@@ -631,7 +634,7 @@ public class GetLogs {
             sshParams.add(sshCmd.toString());
             ExtProcess procSSH = new ExtProcess(sshParams);
 
-            ExtProcess procTar ;
+            ExtProcess procTar;
             ArrayList<String> tarParams = new ArrayList<>();
             tarParams.add("tar");
             tarParams.add("-x");
@@ -729,16 +732,12 @@ public class GetLogs {
         return matchedFiles;
     }
 
-    public static final HashMap<String, String> extUnpacker = getextUnpacker();
-
     private static HashMap<String, String> getextUnpacker() {
         HashMap<String, String> ret = new HashMap<>();
         ret.put("*.zip", "unzip -p ${f}");
         ret.put("*.log", "cat ${f}");
         return ret;
     }
-
-    final static public String filePrefix = "!file!";
 
     public static ArrayList<String> execGrep(String ext, String unp, ArrayList<String> sshParams, StringBuilder sshCmd,
             String regex) throws IOException, InterruptedException {
@@ -883,8 +882,6 @@ public class GetLogs {
         return fileNameClause;
     }
 
-    public static final Pattern regRegDigits = Pattern.compile("(\\d|\\[[\\-\\d]*\\])");
-
     public static String cloudDatePattern(String dateSpec1, String timeSpec1, SettingsPanel.TimeProfile tp) {
 
         StringBuilder ret = new StringBuilder();
@@ -984,7 +981,7 @@ public class GetLogs {
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
                     java.util.logging.Logger.getLogger(GetLogs.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                 }
-  
+
                 SettingsDialog dlg = new SettingsDialog(ds, sGUIProfile);
                 dlg.getCe().setSettingsFile(sGUIProfile);
                 dlg.pack();

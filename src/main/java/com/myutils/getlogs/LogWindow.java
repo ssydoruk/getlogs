@@ -6,6 +6,7 @@
 package com.myutils.getlogs;
 
 import Utils.ScreenInfo;
+import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,14 +28,12 @@ import org.apache.logging.log4j.core.config.AbstractConfiguration;
 import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import static com.myutils.getlogs.GetLogs.logger;
 
 /**
  *
  * @author stepan_sydoruk
  */
 public class LogWindow extends JFrame {
-
 
     static void info(String command_executed) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -71,6 +70,7 @@ public class LogWindow extends JFrame {
 //        config.removeAppender("Custom");
 //        ctx.updateLoggers();
     }
+    JTextArea jt;
 
     public LogWindow() {
         super();
@@ -89,8 +89,6 @@ public class LogWindow extends JFrame {
 //        setFocusable(false);
         setVisible(true);
     }
-
-    JTextArea jt;
 
     public JComponent createContentPanel() {
         jt = new JTextArea();

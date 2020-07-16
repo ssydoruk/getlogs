@@ -5,11 +5,11 @@
  */
 package com.myutils.getlogs;
 
-import Utils.ValuesEditor;
 import Utils.Pair;
 import static Utils.ScreenInfo.CenterWindow;
 import Utils.TDateRange;
 import Utils.TableColumnAdjuster;
+import Utils.ValuesEditor;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -20,6 +20,7 @@ import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.CheckBoxListSelectionModel;
 import com.jidesoft.swing.FolderChooser;
 import com.jidesoft.swing.SearchableUtils;
+import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -31,7 +32,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -70,7 +70,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import org.apache.commons.lang3.StringUtils;
-import static com.myutils.getlogs.GetLogs.logger;
 
 /**
  *
@@ -115,12 +114,12 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         appTitleBase = ((TitledBorder) jpProfileBase.getBorder()).getTitle();
 
-        lmProfile = new DefaultListModel<Object>();
+        lmProfile = new DefaultListModel<>();
         clbProfile = new CheckBoxList(lmProfile);
         jpProfile.add(new JScrollPane(clbProfile));
         clbProfile.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
-        lmApps = new DefaultListModel<Object>();
+        lmApps = new DefaultListModel<>();
         clbApps = new CheckBoxList(lmApps);
         clbApps.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         clbApps.addMouseListener(new MouseAdapter() {
@@ -386,13 +385,11 @@ public class SettingsPanel extends javax.swing.JPanel {
                 Object elementAt = lm.getElementAt(i);
                 if (elementAt instanceof AppProfile) {
                     AppProfile pr = (AppProfile) elementAt;
-                    if (pr != null) {
-                        List<App> apps = new ArrayList<>(pr.getApps());
-                        if (apps != null) {
-                            for (App app : apps) {
-                                if (app.isChecked()) {
-                                    numSelected++;
-                                }
+                    List<App> apps = new ArrayList<>(pr.getApps());
+                    if (apps != null) {
+                        for (App app : apps) {
+                            if (app.isChecked()) {
+                                numSelected++;
                             }
                         }
                     }
@@ -1098,7 +1095,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 sPrompt.append("profile [").append(selectedValuesList.get(0).getName()).append("]");
             } else {
                 sPrompt.append(selectedValuesList.size()).append(" profiles ");
-            };
+            }
 
             if (JOptionPane.showConfirmDialog((Window) this.getRootPane().getParent(),
                     sPrompt.toString(), "Confirmation", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -1126,11 +1123,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         Object selectedValue = clbProfile.getSelectedValue();
         if (selectedValue instanceof AppProfile) {
             AppProfile appPr = (AppProfile) selectedValue;
-            if (appPr != null) {
-                String name = getProfileName("Enter new profile name", appPr.getName());
-                if (name != null) {
-                    addProfile(name, appPr);
-                }
+            String name = getProfileName("Enter new profile name", appPr.getName());
+            if (name != null) {
+                addProfile(name, appPr);
             }
         }
     }//GEN-LAST:event_jbProfileSaveAsActionPerformed
@@ -1214,7 +1209,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             StringBuilder sPrompt = new StringBuilder();
             sPrompt.append("Do you really want to delete ");
             if (selectedValuesList.size() == 1) {
-                sPrompt.append("app [" + selectedValuesList.get(0).getName() + "]");
+                sPrompt.append("app [").append(selectedValuesList.get(0).getName()).append("]");
             } else {
                 sPrompt.append(selectedValuesList.size()).append(" applications ");
             }
@@ -1327,11 +1322,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         Object selectedValue = clbProfile.getSelectedValue();
         if (selectedValue instanceof AppProfile) {
             AppProfile prof = (AppProfile) selectedValue;
-            if (prof != null) {
-                profileSelectionChanged(prof);
-            }
-        } else
+            profileSelectionChanged(prof);
+        } else {
             profileSelectionChanged(null);
+        }
     }//GEN-LAST:event_cbmShowHostsItemStateChanged
 
     private void cbmCopyHostNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbmCopyHostNameItemStateChanged
@@ -1716,6 +1710,22 @@ public class SettingsPanel extends javax.swing.JPanel {
         private final ArrayList<JButton> addButtons;
         private final String selectedFormat;
         private final TableColumnAdjuster tca;
+        JScrollPane jScrollPane;
+        JButton jbFilter;
+        ButtonPanel buttonPanel;
+
+        InfoPanel(Window parent, String title, JTable tab, String selectedFormat) {
+            super(parent, title);
+            this.addButtons = new ArrayList<>();
+            this.theTab = tab;
+            this.selectedFormat = selectedFormat;
+            tca = new TableColumnAdjuster(theTab);
+            tca.setColumnHeaderIncluded(true);
+            jScrollPane = new JScrollPane(theTab);
+            theTab.getTableHeader().setVisible(true);
+            theTab.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        }
 
         public int getCloseCause() {
             return closeCause;
@@ -1731,19 +1741,6 @@ public class SettingsPanel extends javax.swing.JPanel {
             bt.setText((rowsSelected == 0)
                     ? "Empty selection"
                     : String.format(selectedFormat, rowsSelected));
-        }
-
-        InfoPanel(Window parent, String title, JTable tab, String selectedFormat) {
-            super(parent, title);
-            this.addButtons = new ArrayList<>();
-            this.theTab = tab;
-            this.selectedFormat = selectedFormat;
-            tca = new TableColumnAdjuster(theTab);
-            tca.setColumnHeaderIncluded(true);
-            jScrollPane = new JScrollPane(theTab);
-            theTab.getTableHeader().setVisible(true);
-            theTab.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
         }
 
         public void doShow() {
@@ -1765,7 +1762,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 for (int i = 0; i < theTab.getRowCount(); i++) {
                     s.setLength(0);
                     for (int j = 0; j < theTab.getColumnCount(); j++) {
-                        s.append("[" + theTab.getValueAt(i, j) + "],");
+                        s.append("[").append(theTab.getValueAt(i, j)).append("],");
                     }
                     logger.trace(s);
                 }
@@ -1779,7 +1776,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         public JComponent createBannerPanel() {
             return null;
         }
-        JScrollPane jScrollPane;
 
         @Override
         public JComponent createContentPanel() {
@@ -1794,9 +1790,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 
             return listPane;
         }
-
-        JButton jbFilter;
-        ButtonPanel buttonPanel;
 
         @Override
         public ButtonPanel createButtonPanel() {
@@ -2063,39 +2056,13 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         private EnterPanel lfmtBaseDir;
 
+        EnterPanel lfmt;
+        EnterPanel lfmtInstance;
+
         public EditLFMTDialog() {
             super();
             setTitle("Edit LFMT host");
         }
-
-        class EnterPanel {
-
-            public JPanel getEnterPanel() {
-                return enterPanel;
-            }
-
-            private final JTextField tbValue;
-            private final JPanel enterPanel;
-
-            public String getText() {
-                return tbValue.getText();
-            }
-
-            public void setText(String txt) {
-                tbValue.setText(txt);
-            }
-
-            EnterPanel(String title) {
-                enterPanel = new JPanel();
-                enterPanel.setLayout(new BoxLayout(enterPanel, BoxLayout.LINE_AXIS));
-                enterPanel.add(new JLabel(title));
-                tbValue = new JTextField();
-                enterPanel.add(tbValue);
-            }
-        }
-
-        EnterPanel lfmt;
-        EnterPanel lfmtInstance;
 
         public EnterPanel getLfmt() {
             return lfmt;
@@ -2176,6 +2143,32 @@ public class SettingsPanel extends javax.swing.JPanel {
             setLocationRelativeTo(getParent());
             setVisible(true);
             return getDialogResult() == StandardDialog.RESULT_AFFIRMED;
+        }
+
+        class EnterPanel {
+
+            private final JTextField tbValue;
+            private final JPanel enterPanel;
+
+            EnterPanel(String title) {
+                enterPanel = new JPanel();
+                enterPanel.setLayout(new BoxLayout(enterPanel, BoxLayout.LINE_AXIS));
+                enterPanel.add(new JLabel(title));
+                tbValue = new JTextField();
+                enterPanel.add(tbValue);
+            }
+
+            public JPanel getEnterPanel() {
+                return enterPanel;
+            }
+
+            public String getText() {
+                return tbValue.getText();
+            }
+
+            public void setText(String txt) {
+                tbValue.setText(txt);
+            }
         }
     }
 }

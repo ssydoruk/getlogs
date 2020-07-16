@@ -13,16 +13,16 @@ import Utils.Pair;
  */
 public class HostAppdir extends Pair<String, String> {
 
+    public HostAppdir(String key, String value) {
+        super(key, value);
+    }
+
     public String getHost() {
         return getKey();
     }
 
     public String getAppDir() {
         return getValue();
-    }
-
-    public HostAppdir(String key, String value) {
-        super(key, value);
     }
 
     @Override

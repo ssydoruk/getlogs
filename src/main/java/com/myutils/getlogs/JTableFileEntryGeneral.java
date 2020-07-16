@@ -13,6 +13,25 @@ import java.util.HashMap;
  */
 class JTableFileEntryGeneral {
 
+    private static final HashMap<Integer, String> fileTableColls = initCalls();
+
+    private static HashMap<Integer, String> initCalls() {
+        HashMap<Integer, String> ret1 = new HashMap<>();
+        ret1.put(0, "Profile");
+        ret1.put(1, "application");
+        ret1.put(2, "file");
+
+        return ret1;
+    }
+
+    public static HashMap<Integer, String> getFileTableColls() {
+        return fileTableColls;
+    }
+
+    public static String getColumnName(Integer key) {
+        return fileTableColls.get(key);
+    }
+
     private final String fileName;
     private final FilesToGet filesToGet;
 
@@ -37,7 +56,6 @@ class JTableFileEntryGeneral {
         return filesToGet;
     }
 
-
     public Object getColumn(int columnIndex) {
         switch (columnIndex) {
             case 0:
@@ -51,25 +69,6 @@ class JTableFileEntryGeneral {
 
         }
         return null;
-    }
-
-    private static HashMap<Integer, String> initCalls() {
-        HashMap<Integer, String> ret1 = new HashMap<>();
-        ret1.put(0, "Profile");
-        ret1.put(1, "application");
-        ret1.put(2, "file");
-
-        return ret1;
-    }
-
-    private static final HashMap<Integer, String> fileTableColls = initCalls();
-
-    public static HashMap<Integer, String> getFileTableColls() {
-        return fileTableColls;
-    }
-
-    public static String getColumnName(Integer key) {
-        return fileTableColls.get(key);
     }
 
 }

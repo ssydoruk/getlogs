@@ -12,6 +12,7 @@ import Utils.UnixProcess.ExtProcess;
 import Utils.Util;
 import static Utils.Util.rSyncAddClause;
 import com.jidesoft.dialog.StandardDialog;
+import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -35,11 +36,10 @@ import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
-import static com.myutils.getlogs.GetLogs.logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 
 /**
  *
@@ -55,9 +55,11 @@ public final class CommandExecutor {
 //    }
     private static final Pattern regVariable = Pattern.compile("\\{([A-Z]{2,4}|NAME)\\}");
     private static final Pattern regPostAction = Pattern.compile("\\{(NAME|OUTDIR)\\}");
+    private static final Pattern ptFullFileName = Pattern.compile("([^/]+)/([^/]+)$");
+    private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 
     private static String cloudPattern(String fileNameRegex, String datePattern, String timePattern, App ap) {
-        System.out.println(fileNameRegex + "-" + datePattern + "-" + timePattern);
+        logger.debug(fileNameRegex + "-" + datePattern + "-" + timePattern);
         int pos = 0;
         Matcher m;
         StringBuilder ret = new StringBuilder();
@@ -131,6 +133,32 @@ public final class CommandExecutor {
         return ret1;
     }
 
+    private static void cancelExecutor() {
+        logger.debug("Cancelling...");
+        synchronized (executor) {
+            boolean terminatedOK = true;
+            List<Runnable> shutdownNow = executor.shutdownNow();
+            if (shutdownNow != null && !shutdownNow.isEmpty()) {
+                try {
+                    if (!executor.awaitTermination(500, TimeUnit.MILLISECONDS)) {
+                        terminatedOK = false;
+                        logger.error("Not all thread terminated after timeout");
+                    }
+                } catch (InterruptedException ex) {
+                    logger.error(ex);
+                }
+            }
+            if (terminatedOK) {
+                executor.purge();
+                executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+            }
+            if (executor.isTerminated()) {
+                logger.error("executor terminated");
+
+            }
+        }
+    }
+
     private DownloadSettings ds;
 
     private boolean isText;
@@ -139,6 +167,12 @@ public final class CommandExecutor {
     private ArrayList<JTableFileEntry> lsFilesLast = new ArrayList<>();
     private RequestProgress rp = null;
     private final ExtProcessManager extProcessManager;
+    private int ret = StandardDialog.RESULT_CANCELLED;
+    SettingsPanel.InfoPanel lsOutput;
+    SettingsPanel.InfoPanel lsPasteOutput;
+    final ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
+    JTableFileList lsTab = new JTableFileList();
+    JTablePasteFileList lsGeneralTab = null;
 
     public CommandExecutor(boolean isText) {
         this.isText = isText;
@@ -149,8 +183,6 @@ public final class CommandExecutor {
         this(false);
         parent = p;
     }
-
-    private int ret = StandardDialog.RESULT_CANCELLED;
 
     CommandExecutor(boolean b, DownloadSettings ds) {
         this(b);
@@ -190,9 +222,6 @@ public final class CommandExecutor {
         }
     }
 
-    SettingsPanel.InfoPanel lsOutput;
-    SettingsPanel.InfoPanel lsPasteOutput;
-
     @SuppressWarnings("null")
     private String getLogDir(AppProfile appProfile, App ap, boolean isLFMT, String h) {
         StringBuilder logsDir = new StringBuilder();
@@ -207,7 +236,7 @@ public final class CommandExecutor {
             if (instance != null && !instance.isEmpty()) {
                 logsDir.append(lfmtHostInstance.getInstance()).append("/")
                         .append(lfmtHostInstance.getInstance()).append("_cls");
-            };
+            }
 
             logsDir.append("/").append(h) //                    .append("/")
                     //                    .append(ap)
@@ -277,8 +306,6 @@ public final class CommandExecutor {
         return _ret;
 
     }
-
-    final ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
 
     private String preQuoteDouble() {
         if (Utils.Util.getOS() == Util.OS.WINDOWS) {
@@ -550,34 +577,6 @@ public final class CommandExecutor {
         tsk.execute();
     }
 
-    private class ExtProcessManager {
-
-        HashSet<ExtProcess> processes = new HashSet<>(2);
-
-        private ExtProcess addProcess(ExtProcess extProcess) {
-            synchronized (this) {
-                processes.add(extProcess);
-                return extProcess;
-            }
-        }
-
-        private void doneProcess(ExtProcess procSSH) {
-            synchronized (this) {
-                processes.remove(procSSH);
-            }
-        }
-
-        private void cancelAll() {
-            synchronized (this) {
-                for (ExtProcess processe : processes) {
-                    processe.cancel();
-                }
-            }
-
-        }
-
-    }
-
     private void executeGrepGet(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<String> executeGrep = executeGrep(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         ArrayList<String> rSyncFiles = new ArrayList<>();
@@ -763,113 +762,6 @@ public final class CommandExecutor {
         logger.debug("process terminated, result: " + waitFor);
 
         extProcessManager.doneProcess(procRSync);
-
-    }
-
-    class ExtProcessApp extends ExtProcess {
-
-        private AppProfile profile = null;
-        private App app = null;
-
-        private ExtProcessApp(AppProfile appProfile, App ap, ArrayList<String> sshParams, boolean b, boolean b0) throws IOException {
-            this(sshParams, b, b0);
-            this.profile = appProfile;
-            this.app = ap;
-        }
-
-        private String msgPrefix = null;
-
-        private String genLogMsg(String s, boolean isErr) {
-            if (msgPrefix == null) {
-                StringBuilder msg = new StringBuilder();
-                if (profile != null) {
-                    msg.append("[").append(profile).append("]");
-                }
-                if (app != null) {
-
-                    msg.append("/[").append(app.getName()).append("(").append(GetLogs.getHosts().lookupHost(app.getName())).append(")] - ");
-
-                }
-                msgPrefix = msg.toString();
-            }
-            StringBuilder ret = new StringBuilder(msgPrefix);
-            if (isErr) {
-                ret.append(" !ERR! ");
-            }
-            ret.append(s);
-            return ret.toString();
-
-        }
-
-        private void initLogBack(boolean logStdin, boolean logStdout) {
-            if (logStdin) {
-                setStdinReadProc(new IProcessOutputRead() {
-                    @Override
-                    public void lineRead(String s) {
-                        logMessage(Level.INFO, genLogMsg(s, false));
-                    }
-                });
-            }
-
-            if (logStdout) {
-                setStderrReadProc(new IProcessOutputRead() {
-                    @Override
-                    public void lineRead(String s) {
-
-                        logMessage(Level.ERROR, genLogMsg(s, true));
-
-                    }
-
-                });
-            }
-        }
-
-        public ExtProcessApp(ArrayList<String> tarParams, ExtProcess procSSH) throws IOException {
-            super(tarParams, procSSH);
-            initLogBack(false, false);
-        }
-
-        public ExtProcessApp(List<String> tarParams, boolean logStdin, boolean logStdout) throws IOException {
-            super(tarParams);
-            initLogBack(logStdin, logStdout);
-        }
-
-    }
-
-    class ExtProcessFinishing extends ExtProcess {
-
-        private void initLogBack(boolean logStdin, boolean logStdout) {
-            if (logStdin) {
-                setStdinReadProc(new IProcessOutputRead() {
-                    @Override
-                    public void lineRead(String s) {
-                        logMessage(Level.INFO, s);
-                    }
-                });
-            }
-
-            if (logStdout) {
-                setStderrReadProc(new IProcessOutputRead() {
-                    @Override
-                    public void lineRead(String s) {
-                        StringBuilder msg = new StringBuilder();
-                        msg.append("! ").append(s);
-                        logMessage(Level.ERROR, msg.toString());
-
-                    }
-                });
-            }
-        }
-
-        public ExtProcessFinishing(ArrayList<String> tarParams, ExtProcess procSSH) throws IOException {
-            super(tarParams, procSSH);
-            initLogBack(false, false);
-        }
-
-        public ExtProcessFinishing(List<String> tarParams, boolean logStdin, boolean logStdout) throws IOException {
-            super(tarParams);
-            initLogBack(logStdin, logStdout);
-        }
 
     }
 
@@ -1075,8 +967,6 @@ public final class CommandExecutor {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private static final Pattern ptFullFileName = Pattern.compile("([^/]+)/([^/]+)$");
-
     void pasteFiles(java.awt.Window parent, DownloadSettings ds) {
         Clipboard clipboard = getSystemClipboard();
         String data = null;
@@ -1118,7 +1008,7 @@ public final class CommandExecutor {
                 }
             }
         }
-        if (ftd != null && !ftd.isEmpty()) {
+        if (!ftd.isEmpty()) {
             if (lsGeneralTab == null) {
                 lsGeneralTab = new JTablePasteFileList();
             }
@@ -1168,26 +1058,7 @@ public final class CommandExecutor {
             }
 
         }
-        System.out.println(ftd);
-    }
-
-    private class FilesToDownload extends ArrayList<FilesToGet> {
-
-        public FilesToDownload() {
-            super();
-        }
-
-        private void addDownloadFile(Pair<AppProfile, App> findAppProfile, String file) {
-            for (FilesToGet ftg : this) {
-                if (ftg.getProfile().equals(findAppProfile.getKey())
-                        && ftg.getApp().equals(findAppProfile.getValue())) {
-                    ftg.addFile(file);
-                    return;
-                }
-            }
-            add(new FilesToGet(findAppProfile.getKey(), findAppProfile.getValue(), file));
-        }
-
+        logger.debug(ftd);
     }
 
     void showRecent() throws IOException, InterruptedException {
@@ -1412,6 +1283,232 @@ public final class CommandExecutor {
 
     }
 
+    private void doExecuteCmd(java.awt.Window parent1, CommandExecutor aThis) {
+        QueryTaskBase tsk;
+
+        tsk = new QueryThreadingTask(aThis, new IThreadingSubTask() {
+            @Override
+            public ArrayList<ISubTask> task() throws InterruptedException, IOException {
+                lsFilesAll.clear();
+                if (!isText) {
+                    if (lsTab == null) {
+                        lsTab = new JTableFileList();
+                    }
+                    lsTab.clearTable();
+
+                }
+
+                ArrayList<ISubTask> ret1 = new ArrayList<>();
+                for (AppProfile appProfile : ds.getAppProfiles()) {
+                    if (appProfile.isSelected()) {
+                        GetLogs.logger.debug("processing command for profile " + appProfile);
+                        for (App app : appProfile.getApps()) {
+                            GetLogs.logger.debug("processing app  " + app + ": " + app.isChecked());
+                            if (app.isChecked()) {
+                                if (ds.isProd()) {
+                                    ret1.add(new ISubTask() {
+                                        @Override
+                                        public void task() throws InterruptedException, IOException {
+                                            executeCmd(appProfile, app, false);
+                                        }
+                                    });
+                                }
+                                if (ds.isLfmt()) {
+                                    ret1.add(new ISubTask() {
+                                        @Override
+                                        public void task() throws InterruptedException, IOException {
+                                            executeCmd(appProfile, app, true);
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                return ret1;
+            }
+        });
+        if (rp == null) {
+            rp = new RequestProgress(parent1, false, tsk);
+        }
+        tsk.setRp(rp);
+        if (ds.getActionCommand() == GetCommand.GET || ds.getActionCommand() == GetCommand.GREPGET) {
+            tsk.setAfterActions(getAfterActions());
+
+            tsk.setBeforeActions(getBeforeActions());
+
+        }
+        tsk.execute();
+    }
+
+    private void doExecuteCmd(Window parent1, CommandExecutor aThis,
+            CountDownLatch latch,
+            ISubTask subTask) {
+
+        QueryTaskBase tsk = new QueryTask(aThis, latch, subTask);
+        if (rp == null) {
+            rp = new RequestProgress(parent1, true, tsk);
+        }
+
+        tsk.setRp(rp);
+        tsk.setBeforeActions(getBeforeActions());
+        tsk.setAfterActions(getAfterActions());
+
+        tsk.execute();
+
+    }
+
+    private class ExtProcessManager {
+
+        HashSet<ExtProcess> processes = new HashSet<>(2);
+
+        private ExtProcess addProcess(ExtProcess extProcess) {
+            synchronized (this) {
+                processes.add(extProcess);
+                return extProcess;
+            }
+        }
+
+        private void doneProcess(ExtProcess procSSH) {
+            synchronized (this) {
+                processes.remove(procSSH);
+            }
+        }
+
+        private void cancelAll() {
+            synchronized (this) {
+                for (ExtProcess processe : processes) {
+                    processe.cancel();
+                }
+            }
+
+        }
+
+    }
+
+    class ExtProcessApp extends ExtProcess {
+
+        private AppProfile profile = null;
+        private App app = null;
+        private String msgPrefix = null;
+
+        private ExtProcessApp(AppProfile appProfile, App ap, ArrayList<String> sshParams, boolean b, boolean b0) throws IOException {
+            this(sshParams, b, b0);
+            this.profile = appProfile;
+            this.app = ap;
+        }
+
+        public ExtProcessApp(ArrayList<String> tarParams, ExtProcess procSSH) throws IOException {
+            super(tarParams, procSSH);
+            initLogBack(false, false);
+        }
+
+        public ExtProcessApp(List<String> tarParams, boolean logStdin, boolean logStdout) throws IOException {
+            super(tarParams);
+            initLogBack(logStdin, logStdout);
+        }
+
+        private String genLogMsg(String s, boolean isErr) {
+            if (msgPrefix == null) {
+                StringBuilder msg = new StringBuilder();
+                if (profile != null) {
+                    msg.append("[").append(profile).append("]");
+                }
+                if (app != null) {
+
+                    msg.append("/[").append(app.getName()).append("(").append(GetLogs.getHosts().lookupHost(app.getName())).append(")] - ");
+
+                }
+                msgPrefix = msg.toString();
+            }
+            StringBuilder ret = new StringBuilder(msgPrefix);
+            if (isErr) {
+                ret.append(" !ERR! ");
+            }
+            ret.append(s);
+            return ret.toString();
+
+        }
+
+        private void initLogBack(boolean logStdin, boolean logStdout) {
+            if (logStdin) {
+                setStdinReadProc(new IProcessOutputRead() {
+                    @Override
+                    public void lineRead(String s) {
+                        logMessage(Level.INFO, genLogMsg(s, false));
+                    }
+                });
+            }
+
+            if (logStdout) {
+                setStderrReadProc(new IProcessOutputRead() {
+                    @Override
+                    public void lineRead(String s) {
+
+                        logMessage(Level.ERROR, genLogMsg(s, true));
+
+                    }
+
+                });
+            }
+        }
+    }
+
+    class ExtProcessFinishing extends ExtProcess {
+
+        public ExtProcessFinishing(ArrayList<String> tarParams, ExtProcess procSSH) throws IOException {
+            super(tarParams, procSSH);
+            initLogBack(false, false);
+        }
+
+        public ExtProcessFinishing(List<String> tarParams, boolean logStdin, boolean logStdout) throws IOException {
+            super(tarParams);
+            initLogBack(logStdin, logStdout);
+        }
+
+        private void initLogBack(boolean logStdin, boolean logStdout) {
+            if (logStdin) {
+                setStdinReadProc(new IProcessOutputRead() {
+                    @Override
+                    public void lineRead(String s) {
+                        logMessage(Level.INFO, s);
+                    }
+                });
+            }
+
+            if (logStdout) {
+                setStderrReadProc(new IProcessOutputRead() {
+                    @Override
+                    public void lineRead(String s) {
+                        StringBuilder msg = new StringBuilder();
+                        msg.append("! ").append(s);
+                        logMessage(Level.ERROR, msg.toString());
+
+                    }
+                });
+            }
+        }
+    }
+
+    private class FilesToDownload extends ArrayList<FilesToGet> {
+
+        public FilesToDownload() {
+            super();
+        }
+
+        private void addDownloadFile(Pair<AppProfile, App> findAppProfile, String file) {
+            for (FilesToGet ftg : this) {
+                if (ftg.getProfile().equals(findAppProfile.getKey())
+                        && ftg.getApp().equals(findAppProfile.getValue())) {
+                    ftg.addFile(file);
+                    return;
+                }
+            }
+            add(new FilesToGet(findAppProfile.getKey(), findAppProfile.getValue(), file));
+        }
+
+    }
+
     /**
      *
      */
@@ -1479,6 +1576,7 @@ public final class CommandExecutor {
     public class QueryThreadingTask extends QueryTaskBase {
 
         private IThreadingSubTask threadingSubTask;
+        CountDownLatch latch = null;
 
         public QueryThreadingTask(CommandExecutor ce, IThreadingSubTask threadingSubTask) {
             super(ce);
@@ -1533,8 +1631,6 @@ public final class CommandExecutor {
             cancelExecutor();
         }
 
-        CountDownLatch latch = null;
-
         @Override
         void onBackground() throws InterruptedException, IOException {
             if (threadingSubTask != null) {
@@ -1558,37 +1654,24 @@ public final class CommandExecutor {
 
     };
 
-    private static void cancelExecutor() {
-        logger.debug("Cancelling...");
-        synchronized (executor) {
-            boolean terminatedOK = true;
-            List<Runnable> shutdownNow = executor.shutdownNow();
-            if (shutdownNow != null && !shutdownNow.isEmpty()) {
-                try {
-                    if (!executor.awaitTermination(500, TimeUnit.MILLISECONDS)) {
-                        terminatedOK = false;
-                        logger.error("Not all thread terminated after timeout");
-                    }
-                } catch (InterruptedException ex) {
-                    logger.error(ex);
-                }
-            }
-            if (terminatedOK) {
-                executor.purge();
-                executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-            }
-            if (executor.isTerminated()) {
-                logger.error("executor terminated");
-
-            }
-        }
-    }
-
     public abstract class QueryTaskBase extends SwingWorker<Void, String> {
 
         private final CommandExecutor ce;
 
         boolean userCancelling = false;
+        private String outFile;
+        private boolean displayForm;
+        private RequestProgress rp = null;
+        String theTitle = "";
+        private ISubTask finishingTask = null;
+        private CountDownLatch finishLatch = null;
+        private ISubTask startingTask = null;
+        private CountDownLatch startingLatch = null;
+
+        private QueryTaskBase(CommandExecutor aThis) {
+            super();
+            ce = aThis;
+        }
 
         public boolean isUserCancelling() {
             return userCancelling || isCancelled();
@@ -1603,11 +1686,6 @@ public final class CommandExecutor {
         abstract void onDone();
 
         abstract void onCancel();
-
-        private QueryTaskBase(CommandExecutor aThis) {
-            super();
-            ce = aThis;
-        }
 
         boolean myCancel(boolean mayInterruptIfRunning) {
             try {
@@ -1632,7 +1710,7 @@ public final class CommandExecutor {
                      */
                     if (!isDone()) {
                         SettingsDialog.info("Thread not done; killing");
-                        Thread.currentThread().stop();
+                        Thread.currentThread().interrupt();
                     }
 
                 } catch (InterruptedException ex) {
@@ -1646,31 +1724,18 @@ public final class CommandExecutor {
             return true;
         }
 
-        private String outFile;
-
         public void setDisplayForm(boolean displayForm) {
             this.displayForm = displayForm;
         }
-
-        private boolean displayForm;
 
         @Override
         protected void process(List<String> chunks) {
             rp.addProgress(chunks);
         }
 
-        private RequestProgress rp = null;
-
         public void setRp(RequestProgress rp) {
             this.rp = rp;
         }
-
-        String theTitle = "";
-        private ISubTask finishingTask = null;
-        private CountDownLatch finishLatch = null;
-
-        private ISubTask startingTask = null;
-        private CountDownLatch startingLatch = null;
 
         public ISubTask getStartingTask() {
             return startingTask;
@@ -1815,86 +1880,6 @@ public final class CommandExecutor {
         }
 
     };
-
-    private void doExecuteCmd(java.awt.Window parent1, CommandExecutor aThis) {
-        QueryTaskBase tsk ;
-
-        tsk = new QueryThreadingTask(aThis, new IThreadingSubTask() {
-            @Override
-            public ArrayList<ISubTask> task() throws InterruptedException, IOException {
-                lsFilesAll.clear();
-                if (!isText) {
-                    if (lsTab == null) {
-                        lsTab = new JTableFileList();
-                    }
-                    lsTab.clearTable();
-
-                }
-
-                ArrayList<ISubTask> ret1 = new ArrayList<>();
-                for (AppProfile appProfile : ds.getAppProfiles()) {
-                    if (appProfile.isSelected()) {
-                        GetLogs.logger.debug("processing command for profile " + appProfile);
-                        for (App app : appProfile.getApps()) {
-                            GetLogs.logger.debug("processing app  " + app + ": " + app.isChecked());
-                            if (app.isChecked()) {
-                                if (ds.isProd()) {
-                                    ret1.add(new ISubTask() {
-                                        @Override
-                                        public void task() throws InterruptedException, IOException {
-                                            executeCmd(appProfile, app, false);
-                                        }
-                                    });
-                                }
-                                if (ds.isLfmt()) {
-                                    ret1.add(new ISubTask() {
-                                        @Override
-                                        public void task() throws InterruptedException, IOException {
-                                            executeCmd(appProfile, app, true);
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-                return ret1;
-            }
-        });
-        if (rp == null) {
-            rp = new RequestProgress(parent1, false, tsk);
-        }
-        tsk.setRp(rp);
-        if (ds.getActionCommand() == GetCommand.GET || ds.getActionCommand() == GetCommand.GREPGET) {
-            tsk.setAfterActions(getAfterActions());
-
-            tsk.setBeforeActions(getBeforeActions());
-
-        }
-        tsk.execute();
-    }
-
-    private void doExecuteCmd(Window parent1, CommandExecutor aThis,
-            CountDownLatch latch,
-            ISubTask subTask) {
-
-        QueryTaskBase tsk = new QueryTask(aThis, latch, subTask);
-        if (rp == null) {
-            rp = new RequestProgress(parent1, true, tsk);
-        }
-
-        tsk.setRp(rp);
-        tsk.setBeforeActions(getBeforeActions());
-        tsk.setAfterActions(getAfterActions());
-
-        tsk.execute();
-
-    }
-
-    JTableFileList lsTab = new JTableFileList();
-    JTablePasteFileList lsGeneralTab = null;
-
-    private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 
     class CallbackThreadLatched implements Runnable {
 

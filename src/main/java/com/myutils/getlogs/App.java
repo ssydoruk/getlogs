@@ -16,6 +16,18 @@ class App implements Comparable {
 
     private String name;
     private String appDir;
+    private boolean checked;
+
+    public App(App app) {
+        this(app.getName(), app.getAppDir());
+
+    }
+
+    public App(String n, String appDir) {
+        name = n;
+        this.appDir = appDir;
+
+    }
 
     public String getAppDir() {
         if (appDir != null && !appDir.isEmpty()) {
@@ -28,12 +40,11 @@ class App implements Comparable {
     public void setAppDir(String appDir) {
         this.appDir = appDir;
     }
-    private boolean checked;
 
     public boolean isChecked() {
         return checked;
     }
-    
+
     public void setChecked(boolean checked) {
         logger.debug(this.toString() + " set checked " + checked);
         this.checked = checked;
@@ -41,17 +52,6 @@ class App implements Comparable {
 
     public String getName() {
         return name;
-    }
-
-    public App(App app) {
-        this(app.getName(), app.getAppDir());
-
-    }
-
-    public App(String n, String appDir) {
-        name = n;
-        this.appDir = appDir;
-
     }
 
     public String getHost() {

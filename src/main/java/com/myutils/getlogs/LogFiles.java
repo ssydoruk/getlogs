@@ -45,18 +45,6 @@ public class LogFiles extends HashMap<String, ArrayList<LogFile>> {
         private String targetFile;
         private String appName;
 
-        public String getLfmtName() {
-            return lfmtName;
-        }
-
-        public String getTargetFile() {
-            return targetFile;
-        }
-
-        public String getAppName() {
-            return appName;
-        }
-
         private LogFile(String st) {
             lfmtName = st;
             String[] split = st.split("/");
@@ -67,6 +55,18 @@ public class LogFiles extends HashMap<String, ArrayList<LogFile>> {
                         .append(split[split.length - 1]);
                 targetFile = s.toString();
             }
+        }
+
+        public String getLfmtName() {
+            return lfmtName;
+        }
+
+        public String getTargetFile() {
+            return targetFile;
+        }
+
+        public String getAppName() {
+            return appName;
         }
 
     }

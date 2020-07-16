@@ -5,11 +5,12 @@
  */
 package com.myutils.getlogs;
 
-import Utils.ValuesEditor;
 import Utils.Pair;
+import Utils.ValuesEditor;
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.CheckBoxListSelectionModel;
 import com.jidesoft.swing.SearchableUtils;
+import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -25,7 +26,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import static com.myutils.getlogs.GetLogs.logger;
 
 /**
  *
@@ -33,15 +33,7 @@ import static com.myutils.getlogs.GetLogs.logger;
  */
 public class StringListEdit extends JPanel {
 
-
     private ValuesEditor.IAddChoices addChoices;
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        btChange.setEnabled(enabled);
-        clbItems.setEnabled(enabled);
-        super.setEnabled(enabled); //To change body of generated methods, choose Tools | Templates.
-    }
 
     private final DefaultListModel<Object> lmItems;
     private final JButton btChange;
@@ -49,6 +41,7 @@ public class StringListEdit extends JPanel {
     private final String columnTitle;
     private ArrayList<Pair<String, Boolean>> data;
     CheckBoxList clbItems;
+    private IDataChangedFun updatedFun = null;
 
     public StringListEdit(String columnTitle) {
         super();
@@ -56,7 +49,7 @@ public class StringListEdit extends JPanel {
         this.columnTitle = columnTitle;
 
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-        lmItems = new DefaultListModel<Object>();
+        lmItems = new DefaultListModel<>();
         clbItems = new CheckBoxList(lmItems);
         add(new JScrollPane(clbItems));
         clbItems.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -90,6 +83,13 @@ public class StringListEdit extends JPanel {
         });
         btChange.setText("...");
 
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        btChange.setEnabled(enabled);
+        clbItems.setEnabled(enabled);
+        super.setEnabled(enabled); //To change body of generated methods, choose Tools | Templates.
     }
 
     private void btChangePressed(ActionEvent e) {
@@ -193,8 +193,6 @@ public class StringListEdit extends JPanel {
     private void clbItemsSelectionChanged(ListSelectionEvent evt) {
         logger.debug("Item selection changed");
     }
-
-    private IDataChangedFun updatedFun = null;
 
     public void setUpdatedFun(IDataChangedFun updatedFun) {
         this.updatedFun = updatedFun;

@@ -18,8 +18,6 @@ class JTableFileModel extends JTableFileBaseModel<JTableFileEntry> {
         return JTableFileEntry.fileTableColls.size();
 
     }
-    
-    
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {

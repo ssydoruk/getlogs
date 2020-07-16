@@ -46,10 +46,142 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
     private final HashMap<Integer, AColumnFilter> columnFilters = new HashMap<>();
     private final JMenuItem miCancelFilters;
     private final JMenuItem miCancelColumnFilter;
+    private final TableCellRenderer savedHeaderRenderer;
+    TableRowSorter<TableModel> sorter = null;
+
+    public JTableFileListBase(JTableFileBaseModel mod) {
+        super();
+        savedHeaderRenderer = getTableHeader().getDefaultRenderer();
+        setModel(mod);
+        sorter = new TableRowSorter<>(mod);
+
+        popupMenu.add(new UniqueColumnsShown());
+        popupMenu.add(new UniqueColumnsAll());
+        miCancelFilters = popupMenu.add(new CancelFilters());
+        miCancelColumnFilter = popupMenu.add(new CancelColumnFilter());
+
+    }
+
+    private void doCancelFilters() {
+        int sel = popupRow;
+        if (sel >= 0) {
+            sel = convertRowIndexToModel(sel);
+        }
+        for (Integer key : columnFilters.keySet()) {
+            getColumnModel().getColumn(key).setHeaderRenderer(savedHeaderRenderer);
+        }
+
+        getTableHeader().repaint();
+        setRowSorter(null);
+        columnFilters.clear();
+        ((AbstractTableModel) getModel()).fireTableDataChanged();
+        if (sel >= 0) {
+            setRowSelectionInterval(sel, sel);
+            scrollRectToVisible(new Rectangle(getCellRect(sel, 0, true)));
+        }
+    }
+
+    public boolean isEmpty() {
+        return getModel().getRowCount() == 0;
+    }
+
+    @Override
+    void theMousePressed(MouseEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    void callingPopup() {
+        miCancelColumnFilter.setEnabled(popupCol > 0 && columnFilters.containsKey(popupCol));
+        miCancelFilters.setEnabled(!columnFilters.isEmpty());
+    }
+
+    public void clearTable() {
+        ((JTableFileBaseModel) getModel()).clear();
+    }
+
+    public ArrayList<EntryType> getSelectedFiles() {
+        int[] selectedRows = getSelectedRows();
+        if (selectedRows != null && selectedRows.length > 0) {
+            return ((JTableFileBaseModel) getModel()).getSelectedRows(selectedRows);
+        } else {
+            return null;
+        }
+    }
+
+    ArrayList<Pair<String, Integer>> getUniqueVals(int popupCol, boolean allValues) {
+        HashMap<String, AtomicInteger> hsTmp = new HashMap<>();
+        if (allValues) {
+            TableModel model = getModel();
+            for (int i = 0; i < model.getRowCount(); i++) {
+                Object valueAt = model.getValueAt((i), popupCol);
+                String name = (valueAt == null || valueAt.toString().isEmpty()) ? RECORD_EMPTY : valueAt.toString();
+                AtomicInteger cnt = hsTmp.get(name);
+                if (cnt == null) {
+                    hsTmp.put(name, new AtomicInteger(1));
+                } else {
+                    cnt.incrementAndGet();
+                }
+            }
+
+        } else {
+            for (int i = 0; i < getRowCount(); i++) {
+                Object valueAt = getValueAt((i), popupCol);
+                String name = (valueAt == null || valueAt.toString().isEmpty()) ? RECORD_EMPTY : valueAt.toString();
+                AtomicInteger cnt = hsTmp.get(name);
+                if (cnt == null) {
+                    hsTmp.put(name, new AtomicInteger(1));
+                } else {
+                    cnt.incrementAndGet();
+                }
+            }
+        }
+        ArrayList<String> sorted = new ArrayList<>(hsTmp.keySet());
+        Collections.sort(sorted);
+        ArrayList<Pair<String, Integer>> ret = new ArrayList<>(sorted.size());
+        for (String string : sorted) {
+            ret.add(new Pair(string, hsTmp.get(string)));
+        }
+        return ret;
+    }
+
+    private void applyFilter() {
+
+        ArrayList<RowSetFilter> andFilters = new ArrayList<>();
+        DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer();
+        headerRenderer.setBackground(Color.RED);
+//        headerRenderer.setForeground(Color.RED);
+//        getTableHeader().setDefaultRenderer(headerRenderer);
+        for (Map.Entry<Integer, AColumnFilter> entrySet : columnFilters.entrySet()) {
+            Integer key = entrySet.getKey();
+            AColumnFilter value = entrySet.getValue();
+
+            getColumnModel().getColumn(key).setHeaderRenderer(headerRenderer);
+
+//            for (int i = 0; i < getModel().getColumnCount(); i++) {
+//        getColumnModel().getColumn(i).setHeaderRenderer(headerRenderer);
+//}
+            andFilters.add(new RowSetFilter(key, value));
+
+        }
+        sorter.setRowFilter(RowFilter.andFilter(andFilters));
+        setRowSorter(sorter);
+        ((AbstractTableModel) getModel()).fireTableDataChanged();
+//        getTableHeader().invalidate();
+//        getTableHeader().repaint();
+
+    }
+
+    public void setFiles(ArrayList<EntryType> lsFilesLast) {
+        ((JTableFileBaseModel) getModel()).setData(lsFilesLast);
+
+    }
 
     protected class UniqueColumns extends AbstractAction {
 
         private final boolean showAll;
+        SettingsPanel.InfoPanel p = null;
+        private JTablePopup uniquePopup = null;
 
         public UniqueColumns(String menuTitle, boolean showAll) {
             super(menuTitle);
@@ -60,8 +192,6 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
         public void actionPerformed(ActionEvent e) {
             uniqueColumnValues(e);
         }
-
-        SettingsPanel.InfoPanel p = null;
 
         public void uniqueColumnValues(ActionEvent e) {
             Component c = (Component) e.getSource();
@@ -119,8 +249,6 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
             }
             GetLogs.logger.trace(table.getSelectedRow() + " : " + table.getSelectedColumn());
         }
-
-        private JTablePopup uniquePopup = null;
 
         private JTablePopup getJTablePopup() {
             if (uniquePopup == null) {
@@ -399,12 +527,10 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
                         setRowSelectionInterval(selRow, selRow);
                         scrollRectToVisible(new Rectangle(getCellRect(selRow, 0, true)));
                     }
-                } 
+                }
             }
         }
     }
-
-    private final TableCellRenderer savedHeaderRenderer;
 
     protected class CancelFilters extends AbstractAction {
 
@@ -434,102 +560,6 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
         }
     }
 
-    private void doCancelFilters() {
-        int sel = popupRow;
-        if (sel >= 0) {
-            sel = convertRowIndexToModel(sel);
-        }
-        for (Integer key : columnFilters.keySet()) {
-            getColumnModel().getColumn(key).setHeaderRenderer(savedHeaderRenderer);
-        }
-
-        getTableHeader().repaint();
-        setRowSorter(null);
-        columnFilters.clear();
-        ((AbstractTableModel) getModel()).fireTableDataChanged();
-        if (sel >= 0) {
-            setRowSelectionInterval(sel, sel);
-            scrollRectToVisible(new Rectangle(getCellRect(sel, 0, true)));
-        } 
-    }
-
-    public boolean isEmpty() {
-        return getModel().getRowCount() == 0;
-    }
-
-    public JTableFileListBase(JTableFileBaseModel mod) {
-        super();
-        savedHeaderRenderer = getTableHeader().getDefaultRenderer();
-        setModel(mod);
-        sorter = new TableRowSorter<TableModel>(mod);
-
-        popupMenu.add(new UniqueColumnsShown());
-        popupMenu.add(new UniqueColumnsAll());
-        miCancelFilters = popupMenu.add(new CancelFilters());
-        miCancelColumnFilter = popupMenu.add(new CancelColumnFilter());
-
-    }
-
-    @Override
-    void theMousePressed(MouseEvent e) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    void callingPopup() {
-        miCancelColumnFilter.setEnabled(popupCol > 0 && columnFilters.containsKey(popupCol));
-        miCancelFilters.setEnabled(!columnFilters.isEmpty());
-    }
-
-    public void clearTable() {
-        ((JTableFileBaseModel) getModel()).clear();
-    }
-
-    public ArrayList<EntryType> getSelectedFiles() {
-        int[] selectedRows = getSelectedRows();
-        if (selectedRows != null && selectedRows.length > 0) {
-            return ((JTableFileBaseModel) getModel()).getSelectedRows(selectedRows);
-        } else {
-            return null;
-        }
-    }
-
-    ArrayList<Pair<String, Integer>> getUniqueVals(int popupCol, boolean allValues) {
-        HashMap<String, AtomicInteger> hsTmp = new HashMap<>();
-        if (allValues) {
-            TableModel model = getModel();
-            for (int i = 0; i < model.getRowCount(); i++) {
-                Object valueAt = model.getValueAt((i), popupCol);
-                String name = (valueAt == null || valueAt.toString().isEmpty()) ? RECORD_EMPTY : valueAt.toString();
-                AtomicInteger cnt = hsTmp.get(name);
-                if (cnt == null) {
-                    hsTmp.put(name, new AtomicInteger(1));
-                } else {
-                    cnt.incrementAndGet();
-                }
-            }
-
-        } else {
-            for (int i = 0; i < getRowCount(); i++) {
-                Object valueAt = getValueAt((i), popupCol);
-                String name = (valueAt == null || valueAt.toString().isEmpty()) ? RECORD_EMPTY : valueAt.toString();
-                AtomicInteger cnt = hsTmp.get(name);
-                if (cnt == null) {
-                    hsTmp.put(name, new AtomicInteger(1));
-                } else {
-                    cnt.incrementAndGet();
-                }
-            }
-        }
-        ArrayList<String> sorted = new ArrayList<>(hsTmp.keySet());
-        Collections.sort(sorted);
-        ArrayList<Pair<String, Integer>> ret = new ArrayList<>(sorted.size());
-        for (String string : sorted) {
-            ret.add(new Pair(string, hsTmp.get(string)));
-        }
-        return ret;
-    }
-
     private class RowSetFilter extends RowFilter<TableModel, Object> {
 
         private final Integer col;
@@ -544,40 +574,6 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
         public boolean include(RowFilter.Entry<? extends TableModel, ? extends Object> entry) {
             return filter.showValue(entry.getValue(col));
         }
-
-    }
-
-    private void applyFilter() {
-
-        ArrayList<RowSetFilter> andFilters = new ArrayList<RowSetFilter>();
-        DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer();
-        headerRenderer.setBackground(Color.RED);
-//        headerRenderer.setForeground(Color.RED);
-//        getTableHeader().setDefaultRenderer(headerRenderer);
-        for (Map.Entry<Integer, AColumnFilter> entrySet : columnFilters.entrySet()) {
-            Integer key = entrySet.getKey();
-            AColumnFilter value = entrySet.getValue();
-
-            getColumnModel().getColumn(key).setHeaderRenderer(headerRenderer);
-
-//            for (int i = 0; i < getModel().getColumnCount(); i++) {
-//        getColumnModel().getColumn(i).setHeaderRenderer(headerRenderer);
-//}
-            andFilters.add(new RowSetFilter(key, value));
-
-        }
-        sorter.setRowFilter(RowFilter.andFilter(andFilters));
-        setRowSorter(sorter);
-        ((AbstractTableModel) getModel()).fireTableDataChanged();
-//        getTableHeader().invalidate();
-//        getTableHeader().repaint();
-
-    }
-
-    TableRowSorter<TableModel> sorter = null;
-
-    public void setFiles(ArrayList<EntryType> lsFilesLast) {
-        ((JTableFileBaseModel) getModel()).setData(lsFilesLast);
 
     }
 

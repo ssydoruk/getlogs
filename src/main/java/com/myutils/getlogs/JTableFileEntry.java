@@ -13,15 +13,32 @@ import java.util.HashMap;
  */
 class JTableFileEntry extends JTableFileEntryGeneral {
 
-    private final SavedSearchStorage storage;
+    public static final HashMap<Integer, String> fileTableColls = initCalls();
 
-    public SavedSearchStorage getStorage() {
-        return storage;
+    private static HashMap<Integer, String> initCalls() {
+        HashMap<Integer, String> ret1 = new HashMap<>();
+        ret1.put(0, "Profile");
+        ret1.put(1, "application");
+        ret1.put(2, "LFMT?");
+        ret1.put(3, "host");
+        ret1.put(4, "file");
+
+        return ret1;
     }
+
+    public static String getColumnName(Integer key) {
+        return fileTableColls.get(key);
+    }
+
+    private final SavedSearchStorage storage;
 
     public JTableFileEntry(AppProfile appProfile, SavedSearchStorage s, String fileName) {
         super(new FilesToGet(appProfile, s.getAp(), fileName), fileName);
         this.storage = s;
+    }
+
+    public SavedSearchStorage getStorage() {
+        return storage;
     }
 
     @Override
@@ -44,23 +61,6 @@ class JTableFileEntry extends JTableFileEntryGeneral {
 
         }
         return null;
-    }
-
-    private static HashMap<Integer, String> initCalls() {
-        HashMap<Integer, String> ret1 = new HashMap<>();
-        ret1.put(0, "Profile");
-        ret1.put(1, "application");
-        ret1.put(2, "LFMT?");
-        ret1.put(3, "host");
-        ret1.put(4, "file");
-
-        return ret1;
-    }
-
-    public static final HashMap<Integer, String> fileTableColls = initCalls();
-
-    public static String getColumnName(Integer key) {
-        return fileTableColls.get(key);
     }
 
 }

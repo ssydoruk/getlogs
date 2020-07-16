@@ -5,13 +5,13 @@
  */
 package com.myutils.getlogs;
 
+import static com.myutils.getlogs.GetLogs.logger;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import static com.myutils.getlogs.GetLogs.logger;
 
 /**
  *
@@ -21,7 +21,6 @@ import static com.myutils.getlogs.GetLogs.logger;
  *
  */
 class Hosts extends HashMap<String, HostAppdir> {
-
 
     Hosts(String fileName) throws FileNotFoundException, IOException {
         File file = new File(fileName);
@@ -41,7 +40,7 @@ class Hosts extends HashMap<String, HostAppdir> {
                         put(split[1], new HostAppdir(split[0], null));
                     }
                     cnt++;
-                    
+
                 }
             }
         }

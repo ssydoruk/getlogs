@@ -5,6 +5,7 @@
  */
 package com.myutils.getlogs;
 
+import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -22,7 +23,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import static com.myutils.getlogs.GetLogs.logger;
 
 /**
  *
@@ -42,6 +42,7 @@ public class EnterRegexDialog extends javax.swing.JDialog {
 
     /**
      * Creates new form EnterRegexDialog
+     *
      * @param parent
      * @param modal
      */

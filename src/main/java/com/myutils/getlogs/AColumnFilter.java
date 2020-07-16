@@ -75,6 +75,11 @@ abstract class AColumnFilter {
         private double secondNum;
         private boolean showNonNumbers = false;
 
+        public NumberFilter(String name, boolean needsSecond) {
+            this.name = name;
+            this.needsSecond = needsSecond;
+        }
+
         public boolean isShowNonNumbers() {
             return showNonNumbers;
         }
@@ -122,11 +127,6 @@ abstract class AColumnFilter {
         @Override
         public String toString() {
             return name;
-        }
-
-        public NumberFilter(String name, boolean needsSecond) {
-            this.name = name;
-            this.needsSecond = needsSecond;
         }
 
         public void setShowNonNumbers(boolean selected) {

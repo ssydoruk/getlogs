@@ -7,11 +7,11 @@ package com.myutils.getlogs;
 
 import Utils.Pair;
 import Utils.UTCTimeRange;
+import static com.myutils.getlogs.GetLogs.logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.apache.commons.lang3.StringUtils;
-import static com.myutils.getlogs.GetLogs.logger;
 
 /**
  *
@@ -30,6 +30,29 @@ public class DownloadSettings {
     private boolean lcaLogs;
     private String statusScript = "/Users/stepan_sydoruk/bin/getAppStatus";
 
+    private ArrayList<Pair<String, Boolean>> afterActions;
+    private ArrayList<Pair<String, Boolean>> beforeActions;
+    private boolean listFiles;
+    ArrayList<LFMTHostInstance> lfmtHostInstances;
+    private ArrayList<AppProfile> appProfiles;
+    private boolean lfmt;
+    private boolean prod;
+    private String hours;
+    private long rangeStart;
+    private long rangeEnd;
+
+    public DownloadSettings() {
+        this.appLogs = true;
+        this.lcaLogs = false;
+        this.actionCommand = GetCommand.LS;
+        this.lfmtHostInstances = new ArrayList();
+        this.appProfiles = new ArrayList<>();
+        lfmt = true;
+        prod = true;
+        rangeStart = 0;
+        rangeEnd = 0;
+    }
+
     public String getStatusScript() {
         return statusScript;
     }
@@ -37,9 +60,6 @@ public class DownloadSettings {
     public void setStatusScript(String statusScript) {
         this.statusScript = statusScript;
     }
-
-    private ArrayList<Pair<String, Boolean>> afterActions;
-    private ArrayList<Pair<String, Boolean>> beforeActions;
 
     public Collection<App> getCheckedApps() {
         ArrayList<App> ret = new ArrayList<>();
@@ -97,8 +117,6 @@ public class DownloadSettings {
         this.useRSync = useRSync;
     }
 
-    private boolean listFiles;
-
     public boolean isListFiles() {
         return true;
     }
@@ -126,20 +144,6 @@ public class DownloadSettings {
     public ArrayList<LFMTHostInstance> getLfmtHostInstances() {
         return lfmtHostInstances;
     }
-
-    public DownloadSettings() {
-        this.appLogs = true;
-        this.lcaLogs = false;
-        this.actionCommand = GetCommand.LS;
-        this.lfmtHostInstances = new ArrayList();
-        this.appProfiles = new ArrayList<>();
-        lfmt = true;
-        prod = true;
-        rangeStart = 0;
-        rangeEnd = 0;
-    }
-
-    ArrayList<LFMTHostInstance> lfmtHostInstances;
 
     LFMTHostInstance addLFMTInstance(String host, String instance, String baseDir) {
         LFMTHostInstance ret1 = new LFMTHostInstance(host, instance, baseDir);
@@ -191,7 +195,7 @@ public class DownloadSettings {
     }
 
     int getTotalApps() {
-        int ret=0;
+        int ret = 0;
         for (AppProfile appProfile : getAppProfiles()) {
             for (App app : appProfile.getApps()) {
                 ret++;
@@ -199,52 +203,6 @@ public class DownloadSettings {
         }
         return ret;
     }
-
-    public static class LFMTHostInstance {
-
-        private String host;
-        private String instance;
-        private String baseDir;
-
-        public LFMTHostInstance(String host, String instance, String baseDir) {
-            this.host = host;
-            this.instance = instance;
-            this.baseDir = baseDir;
-        }
-
-        private LFMTHostInstance(Object[] objects) {
-            this(StringUtils.defaultString((String) objects[0]), StringUtils.defaultString((String) objects[1]), StringUtils.defaultString((String) objects[2]));
-
-        }
-
-        public String getBaseDir() {
-            if (baseDir == null || baseDir.isEmpty()) {
-                return "/Logs/";
-            } else {
-                return baseDir;
-            }
-        }
-
-        public void setBaseDir(String baseDir) {
-            this.baseDir = baseDir;
-        }
-
-        public String getHost() {
-            return host;
-        }
-
-        public String getInstance() {
-            return instance;
-        }
-
-        @Override
-        public String toString() {
-            return "Host[" + host + "] instance[" + instance + "]";
-        }
-
-    }
-
-    private ArrayList<AppProfile> appProfiles;
 
     public Pair<AppProfile, App> findAppProfile(String app, String file, String fullFileName) {
         for (AppProfile appProfile : appProfiles) {
@@ -265,10 +223,6 @@ public class DownloadSettings {
         Collections.sort(ret, new AppProfile.SortByName());
         return ret;
     }
-
-    private boolean lfmt;
-    private boolean prod;
-    private String hours;
 
     public String getHours() {
         return hours;
@@ -339,10 +293,6 @@ public class DownloadSettings {
         return ret1;
     }
 
-    private long rangeStart;
-
-    private long rangeEnd;
-
     UTCTimeRange getTimeRange() {
         UTCTimeRange ret = new UTCTimeRange();
         if (rangeStart > 0) {
@@ -362,6 +312,50 @@ public class DownloadSettings {
     void setTimeRange(UTCTimeRange timeRange) {
         rangeStart = timeRange.getStart();
         rangeEnd = timeRange.getEnd();
+    }
+
+    public static class LFMTHostInstance {
+
+        private String host;
+        private String instance;
+        private String baseDir;
+
+        public LFMTHostInstance(String host, String instance, String baseDir) {
+            this.host = host;
+            this.instance = instance;
+            this.baseDir = baseDir;
+        }
+
+        private LFMTHostInstance(Object[] objects) {
+            this(StringUtils.defaultString((String) objects[0]), StringUtils.defaultString((String) objects[1]), StringUtils.defaultString((String) objects[2]));
+
+        }
+
+        public String getBaseDir() {
+            if (baseDir == null || baseDir.isEmpty()) {
+                return "/Logs/";
+            } else {
+                return baseDir;
+            }
+        }
+
+        public void setBaseDir(String baseDir) {
+            this.baseDir = baseDir;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public String getInstance() {
+            return instance;
+        }
+
+        @Override
+        public String toString() {
+            return "Host[" + host + "] instance[" + instance + "]";
+        }
+
     }
 
 }

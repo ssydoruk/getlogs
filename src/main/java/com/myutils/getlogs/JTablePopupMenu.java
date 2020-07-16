@@ -5,13 +5,13 @@
  */
 package com.myutils.getlogs;
 
+import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.Component;
 import java.awt.Point;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import static com.myutils.getlogs.GetLogs.logger;
 
 /**
  *

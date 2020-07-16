@@ -7,6 +7,7 @@ package com.myutils.getlogs;
 
 import Utils.Pair;
 import Utils.UTCTimeRange;
+import static com.myutils.getlogs.GetLogs.logger;
 import java.time.DateTimeException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -15,7 +16,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static com.myutils.getlogs.GetLogs.logger;
 
 /**
  *
@@ -23,11 +23,27 @@ import static com.myutils.getlogs.GetLogs.logger;
  */
 public final class AppProfile {
 
+    private final static Pattern ptGenesysTimestamp = Pattern.compile("^(.+)\\.(\\d{4})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})(\\d{2})_(\\d{3})");
+
     private String Name;
     private boolean selected;
     private DownloadSettings.LFMTHostInstance lftm;
     private boolean isGenesysName;
     private HashMap<String, Boolean> nameSuffixes;
+    HashSet<App> apps = new HashSet<>();
+
+    public AppProfile(String newName, AppProfile appPr) {
+        this(newName);
+        setSelected(selected);
+        for (App app : appPr.getApps()) {
+            apps.add(new App(app));
+        }
+    }
+
+    public AppProfile(String Name) {
+        this.Name = Name;
+        selected = true;
+    }
 
     public DownloadSettings.LFMTHostInstance getLFMT() {
         return lftm;
@@ -64,14 +80,6 @@ public final class AppProfile {
         this.selected = selected;
     }
 
-    public AppProfile(String newName, AppProfile appPr) {
-        this(newName);
-        setSelected(selected);
-        for (App app : appPr.getApps()) {
-            apps.add(new App(app));
-        }
-    }
-
     public void setName(String Name) {
         this.Name = Name;
     }
@@ -79,15 +87,9 @@ public final class AppProfile {
     public String getName() {
         return Name;
     }
-    HashSet<App> apps = new HashSet<>();
 
     public HashSet<App> getApps() {
         return apps;
-    }
-
-    public AppProfile(String Name) {
-        this.Name = Name;
-        selected = true;
     }
 
     @Override
@@ -132,8 +134,6 @@ public final class AppProfile {
 
     }
 
-    private final static Pattern ptGenesysTimestamp = Pattern.compile("^(.+)\\.(\\d{4})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})(\\d{2})_(\\d{3})");
-
     public boolean fitsTimeRange(String string, UTCTimeRange timeRange) {
         if (!isGenesysName) {
             return true;
@@ -158,7 +158,6 @@ public final class AppProfile {
             return true;
         }
     }
-    
 
     public Pair<Long, String> getFileNameTime(String string) {
         if (isGenesysName) {

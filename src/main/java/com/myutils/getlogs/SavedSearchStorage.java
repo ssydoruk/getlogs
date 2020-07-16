@@ -11,10 +11,6 @@ package com.myutils.getlogs;
  */
 class SavedSearchStorage {
 
-    public AppProfile getAppProfile() {
-        return appProfile;
-    }
-
     private final boolean lcaLog;
     private final boolean lfmt;
     private final String logsDir;
@@ -30,6 +26,10 @@ class SavedSearchStorage {
         this.lfmt = lfmt;
         this.lcaLog = lcaLog;
 
+    }
+
+    public AppProfile getAppProfile() {
+        return appProfile;
     }
 
     @Override
