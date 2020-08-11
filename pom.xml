@@ -37,12 +37,6 @@
             <artifactId>commons-cli</artifactId>
             <version>1.4</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.airbnb</groupId>
-            <artifactId>my-utils</artifactId>
-            <version>1.0</version>
-        </dependency>
       
         <dependency>
             <groupId>dnsjava</groupId>
@@ -70,6 +64,11 @@
             <groupId>com.github.lgooddatepicker</groupId>
             <artifactId>LGoodDatePicker</artifactId>
             <version>10.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mycompany</groupId>
+            <artifactId>Utils</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>    
     <properties>
