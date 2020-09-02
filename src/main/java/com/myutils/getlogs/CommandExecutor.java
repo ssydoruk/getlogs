@@ -1017,9 +1017,13 @@ public final class CommandExecutor {
                         "Download %d files");
             }
             ArrayList<JTableFileEntryGeneral> lsPasteFiles = new ArrayList<>();
+            HashSet<String> sortedFiles = new HashSet<>();
             for (FilesToGet filesToGet : ftd) {
                 for (String fileName : filesToGet.getFileNames()) {
-                    lsPasteFiles.add(new JTableFileEntryGeneral(filesToGet, fileName));
+                    if(!sortedFiles.contains(fileName)){
+                        lsPasteFiles.add(new JTableFileEntryGeneral(filesToGet, fileName));
+                        sortedFiles.add(fileName);
+                    }
                 }
             }
             lsGeneralTab.setFiles(lsPasteFiles);
