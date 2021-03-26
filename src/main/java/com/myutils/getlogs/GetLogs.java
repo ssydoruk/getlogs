@@ -5,46 +5,25 @@
  */
 package com.myutils.getlogs;
 
-import Utils.Pair;
-import Utils.ScreenInfo;
-import Utils.UnixProcess.ExtProcess;
+import Utils.*;
+import Utils.UnixProcess.*;
 import static Utils.Util.rSyncAddClause;
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
 import com.myutils.getlogs.LogFiles.LogFile;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import java.io.*;
+import java.lang.reflect.*;
+import java.nio.file.*;
+import java.text.*;
+import java.util.*;
+import java.util.regex.*;
+import javax.swing.*;
 import org.apache.commons.cli.*;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
-import org.apache.logging.log4j.core.config.builder.api.ComponentBuilder;
-import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
-import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
-import org.apache.logging.log4j.core.config.builder.api.LayoutComponentBuilder;
-import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
-import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
+import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.core.config.*;
+import org.apache.logging.log4j.core.config.builder.api.*;
+import org.apache.logging.log4j.core.config.builder.impl.*;
 
 /**
  *
@@ -83,6 +62,8 @@ public class GetLogs {
     private static Option optLoaderLog;
     private static Option optGrep;
     private static Option optForceHost;
+    private static Option optSSHUser;
+    private static Option optSSHPassword;
     private static Option optHelp;
     private static Option optDay;
     private static Option optArchives;
@@ -114,6 +95,16 @@ public class GetLogs {
     public static final HashMap<String, String> extUnpacker = getextUnpacker();
     final static public String filePrefix = "!file!";
     public static final Pattern regRegDigits = Pattern.compile("(\\d|\\[[\\-\\d]*\\])");
+    private static String sshUser;
+
+    public static String getSshUser() {
+        return sshUser;
+    }
+
+    public static String getSshPassword() {
+        return sshPassword;
+    }
+    private static String sshPassword;
 
     public static Hosts getHosts() {
         return hosts;
@@ -256,6 +247,22 @@ public class GetLogs {
                 .longOpt("force-host")
                 .build();
         options.addOption(optForceHost);
+
+        optSSHUser = Option.builder()
+                .hasArg(true)
+                .required(false)
+                .desc("ssh user to use to connect to remote linux server")
+                .longOpt("ssh-user")
+                .build();
+        options.addOption(optSSHUser);
+
+        optSSHPassword = Option.builder()
+                .hasArg(true)
+                .required(false)
+                .desc("ssh password to use to connect to remote linux server")
+                .longOpt("ssh-password")
+                .build();
+        options.addOption(optSSHPassword);
 
         optGrep = Option.builder("g")
                 .hasArg(true)
@@ -1004,6 +1011,10 @@ public class GetLogs {
         bIsCloud = cmd.hasOption(optIsCloud.getLongOpt());
 
         appHost = (String) cmd.getParsedOptionValue(optForceHost.getLongOpt());
+        
+        sshUser = (String) cmd.getParsedOptionValue(optSSHUser.getLongOpt());
+        sshPassword = (String) cmd.getParsedOptionValue(optSSHPassword.getLongOpt());
+        
         dateSpec = (String) cmd.getParsedOptionValue(optDay.getOpt());
         timeSpec = (String) cmd.getParsedOptionValue(optTime.getOpt());
 

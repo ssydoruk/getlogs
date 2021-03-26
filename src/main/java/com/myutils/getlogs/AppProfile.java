@@ -5,17 +5,12 @@
  */
 package com.myutils.getlogs;
 
-import Utils.Pair;
-import Utils.UTCTimeRange;
+import Utils.*;
 import static com.myutils.getlogs.GetLogs.logger;
-import java.time.DateTimeException;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.time.*;
+import java.util.*;
+import java.util.regex.*;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -30,6 +25,25 @@ public final class AppProfile {
     private DownloadSettings.LFMTHostInstance lftm;
     private boolean isGenesysName;
     private HashMap<String, Boolean> nameSuffixes;
+    private String logDirectory;
+    private String logFileNameBase;
+
+    public String getLogDirectory() {
+        return (StringUtils.isEmpty(logDirectory))?GetLogs.getProdBaseDir(): logDirectory;
+    }
+
+    public void setLogDirectory(String logDirectory) {
+        this.logDirectory = logDirectory;
+    }
+
+    public String getLogFileNameBase() {
+        return logFileNameBase;
+    }
+
+    public void setLogFileNameBase(String logFileNameBase) {
+        this.logFileNameBase = logFileNameBase;
+    }
+    
     HashSet<App> apps = new HashSet<>();
 
     public AppProfile(String newName, AppProfile appPr) {

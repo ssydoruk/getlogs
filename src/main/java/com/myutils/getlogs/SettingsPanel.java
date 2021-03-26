@@ -5,70 +5,24 @@
  */
 package com.myutils.getlogs;
 
-import Utils.Pair;
 import static Utils.ScreenInfo.CenterWindow;
-import Utils.TDateRange;
-import Utils.TableColumnAdjuster;
-import Utils.ValuesEditor;
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.jidesoft.dialog.ButtonPanel;
-import com.jidesoft.dialog.StandardDialog;
+import Utils.*;
+import com.google.gson.*;
+import com.jidesoft.dialog.*;
 import static com.jidesoft.dialog.StandardDialog.RESULT_CANCELLED;
-import com.jidesoft.swing.CheckBoxList;
-import com.jidesoft.swing.CheckBoxListSelectionModel;
-import com.jidesoft.swing.FolderChooser;
-import com.jidesoft.swing.SearchableUtils;
+import com.jidesoft.swing.*;
 import static com.myutils.getlogs.GetLogs.logger;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.LayoutManager;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.text.*;
+import java.util.*;
 import java.util.List;
-import javax.swing.AbstractAction;
 import static javax.swing.Action.SHORT_DESCRIPTION;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.event.*;
+import javax.swing.table.*;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -475,6 +429,8 @@ public class SettingsPanel extends javax.swing.JPanel {
             rbGenesysLogs.setSelected(pr.isIsGenesysName());
             rbCloudLogs.setSelected(!pr.isIsGenesysName());
             ext.setData(pr.getNameSuffixes());
+            jtfLogDirectory.setText(pr.getLogDirectory());
+            jtfFileNameBase.setText(pr.getLogFileNameBase());
 //        tfFilenameSuffixes.setText(pr.getNameSuffixes());
 
             DownloadSettings.LFMTHostInstance lfmtHostInstance = pr.getLFMT();
@@ -583,6 +539,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbLFMTs.setEnabled(numSelected == 1);
         btEditLFMTs.setEnabled(numSelected == 1);
         ext.setEnabled(numSelected == 1);
+        jlbFileNameBase.setEnabled(numSelected == 1);
+        jtfFileNameBase.setEnabled(numSelected == 1);
+        jlbLogDirectory.setEnabled(numSelected == 1);
+        jtfLogDirectory.setEnabled(numSelected == 1);
 
         int[] selectedIndices = clbApps.getSelectedIndices();
         appSelected(selectedIndices != null && selectedIndices.length == 1);
@@ -650,9 +610,17 @@ public class SettingsPanel extends javax.swing.JPanel {
         jbAppAdd = new javax.swing.JButton();
         jbAppDelete = new javax.swing.JButton();
         jpAppProperties = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         rbGenesysLogs = new javax.swing.JRadioButton();
         rbCloudLogs = new javax.swing.JRadioButton();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        jlbLogDirectory = new javax.swing.JLabel();
+        jtfLogDirectory = new javax.swing.JTextField();
+        jPanel12 = new javax.swing.JPanel();
+        jlbFileNameBase = new javax.swing.JLabel();
+        jtfFileNameBase = new javax.swing.JTextField();
         jPanel6 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jPanel13 = new javax.swing.JPanel();
@@ -823,6 +791,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpAppProperties.setLayout(new javax.swing.BoxLayout(jpAppProperties, javax.swing.BoxLayout.PAGE_AXIS));
 
+        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
+
         bgFileNaming.add(rbGenesysLogs);
         rbGenesysLogs.setText("Genesys file naming");
         rbGenesysLogs.addItemListener(new java.awt.event.ItemListener() {
@@ -865,7 +835,29 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        jpAppProperties.add(jPanel5);
+        jPanel1.add(jPanel5);
+
+        jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jlbLogDirectory.setText("Log files directory");
+        jPanel4.add(jlbLogDirectory);
+        jPanel4.add(jtfLogDirectory);
+
+        jPanel3.add(jPanel4);
+
+        jPanel12.setLayout(new javax.swing.BoxLayout(jPanel12, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jlbFileNameBase.setText("Log files name base");
+        jPanel12.add(jlbFileNameBase);
+        jPanel12.add(jtfFileNameBase);
+
+        jPanel3.add(jPanel12);
+
+        jPanel1.add(jPanel3);
+
+        jpAppProperties.add(jPanel1);
 
         jPanel6.setLayout(new javax.swing.BoxLayout(jPanel6, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1358,8 +1350,10 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel16;
     private javax.swing.JPanel jPanel18;
@@ -1372,6 +1366,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel25;
     private javax.swing.JPanel jPanel26;
     private javax.swing.JPanel jPanel27;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
@@ -1385,6 +1381,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JButton jbProfileSaveAs;
     private javax.swing.JButton jbSelectDirectory;
     private javax.swing.JButton jbSelectScript;
+    private javax.swing.JLabel jlbFileNameBase;
+    private javax.swing.JLabel jlbLogDirectory;
     private javax.swing.JPanel jpAllProfiles;
     private javax.swing.JPanel jpAppProperties;
     private javax.swing.JPanel jpApps;
@@ -1400,6 +1398,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jpRegEx;
     private javax.swing.JPanel jpStatusScript;
     private javax.swing.JPopupMenu jpmAppSettings;
+    private javax.swing.JTextField jtfFileNameBase;
+    private javax.swing.JTextField jtfLogDirectory;
     private javax.swing.JTextField jtfOutputDir;
     private javax.swing.JTextField jtfStatusScript;
     private javax.swing.JLabel lCommand;
