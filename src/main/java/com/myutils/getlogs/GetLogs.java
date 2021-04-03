@@ -7,9 +7,12 @@ package com.myutils.getlogs;
 
 import Utils.*;
 import Utils.UnixProcess.*;
+
 import static Utils.Util.rSyncAddClause;
+
 import com.google.gson.*;
 import com.myutils.getlogs.LogFiles.LogFile;
+
 import java.io.*;
 import java.lang.reflect.*;
 import java.nio.file.*;
@@ -17,6 +20,7 @@ import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 import javax.swing.*;
+
 import org.apache.commons.cli.*;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +30,6 @@ import org.apache.logging.log4j.core.config.builder.api.*;
 import org.apache.logging.log4j.core.config.builder.impl.*;
 
 /**
- *
  * @author stepansydoruk
  */
 public class GetLogs {
@@ -69,6 +72,7 @@ public class GetLogs {
     private static Option optArchives;
     private static Option optGUIProfile;
     private static Option optIsCloud;
+    private static Option optIsSSHJava;
     private static Option optListFiles;
     private static Option optUseRSync;
     private static Option optTime;
@@ -86,6 +90,7 @@ public class GetLogs {
     private static String sArchives;
     private static LogFiles logFiles = null;
     private static boolean bIsCloud = false;
+    private static boolean bIsSSHJava = false;
     private static String sGUIProfile;
 
     private static Options options;
@@ -104,6 +109,7 @@ public class GetLogs {
     public static String getSshPassword() {
         return sshPassword;
     }
+
     private static String sshPassword;
 
     public static Hosts getHosts() {
@@ -112,6 +118,10 @@ public class GetLogs {
 
     public static String getsGUIProfile() {
         return sGUIProfile;
+    }
+
+    public static boolean isbIsSSHJava() {
+        return bIsSSHJava;
     }
 
     public static void main(String[] args) throws Exception {
@@ -160,6 +170,15 @@ public class GetLogs {
                 .build();
         options.addOption(optIsCloud);
 
+        optIsSSHJava = Option.builder()
+                .hasArg(false)
+                .required(false)
+                .desc("if specified, remote commands and file download will be performed vis java SSH client; " +
+                        "by default using local commands (ssh, rsync, etc)")
+                .longOpt("ssh-java")
+                .build();
+        options.addOption(optIsSSHJava);
+
         optLFMTInstance = Option.builder()
                 .hasArg(true)
                 .required(false)
@@ -167,6 +186,7 @@ public class GetLogs {
                 .longOpt("lfmt-instance")
                 .build();
         options.addOption(optLFMTInstance);
+
 
         optLogLevel = Option.builder("d")
                 .hasArg(true)
@@ -363,6 +383,10 @@ public class GetLogs {
         }
         sshOptions = (String) cmd.getParsedOptionValue(optSSHOptions.getLongOpt());
         sUserName = (String) cmd.getParsedOptionValue(optUserName.getLongOpt());
+        bIsSSHJava = cmd.hasOption(optIsSSHJava.getLongOpt());
+        sshUser = (String) cmd.getParsedOptionValue(optSSHUser.getLongOpt());
+        sshPassword = (String) cmd.getParsedOptionValue(optSSHPassword.getLongOpt());
+
 
         sRSyncUserName = (String) cmd.getParsedOptionValue(optRSyncUserName.getLongOpt());
 
@@ -423,8 +447,8 @@ public class GetLogs {
                     .append(lfmtInstance).append("/")
                     .append(lfmtInstance).append("_cls/")
                     .append(theAppHost) //                    .append("/")
-                    //                    .append(ap)
-                    ;
+            //                    .append(ap)
+            ;
         } else {
             logsDir.append("/AppLog/GCTI");
 
@@ -747,7 +771,7 @@ public class GetLogs {
     }
 
     public static ArrayList<String> execGrep(String ext, String unp, ArrayList<String> sshParams, StringBuilder sshCmd,
-            String regex) throws IOException, InterruptedException {
+                                             String regex) throws IOException, InterruptedException {
         StringBuilder grepCmd = new StringBuilder();
         grepCmd.append(sshCmd)
                 .append(" -iname ").append(ext)
@@ -815,8 +839,8 @@ public class GetLogs {
             StringBuilder buf = new StringBuilder();
             buf.append(sshOptions).append("@").append((lfmtHost != null ? lfmtHost : "")).append(":")
                     .append(listLogFiles.get(0).getLfmtName()) //                .append(" :").append(logFiles.get(1));
-                    //                .append("/*")
-                    ;
+            //                .append("/*")
+            ;
             rsyncParams.add(buf.toString());
 
             for (int i = 1; i < listLogFiles.size(); i++) {
@@ -1009,12 +1033,13 @@ public class GetLogs {
         apps.addAll(Arrays.asList(split));
 
         bIsCloud = cmd.hasOption(optIsCloud.getLongOpt());
+        bIsSSHJava = cmd.hasOption(optIsSSHJava.getLongOpt());
 
         appHost = (String) cmd.getParsedOptionValue(optForceHost.getLongOpt());
-        
+
         sshUser = (String) cmd.getParsedOptionValue(optSSHUser.getLongOpt());
         sshPassword = (String) cmd.getParsedOptionValue(optSSHPassword.getLongOpt());
-        
+
         dateSpec = (String) cmd.getParsedOptionValue(optDay.getOpt());
         timeSpec = (String) cmd.getParsedOptionValue(optTime.getOpt());
 

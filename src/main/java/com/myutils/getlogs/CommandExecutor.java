@@ -6,13 +6,22 @@
 package com.myutils.getlogs;
 
 import Utils.Pair;
+
 import static Utils.SystemClipboard.getSystemClipboard;
+
 import Utils.UTCTimeRange;
 import Utils.UnixProcess.ExtProcess;
+import Utils.UnixProcess.RemoteExecutionResult;
+import Utils.UnixProcess.SSHClientWrapper;
 import Utils.Util;
+
 import static Utils.Util.rSyncAddClause;
+
 import com.jidesoft.dialog.StandardDialog;
+
+import static Utils.Util.stripDir;
 import static com.myutils.getlogs.GetLogs.logger;
+
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -36,18 +45,18 @@ import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
 /**
- *
  * @author stepan_sydoruk
  */
 public final class CommandExecutor {
 
-//    public static void main(String[] args) throws Exception {
+    //    public static void main(String[] args) throws Exception {
 //        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190", "1"));
 //        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "201901", "1"));
 //        System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "2019012", "1"));
@@ -173,10 +182,15 @@ public final class CommandExecutor {
     final ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
     JTableFileList lsTab = new JTableFileList();
     JTablePasteFileList lsGeneralTab = null;
+    SSHClientWrapper sshClient = null;
 
     public CommandExecutor(boolean isText) {
         this.isText = isText;
         extProcessManager = new ExtProcessManager();
+        if (GetLogs.isbIsSSHJava()) {
+            // todo: make defaultTimeoutSeconds configurable
+            sshClient = new SSHClientWrapper(20000);
+        }
     }
 
     public CommandExecutor(Window p) {
@@ -239,8 +253,8 @@ public final class CommandExecutor {
             }
 
             logsDir.append("/").append(h) //                    .append("/")
-                    //                    .append(ap)
-                    ;
+            //                    .append(ap)
+            ;
         } else {
             logsDir.append(GetLogs.getProdBaseDir());
 
@@ -319,29 +333,12 @@ public final class CommandExecutor {
         return preQuoteDouble() + "\"";
     }
 
-    private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-            ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
-        ArrayList<JTableFileEntry> lsFiles = null;
-        ArrayList<String> sshParams = new ArrayList<>();
-        HashMap<String, Boolean> nameSuffixes = appProfile.getNameSuffixes();
 
-        sshParams.add("ssh");
-        if (GetLogs.sshOptions != null) {
-            sshParams.addAll(
-                    Arrays.asList(StringUtils.split(GetLogs.sshOptions))
-            );
-        }
-        sshParams.addAll(Arrays.asList(new String[]{"-o", "StrictHostKeyChecking no"}));
-
-        if (isLFMT) {
-            sshParams.add(appProfile.getLFMT().getHost());
-        } else {
-            sshParams.add(theAppHost.getHost());
-        }
-
+    private String remoteSSHCmd(AppProfile appProfile, App ap, String logsDir,
+                                ArrayList<StringBuilder> fileNameClause, boolean lcaLog) {
         StringBuilder sshCmd = new StringBuilder();
 
-//this is to play with permissions. 
+//this is to play with permissions.
 //        sshCmd.append("sudo -u svc-gsys -s bash -c \"");
         String u = GetLogs.getsRSyncUserName();
         if (StringUtils.isBlank(u)) {
@@ -397,80 +394,128 @@ public final class CommandExecutor {
         sshCmd.append(" ; done");
 
         sshCmd.append(quoteDouble());
-        sshParams.add(sshCmd.toString());
-        ExtProcess procSSH;
-        procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, false, true));
-        procSSH.startProcess(true, true);
 
-        int waitFor = procSSH.waitFor();
-        logger.debug("process terminated, result: " + waitFor);
-        if (waitFor != 0) {
-            SettingsDialog.error("LS failed, error code: " + waitFor);
-            ArrayList<String> errBuf = procSSH.getErrBuf();
-            if (errBuf != null && !errBuf.isEmpty()) {
-                logMessage(Level.ERROR, StringUtils.join(errBuf, " | "));
-//                lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, null, logsDir, isLFMT, lcaLog), StringUtils.join(errBuf, " | ")));
-//                lsTab.addRow(appProfile, ap, theAppHost, null, logsDir.toString(), isLFMT, lcaLog, StringUtils.join(errBuf, " | "));
+        return sshCmd.toString();
+    }
 
+    private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
+                                                 ArrayList<StringBuilder> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+
+        String remoteCmd = remoteSSHCmd(appProfile, ap, logsDir, fileNameClause, lcaLog);
+        int executionResult;
+        List<String> stdout;
+        List<String> stderr;
+
+        if (GetLogs.isbIsSSHJava()) {
+            RemoteExecutionResult ret1 = sshClient.executeRemoteCommand(GetLogs.getSshUser(),
+                    GetLogs.getSshPassword(), theAppHost.getHost(), 22, remoteCmd);
+            executionResult = ret1.getRetCode();
+            stderr = ret1.getStderr();
+            stdout = ret1.getStdout();
+        } else {
+            ArrayList<String> sshParams = new ArrayList<>();
+            HashMap<String, Boolean> nameSuffixes = appProfile.getNameSuffixes();
+
+            sshParams.add("ssh");
+            if (GetLogs.sshOptions != null) {
+                sshParams.addAll(
+                        Arrays.asList(StringUtils.split(GetLogs.sshOptions))
+                );
+            }
+            sshParams.addAll(Arrays.asList(new String[]{"-o", "StrictHostKeyChecking no"}));
+
+            if (isLFMT) {
+                sshParams.add(appProfile.getLFMT().getHost());
+            } else {
+                sshParams.add(theAppHost.getHost());
             }
 
+
+            sshParams.add(remoteCmd);
+
+            ExtProcess procSSH;
+            procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, false, true));
+            procSSH.startProcess(true, true);
+
+            executionResult = procSSH.waitFor();
+            stderr = procSSH.getErrBuf();
+            stdout = procSSH.getSTDOut();
+            logger.debug("process terminated, result: " + executionResult);
+            extProcessManager.doneProcess(procSSH);
+        }
+        if (executionResult != 0) {
+            SettingsDialog.error("LS failed, error code: " + executionResult);
+            if (stderr != null && !stderr.isEmpty()) {
+                logMessage(Level.ERROR, StringUtils.join(stderr, " | "));
+            }
         } else {
-            lsFiles = new ArrayList<>();
-            boolean startFound = false;
-            String savedPrefix = null;
-            for (String string : procSSH.getSTDOut()) {
+            if (stdout != null) {
+                ArrayList<JTableFileEntry> lsFiles = null;
+
+                lsFiles = new ArrayList<>();
+                boolean startFound = false;
+                String savedPrefix = null;
+                for (String string : stdout) {
 //                lsTab.addRow(appProfile, ap, theAppHost, string, logsDir.toString(), isLFMT, lcaLog);
-                if (ds.getTimeProfile() == SettingsPanel.TimeProfile.RANGE) {
-                    Pair<Long, String> utcTime = appProfile.getFileNameTime(string);
-                    boolean shouldAdd = true;
-                    UTCTimeRange timeRange = ds.getTimeRange();
-                    if (utcTime != null) { // was able to parse time name
-                        if (utcTime.getKey() > timeRange.getEnd()) {
-                            shouldAdd = false;
-                        } else {
-                            if ((utcTime.getKey() > timeRange.getStart())) {
-                                shouldAdd = true;
+                    if (ds.getTimeProfile() == SettingsPanel.TimeProfile.RANGE) {
+                        Pair<Long, String> utcTime = appProfile.getFileNameTime(string);
+                        boolean shouldAdd = true;
+                        UTCTimeRange timeRange = ds.getTimeRange();
+                        if (utcTime != null) { // was able to parse time name
+                            if (utcTime.getKey() > timeRange.getEnd()) {
+                                shouldAdd = false;
                             } else {
-                                /*so the assumption is that files are always sorted*/
-                                if (startFound == false) {
-                                    startFound = true;
-                                    savedPrefix = utcTime.getValue();
+                                if ((utcTime.getKey() > timeRange.getStart())) {
                                     shouldAdd = true;
                                 } else {
-                                    if (savedPrefix == null || !savedPrefix.equals(utcTime.getValue())) {
-                                        startFound = false;
+                                    /*so the assumption is that files are always sorted*/
+                                    if (startFound == false) {
+                                        startFound = true;
+                                        savedPrefix = utcTime.getValue();
+                                        shouldAdd = true;
+                                    } else {
+                                        if (savedPrefix == null || !savedPrefix.equals(utcTime.getValue())) {
+                                            startFound = false;
+                                        }
+                                        shouldAdd = false;
                                     }
-                                    shouldAdd = false;
                                 }
                             }
                         }
-                    }
-                    logger.debug("file [" + string + "] range: " + timeRange.toString()
-                            //                                +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime > timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime < timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
-                            + " shouldadd: " + shouldAdd
-                    );
-                    if (shouldAdd) {
+                        logger.debug("file [" + string + "] range: " + timeRange.toString()
+                                //                                +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime > timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime < timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
+                                + " shouldadd: " + shouldAdd
+                        );
+                        if (shouldAdd) {
+                            lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
+                        }
+
+                    } else {
                         lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
                     }
-
-                } else {
-                    lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
                 }
-            }
-            SettingsDialog.info("ls successful for [" + appProfile.getName() + "] + app[" + ap + "]" + ((isLFMT) ? " on LFMT" : "") + " : got " + lsFiles.size() + " files");
-            ArrayList<String> errBuf = procSSH.getErrBuf();
-            if (errBuf != null && !errBuf.isEmpty()) {
-                logMessage(Level.ERROR, StringUtils.join(errBuf, " | "));
+                SettingsDialog.info("ls successful for [" + appProfile.getName() + "] + app[" + ap + "]" + ((isLFMT) ? " on LFMT" : "") + " : got " + lsFiles.size() + " files");
+                if (stderr != null && !stderr.isEmpty()) {
+                    logMessage(Level.ERROR, StringUtils.join(stderr, " | "));
 //                lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, null, logsDir, isLFMT, lcaLog), StringUtils.join(errBuf, " | ")));
 //                lsTab.addRow(appProfile, ap, theAppHost, null, logsDir.toString(), isLFMT, lcaLog, StringUtils.join(errBuf, " | "));
 
+                }
+
+                ((AbstractTableModel) lsTab.getModel()).fireTableDataChanged();
+                return lsFiles;
+            } else {
+                SettingsDialog.error("LS failed, error code: " + executionResult);
+                if (stderr != null && !stderr.isEmpty()) {
+                    logMessage(Level.ERROR, StringUtils.join(stderr, " | "));
+                }
+                String s = (stderr != null && stderr.size() > 0) ?
+                        "\n" + StringUtils.join(stderr, "\n")
+                        : "<Empty>";
+                logMessage(Level.ERROR, "Command successful but stdout is empty. Stderr: " + s);
             }
         }
-
-        extProcessManager.doneProcess(procSSH);
-
-        ((AbstractTableModel) lsTab.getModel()).fireTableDataChanged();
-        return lsFiles;
+        return null;
 
     }
 
@@ -583,13 +628,12 @@ public final class CommandExecutor {
         for (String fileName : executeGrep) {
             rSyncFiles.addAll(rSyncAddClause(FilenameUtils.getName(fileName)));
         }
-
         executeRSync(appProfile, ap, theAppHost, logsDir, rSyncFiles, isLFMT, lcaLog);
     }
 
     private ArrayList<String> executeGrep(AppProfile appProfile, App ap,
-            HostAppdir appHost1, String logsDir, ArrayList<StringBuilder> fileNameClause,
-            boolean isLFMT, boolean isLCA) throws IOException, InterruptedException {
+                                          HostAppdir appHost1, String logsDir, ArrayList<StringBuilder> fileNameClause,
+                                          boolean isLFMT, boolean isLCA) throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
         sshParams.add("ssh");
         if (GetLogs.getsUserName() != null) {
@@ -687,18 +731,19 @@ public final class CommandExecutor {
 
     }
 
-    /**
-     *
-     * @param appProfile
-     * @param ap
-     * @param theAppHost
-     * @param logsDir
-     * @param fileNameClause - cannot work via ssh variable
-     * @param isLFMT
-     * @param lcaLog
-     * @throws IOException
-     * @throws InterruptedException
-     */
+    private void executeDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+    }
+        /**
+         * @param appProfile
+         * @param ap
+         * @param theAppHost
+         * @param logsDir
+         * @param fileNameClause - cannot work via ssh variable
+         * @param isLFMT
+         * @param lcaLog
+         * @throws IOException
+         * @throws InterruptedException
+         */
     private void executeRSync(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
@@ -1020,7 +1065,7 @@ public final class CommandExecutor {
             HashSet<String> sortedFiles = new HashSet<>();
             for (FilesToGet filesToGet : ftd) {
                 for (String fileName : filesToGet.getFileNames()) {
-                    if(!sortedFiles.contains(fileName)){
+                    if (!sortedFiles.contains(fileName)) {
                         lsPasteFiles.add(new JTableFileEntryGeneral(filesToGet, fileName));
                         sortedFiles.add(fileName);
                     }
@@ -1099,11 +1144,11 @@ public final class CommandExecutor {
                     doExecuteCmd(parent, this,
                             latch,
                             new ISubTask() {
-                        @Override
-                        public void task() throws InterruptedException, IOException {
-                            executeRSync(r, latch);
-                        }
-                    }
+                                @Override
+                                public void task() throws InterruptedException, IOException {
+                                    executeRSync(r, latch);
+                                }
+                            }
                     );
 
                 }
@@ -1140,7 +1185,7 @@ public final class CommandExecutor {
     }
 
     private void executeRSync(HashMap<SavedSearchStorage, ArrayList<String>> r,
-            CountDownLatch latch) {
+                              CountDownLatch latch) {
 
         for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
             SavedSearchStorage key = entry.getKey();
@@ -1157,7 +1202,7 @@ public final class CommandExecutor {
     }
 
     private void executeRSyncFilesToGet(HashMap<FilesToGet, ArrayList<String>> r,
-            CountDownLatch latch) {
+                                        CountDownLatch latch) {
 
         for (Map.Entry<FilesToGet, ArrayList<String>> entry : r.entrySet()) {
             FilesToGet key = entry.getKey();
@@ -1346,8 +1391,8 @@ public final class CommandExecutor {
     }
 
     private void doExecuteCmd(Window parent1, CommandExecutor aThis,
-            CountDownLatch latch,
-            ISubTask subTask) {
+                              CountDownLatch latch,
+                              ISubTask subTask) {
 
         QueryTaskBase tsk = new QueryTask(aThis, latch, subTask);
         if (rp == null) {
@@ -1543,10 +1588,10 @@ public final class CommandExecutor {
         }
 
         private QueryTask(CommandExecutor aThis,
-                CountDownLatch latch,
-                ISubTask subTask,
-                CountDownLatch finishLatch,
-                ISubTask finishingTask) {
+                          CountDownLatch latch,
+                          ISubTask subTask,
+                          CountDownLatch finishLatch,
+                          ISubTask finishingTask) {
             this(aThis, latch, subTask);
             if (finishingTask != null) {
                 setFinishingTask(finishingTask);
@@ -1575,7 +1620,9 @@ public final class CommandExecutor {
             cancelExecutor();
         }
 
-    };
+    }
+
+    ;
 
     public class QueryThreadingTask extends QueryTaskBase {
 
@@ -1587,7 +1634,7 @@ public final class CommandExecutor {
             this.threadingSubTask = threadingSubTask;
         }
 
-//        boolean myCancel(boolean mayInterruptIfRunning) {
+        //        boolean myCancel(boolean mayInterruptIfRunning) {
 //            ce.cancel();
 //            cancel(mayInterruptIfRunning);
 //            if (isDone()) {
@@ -1656,7 +1703,9 @@ public final class CommandExecutor {
             }
         }
 
-    };
+    }
+
+    ;
 
     public abstract class QueryTaskBase extends SwingWorker<Void, String> {
 
@@ -1837,23 +1886,23 @@ public final class CommandExecutor {
                 setStartingLatch(startingLatch);
                 setStartingTask(
                         new ISubTask() {
-                    @Override
-                    public void task() throws InterruptedException, IOException {
-
-                        executor.execute(new CallbackThreadLatched(startingLatch, new ISubTask() {
                             @Override
                             public void task() throws InterruptedException, IOException {
-                                for (String beforeAction : beforeActions) {
-                                    executeCommand(beforeAction);
-                                }
 
-                                startingLatch.countDown();
+                                executor.execute(new CallbackThreadLatched(startingLatch, new ISubTask() {
+                                    @Override
+                                    public void task() throws InterruptedException, IOException {
+                                        for (String beforeAction : beforeActions) {
+                                            executeCommand(beforeAction);
+                                        }
+
+                                        startingLatch.countDown();
+                                    }
+
+                                }));
+
                             }
-
-                        }));
-
-                    }
-                }
+                        }
                 );
             }
         }
@@ -1864,26 +1913,28 @@ public final class CommandExecutor {
                 setFinishLatch(finalLatch);
                 setFinishingTask(
                         new ISubTask() {
-                    @Override
-                    public void task() throws InterruptedException, IOException {
-                        executor.execute(new CallbackThreadLatched(finalLatch, new ISubTask() {
                             @Override
                             public void task() throws InterruptedException, IOException {
-                                for (String afterAction : afterActions) {
-                                    executeCommand(afterAction);
-                                }
+                                executor.execute(new CallbackThreadLatched(finalLatch, new ISubTask() {
+                                    @Override
+                                    public void task() throws InterruptedException, IOException {
+                                        for (String afterAction : afterActions) {
+                                            executeCommand(afterAction);
+                                        }
 
-                                finalLatch.countDown();
+                                        finalLatch.countDown();
+                                    }
+
+                                }));
                             }
-
-                        }));
-                    }
-                }
+                        }
                 );
             }
         }
 
-    };
+    }
+
+    ;
 
     class CallbackThreadLatched implements Runnable {
 
