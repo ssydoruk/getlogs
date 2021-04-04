@@ -5,28 +5,37 @@
  */
 package com.myutils.getlogs;
 
-import static Utils.ScreenInfo.CenterWindow;
-import Utils.*;
-import com.google.gson.*;
-import com.jidesoft.dialog.*;
-import static com.jidesoft.dialog.StandardDialog.RESULT_CANCELLED;
-import com.jidesoft.swing.*;
-import static com.myutils.getlogs.GetLogs.logger;
+import Utils.Pair;
+import Utils.TDateRange;
+import Utils.TableColumnAdjuster;
+import Utils.ValuesEditor;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.jidesoft.dialog.ButtonPanel;
+import com.jidesoft.dialog.StandardDialog;
+import com.jidesoft.swing.CheckBoxList;
+import com.jidesoft.swing.CheckBoxListSelectionModel;
+import com.jidesoft.swing.FolderChooser;
+import com.jidesoft.swing.SearchableUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.text.DateFormat;
 import java.util.List;
-import static javax.swing.Action.SHORT_DESCRIPTION;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import org.apache.commons.lang3.StringUtils;
+import java.util.*;
+
+import static Utils.ScreenInfo.CenterWindow;
+import static com.myutils.getlogs.GetLogs.logger;
 
 /**
- *
  * @author Stepan
  */
 public class SettingsPanel extends javax.swing.JPanel {
@@ -203,6 +212,45 @@ public class SettingsPanel extends javax.swing.JPanel {
         tfTimeRegex.setMaximumSize(new Dimension(tfTimeRegex.getMaximumSize().width, tfTimeRegex.getMinimumSize().height));
         ftHours.setMaximumSize(new Dimension(ftHours.getMaximumSize().width, ftHours.getMinimumSize().height));
         jpCommandParams.setMaximumSize(new Dimension(jpCommandParams.getMaximumSize().width, jpCommandParams.getMinimumSize().height));
+
+        jtfLogDirectory.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                jtfLogDirectoryTextChanged(e);
+            }
+        });
+
+        jtfFileNameBase.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                jtfFileNameBaseTextChanged(e);
+            }
+        });
+    }
+
+    private void jtfLogDirectoryTextChanged(FocusEvent e) {
+        AppProfile prof = getActiveAppProfile();
+        if (prof != null) {
+            prof.setLogDirectory(((JTextField) e.getSource()).getText());
+        }
+
+    }
+
+    private void jtfFileNameBaseTextChanged(FocusEvent e) {
+        AppProfile prof = getActiveAppProfile();
+        if (prof != null) {
+            prof.setLogFileNameBase(((JTextField) e.getSource()).getText());
+        }
     }
 
     private void tfFilenameSuffixesChanged() {
@@ -527,6 +575,15 @@ public class SettingsPanel extends javax.swing.JPanel {
 //        btEditLFMTs.setEnabled(singleSelection);
     }
 
+    private AppProfile getActiveAppProfile() {
+
+        Object selectedValue = clbProfile.getSelectedValue();
+        if (selectedValue != null && selectedValue instanceof AppProfile) {
+            return (AppProfile) selectedValue;
+        }
+        return null;
+    }
+
     private void profileSelected(int numSelected) {
         jpAppsBase.setEnabled(numSelected == 1);
         jpAppProperties.setEnabled(numSelected == 1);
@@ -817,22 +874,22 @@ public class SettingsPanel extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(rbGenesysLogs)
-                    .addComponent(rbCloudLogs))
-                .addContainerGap())
+                jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(rbGenesysLogs)
+                                        .addComponent(rbCloudLogs))
+                                .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(rbGenesysLogs)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(rbCloudLogs)
-                .addContainerGap())
+                jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(rbGenesysLogs)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(rbCloudLogs)
+                                .addContainerGap())
         );
 
         jPanel1.add(jPanel5);
@@ -941,7 +998,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         lCommand.setText("Command");
         jPanel16.add(lCommand);
 
-        cbCommand.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbCommand.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
         cbCommand.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbCommandActionPerformed(evt);
@@ -1112,6 +1169,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jbProfileRenameActionPerformed
 
     private void jbProfileSaveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbProfileSaveAsActionPerformed
+
         Object selectedValue = clbProfile.getSelectedValue();
         if (selectedValue instanceof AppProfile) {
             AppProfile appPr = (AppProfile) selectedValue;
@@ -1123,12 +1181,9 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jbProfileSaveAsActionPerformed
 
     private void rbGenesysLogsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbGenesysLogsItemStateChanged
-        Object selectedValue = clbProfile.getSelectedValue();
-        if (selectedValue instanceof AppProfile) {
-            AppProfile prof = (AppProfile) selectedValue;
-            if (prof != null) {
-                prof.setIsGenesysName(evt.getStateChange() == ItemEvent.SELECTED);
-            }
+        AppProfile prof = getActiveAppProfile();
+        if (prof != null) {
+            prof.setIsGenesysName(evt.getStateChange() == ItemEvent.SELECTED);
         }
     }//GEN-LAST:event_rbGenesysLogsItemStateChanged
 
@@ -1327,7 +1382,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         App selectedApp = (App) clbApps.getSelectedValue();
         if (selectedApp != null) {
             Utils.SystemClipboard.copy(selectedApp.getHost());
-        }    }//GEN-LAST:event_cbmCopyHostNameActionPerformed
+        }
+    }//GEN-LAST:event_cbmCopyHostNameActionPerformed
 
     private void jbSelectScriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSelectScriptActionPerformed
         // TODO add your handling code here:
@@ -1689,7 +1745,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             name = s;
         }
 
-//    public boolean equals(DialogItem item) {
+        //    public boolean equals(DialogItem item) {
 //        
 //    }
         public boolean equalsName(String otherName) {

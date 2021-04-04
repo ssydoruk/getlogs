@@ -336,7 +336,7 @@ public final class CommandExecutor {
 
         sshCmd.append("bash -c ").append(quoteDouble());
 
-        sshCmd.append("cd ").append(logsDir).append("; ");
+        sshCmd.append("cd ").append(appProfile.getLogDirectory()).append("; ");
 //        sshCmd.append(" declare -a arr=( \\\"-001\\\" \\\"-768\\\" ); for ext in \\\"\\${arr[@]}\\\"; do");
         sshCmd.append(" declare -a arr=(");
         sshCmd.append(" \\").append(quoteDouble());
@@ -721,7 +721,7 @@ public final class CommandExecutor {
 //   https://mkyong.com/java/how-to-create-tar-gz-in-java/
 
         StringBuilder remoteCmd = new StringBuilder().append("tar -C ")
-                .append(logsDir).append(" -cz ")
+                .append(appProfile.getLogDirectory()).append(" -cz ")
                 .append(StringUtils.join(fileNameClause, " "));
         try {
             ThreadedUnTarGZ stdoutReader = new ThreadedUnTarGZ(ds.getOutputDir());
