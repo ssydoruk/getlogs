@@ -307,16 +307,9 @@ public final class CommandExecutor {
 
     }
 
-    private String preQuoteDouble() {
-        if (Utils.Util.getOS() == Util.OS.WINDOWS) {
-            return "\\";
-        } else {
-            return "";
-        }
-    }
 
     private String quoteDouble() {
-        return preQuoteDouble() + "\"";
+        return "\"";
     }
 
 
