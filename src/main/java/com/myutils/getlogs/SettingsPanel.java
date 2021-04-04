@@ -35,7 +35,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private final CheckBoxList clbApps;
     private final DefaultListModel<Object> lmProfile;
     private final DefaultListModel<Object> lmApps;
-    private TDateRange dtRange;
+    private final TDateRange dtRange;
     private DownloadSettings ds;
     private InfoPanel p = null;
     private InfoPanel lfmtPanes = null;
