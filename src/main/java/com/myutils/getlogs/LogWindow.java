@@ -5,35 +5,23 @@
  */
 package com.myutils.getlogs;
 
-import Utils.ScreenInfo;
 import static com.myutils.getlogs.GetLogs.logger;
-import java.awt.BorderLayout;
-import java.io.Serializable;
-import java.util.ArrayList;
+import java.awt.*;
+import java.io.*;
+import java.util.*;
 import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Filter;
-import org.apache.logging.log4j.core.Layout;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.AbstractConfiguration;
-import org.apache.logging.log4j.core.config.AppenderRef;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.PatternLayout;
+import javax.swing.*;
+import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.core.*;
+import org.apache.logging.log4j.core.appender.*;
+import org.apache.logging.log4j.core.config.*;
+import org.apache.logging.log4j.core.layout.*;
 
 /**
  *
  * @author stepan_sydoruk
  */
-public class LogWindow extends JFrame {
+public final class LogWindow extends JFrame {
 
     static void info(String command_executed) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -72,22 +60,26 @@ public class LogWindow extends JFrame {
     }
     JTextArea jt;
 
-    public LogWindow() {
+    public LogWindow(Window parent) {
         super();
+        setLayout(new BorderLayout());
         add(createContentPanel());
+        setSize(new Dimension(600, 400));
+        invalidate();
 //        setModal(false);
 //        setMaximumSize(new Dimension(500, 200));
 //        setFocusable(true);
 
     }
 
-    public void doShow() {
-        pack();
-        ScreenInfo.windowOccupyTopThird(this);
+    public void doShow(boolean visible) {
+
+//        ScreenInfo.windowOccupyTopThird(this);
 //        setAutoRequestFocus(false);
 //        setAlwaysOnTop(false);
 //        setFocusable(false);
-        setVisible(true);
+        invalidate();
+        setVisible(visible);
     }
 
     public JComponent createContentPanel() {
@@ -99,9 +91,10 @@ public class LogWindow extends JFrame {
         JPanel listPane = new JPanel(new BorderLayout());
 
         listPane.add(jScrollPane, BorderLayout.CENTER);
-//        jScrollPane.setMinimumSize(new Dimension(300, 200));
+//        jt.setMinimumSize(new Dimension(300, 200));
+//        jt.setSize(new Dimension(300, 200));
 //        jScrollPane.setMaximumSize(new Dimension(500, 200));
-//        jScrollPane.setPreferredSize(new Dimension(500, 200));
+//        jt.setPreferredSize(new Dimension(500, 200));
         return listPane;
 
     }

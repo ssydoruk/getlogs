@@ -5,26 +5,18 @@
  */
 package com.myutils.getlogs;
 
-import com.jidesoft.dialog.ButtonPanel;
-import com.jidesoft.dialog.StandardDialog;
-import static com.jidesoft.dialog.StandardDialog.RESULT_CANCELLED;
+import com.jidesoft.dialog.*;
 import static com.myutils.getlogs.GetLogs.logger;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
+import java.awt.event.*;
+import java.io.*;
+import java.util.logging.*;
+import javax.swing.*;
 
 /**
  *
  * @author Stepan
  */
-public class SettingsDialog extends StandardDialog {
+public final class SettingsDialog extends StandardDialog {
 
     private static LogWindow lw;
 
@@ -42,13 +34,24 @@ public class SettingsDialog extends StandardDialog {
     private final SettingsPanel settingsPanel;
     private final CommandExecutor ce;
     private JButton jbRun;
+    private JToggleButton showLog;
 
-    public SettingsDialog(DownloadSettings ds, String guiProfile) {
-        super();
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (!visible) {
+            ((DummyFrame) getParent()).dispose();
+        }
+    }
+
+    public SettingsDialog(DummyFrame parent, DownloadSettings ds, String guiProfile) {
+
+        super(parent);
+
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         settingsPanel = new SettingsPanel(ds, this);
         ce = new CommandExecutor(this);
-        lw = new LogWindow();
-        lw.doShow();
+        lw = new LogWindow(this);
         setModal(false);
 
         addWindowListener(new WindowAdapter() {
@@ -90,6 +93,17 @@ public class SettingsDialog extends StandardDialog {
     @Override
     public ButtonPanel createButtonPanel() {
         ButtonPanel buttonPanel = new ButtonPanel();
+
+        showLog = new JToggleButton(new AbstractAction("log window") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                logWindowToggled(e);
+//                    cancelButtonAction(e);
+            }
+
+        });
+        buttonPanel.addButton(showLog);
+        showLog.doClick();
         JButton cancelButton = new JButton(new AbstractAction("Close") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -102,6 +116,20 @@ public class SettingsDialog extends StandardDialog {
 
         });
         buttonPanel.addButton(cancelButton);
+        
+        lw.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                showLog.setSelected(false);
+                super.windowClosing(e); 
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                super.windowGainedFocus(e); 
+            }
+
+        });
 
         JButton pasteFiles = new JButton(new AbstractAction("Paste files") {
             @Override
@@ -219,6 +247,10 @@ public class SettingsDialog extends StandardDialog {
         setVisible(false);
         dispose();
         System.exit(0);
+    }
+
+    private void logWindowToggled(ActionEvent e) {
+        lw.doShow(((JToggleButton) e.getSource()).isSelected());
     }
 
 }

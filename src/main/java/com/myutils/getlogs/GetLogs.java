@@ -1013,7 +1013,9 @@ public class GetLogs {
                     java.util.logging.Logger.getLogger(GetLogs.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                 }
 
-                SettingsDialog dlg = new SettingsDialog(ds, sGUIProfile);
+                SettingsDialog dlg = new SettingsDialog(
+                        new DummyFrame("Log downloader", null),
+                        ds, sGUIProfile);
                 dlg.getCe().setSettingsFile(sGUIProfile);
                 dlg.pack();
                 dlg.invalidate();
