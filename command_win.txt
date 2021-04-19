@@ -1,0 +1,5 @@
+cmd /C “copy C:\Users\N748772\gcti\bin\logbrBE.bat {OUTDIR}"
+cmd /C “copy C:\Users\N748772\gcti\bin\logbrFE.bat {OUTDIR}"
+cmd /C "cd /D {OUTDIR} & logbrBE.bat"
+cmd /C “cd /D {OUTDIR} & logbrFE.bat"
+
