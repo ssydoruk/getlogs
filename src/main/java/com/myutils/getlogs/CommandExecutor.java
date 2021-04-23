@@ -499,12 +499,12 @@ public final class CommandExecutor {
     }
 
     private String osSpecificPath(String outputDir) {
-        if (Utils.Util.getOS() == Util.OS.WINDOWS) {
-
-            return "/cygdrive/" + StringUtils.replaceChars(outputDir.replace(":", ""), "\\", "/");
-        } else {
+//        if (Utils.Util.getOS() == Util.OS.WINDOWS) {
+//
+//            return "/cygdrive/" + StringUtils.replaceChars(outputDir.replace(":", ""), "\\", "/");
+//        } else {
             return outputDir;
-        }
+//        }
     }
 
     Pair<ArrayList<String>, ArrayList<String>> uncheckNonPrimary() {
