@@ -5,35 +5,21 @@
  */
 package com.myutils.getlogs;
 
-import Utils.Pair;
-import Utils.TDateRange;
-import Utils.TableColumnAdjuster;
-import Utils.ValuesEditor;
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.jidesoft.dialog.ButtonPanel;
-import com.jidesoft.dialog.StandardDialog;
-import com.jidesoft.swing.CheckBoxList;
-import com.jidesoft.swing.CheckBoxListSelectionModel;
-import com.jidesoft.swing.FolderChooser;
-import com.jidesoft.swing.SearchableUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
+import Utils.*;
+import com.google.gson.*;
+import com.jidesoft.swing.*;
+import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.text.DateFormat;
-import java.util.List;
+import java.text.*;
 import java.util.*;
-
-import static Utils.ScreenInfo.CenterWindow;
-import static com.myutils.getlogs.GetLogs.logger;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.event.*;
+import javax.swing.table.*;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Stepan
@@ -1759,158 +1745,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     }
 
-    public static class InfoPanel extends StandardDialog {
-
-        private int closeCause = JOptionPane.CANCEL_OPTION;
-        private final JTable theTab;
-        private final ArrayList<JButton> addButtons;
-        private final String selectedFormat;
-        private final TableColumnAdjuster tca;
-        JScrollPane jScrollPane;
-        JButton jbFilter;
-        ButtonPanel buttonPanel;
-
-        InfoPanel(Window parent, String title, JTable tab, String selectedFormat) {
-            super(parent, title);
-            this.addButtons = new ArrayList<>();
-            this.theTab = tab;
-            this.selectedFormat = selectedFormat;
-            tca = new TableColumnAdjuster(theTab);
-            tca.setColumnHeaderIncluded(true);
-            jScrollPane = new JScrollPane(theTab);
-            theTab.getTableHeader().setVisible(true);
-            theTab.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-        }
-
-        public int getCloseCause() {
-            return closeCause;
-        }
-
-        public void setCloseCause(int closeCause) {
-            this.closeCause = closeCause;
-        }
-
-        private void selectionChanged(JButton bt, JTable tab) {
-            int rowsSelected = tab.getSelectedRows().length;
-            bt.setEnabled(rowsSelected > 0);
-            bt.setText((rowsSelected == 0)
-                    ? "Empty selection"
-                    : String.format(selectedFormat, rowsSelected));
-        }
-
-        public void doShow() {
-            this.setLocationRelativeTo(getParent());
-            tca.adjustColumns();
-
-            Dimension d = theTab.getPreferredSize();
-
-            d.height = 500;
-            d.width += jScrollPane.getVerticalScrollBar().getMaximumSize().width + 4;
-            jScrollPane.setPreferredSize(d);
-            pack();
-
-            CenterWindow(this);
-
-            if (logger.isTraceEnabled()) {
-                logger.trace("Show info PanelDialog; title=" + getTitle() + "; tab cols:" + theTab.getColumnCount() + " rows: " + theTab.getRowCount());
-                StringBuilder s = new StringBuilder(512);
-                for (int i = 0; i < theTab.getRowCount(); i++) {
-                    s.setLength(0);
-                    for (int j = 0; j < theTab.getColumnCount(); j++) {
-                        s.append("[").append(theTab.getValueAt(i, j)).append("],");
-                    }
-                    logger.trace(s);
-                }
-
-            }
-
-            setVisible(true);
-        }
-
-        @Override
-        public JComponent createBannerPanel() {
-            return null;
-        }
-
-        @Override
-        public JComponent createContentPanel() {
-//                        JPanel panel = new JPanel(new BorderLayout(10, 10));
-//            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
-
-//            panel.add(mainPanel, BorderLayout.CENTER);
-//            return panel;
-            JPanel listPane = new JPanel(new BorderLayout());
-
-            listPane.add(jScrollPane, BorderLayout.CENTER);
-
-            return listPane;
-        }
-
-        @Override
-        public ButtonPanel createButtonPanel() {
-            buttonPanel = new ButtonPanel();
-            for (JButton addButton : addButtons) {
-                buttonPanel.add(addButton);
-            }
-            JButton cancelButton = new JButton();
-            buttonPanel.addButton(cancelButton);
-
-            cancelButton.setAction(new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setDialogResult(RESULT_CANCELLED);
-                    setCloseCause(JOptionPane.CANCEL_OPTION);
-                    setVisible(false);
-                    dispose();
-                }
-            });
-            cancelButton.setText("Close");
-
-            jbFilter = new JButton("Use as filter");
-            buttonPanel.addButton(jbFilter);
-            theTab.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-                @Override
-                public void valueChanged(ListSelectionEvent e) {
-                    selectionChanged(jbFilter, theTab);
-                }
-            });
-            selectionChanged(jbFilter, theTab);
-
-//            listPane.add(jbFilter);
-            jbFilter.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    theTab.editingCanceled(null);
-                    setCloseCause(JOptionPane.OK_OPTION);
-                    dispose();
-                }
-            });
-
-            String act = "ApplyFilter";
-
-            theTab.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0), act);
-            theTab.getActionMap().put(act, jbFilter.getAction());
-
-            setDefaultCancelAction(cancelButton.getAction());
-            setDefaultAction(jbFilter.getAction());
-            getRootPane().setDefaultButton(jbFilter);
-
-            buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            buttonPanel.setSizeConstraint(ButtonPanel.NO_LESS_THAN); // since the checkbox is quite wide, we don't want all of them have the same size.
-            return buttonPanel;
-        }
-
-        private void doShow(String theTitle) {
-            this.setTitle(theTitle);
-            doShow();
-        }
-
-        private void addButton(JButton jButton) {
-            addButtons.add(jButton);
-        }
-    }
-
     private JTablePopup uniquePopup;
 
     private JTablePopup getJTablePopup() {
@@ -2108,123 +1942,4 @@ public class SettingsPanel extends javax.swing.JPanel {
     JTablePopup tab;
     JTablePopup tabLFMT;
 
-    class EditLFMTDialog extends StandardDialog {
-
-        private EnterPanel lfmtBaseDir;
-
-        EnterPanel lfmt;
-        EnterPanel lfmtInstance;
-
-        public EditLFMTDialog() {
-            super();
-            setTitle("Edit LFMT host");
-        }
-
-        public EnterPanel getLfmt() {
-            return lfmt;
-        }
-
-        public EnterPanel getLfmtInstance() {
-            return lfmtInstance;
-        }
-
-        public EnterPanel getBaseDir() {
-            return lfmtBaseDir;
-        }
-
-        @Override
-        public JComponent createBannerPanel() {
-            return null;
-        }
-
-        @Override
-        public JComponent createContentPanel() {
-            JPanel content = new JPanel();
-            content.setLayout(new BoxLayout(content, BoxLayout.PAGE_AXIS));
-            lfmt = new EnterPanel("LFMT host");
-            content.add(lfmt.getEnterPanel());
-            lfmtInstance = new EnterPanel("LFMT instance");
-            content.add(lfmtInstance.getEnterPanel());
-            lfmtBaseDir = new EnterPanel("Log base dir");
-            content.add(lfmtBaseDir.getEnterPanel());
-            return content;
-        }
-
-        @Override
-        public ButtonPanel createButtonPanel() {
-            ButtonPanel buttonPanel = new ButtonPanel();
-            JButton cancelButton = new JButton();
-            buttonPanel.addButton(cancelButton);
-
-            cancelButton.setAction(new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setDialogResult(RESULT_CANCELLED);
-                    setVisible(false);
-                    dispose();
-                }
-            });
-            cancelButton.setText("Close");
-
-            JButton jbOK = new JButton("OK");
-            buttonPanel.addButton(jbOK);
-
-//            listPane.add(jbFilter);
-            jbOK.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setDialogResult(RESULT_AFFIRMED);
-                    dispose();
-                }
-            });
-
-            String act = "OK";
-
-            setDefaultCancelAction(cancelButton.getAction());
-            setDefaultAction(jbOK.getAction());
-            getRootPane().setDefaultButton(jbOK);
-
-            buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            buttonPanel.setSizeConstraint(ButtonPanel.NO_LESS_THAN); // since the checkbox is quite wide, we don't want all of them have the same size.
-            return buttonPanel;
-        }
-
-        public boolean doShow() {
-
-            setModal(true);
-
-            pack();
-
-//            ScreenInfo.CenterWindow(this);
-            setLocationRelativeTo(getParent());
-            setVisible(true);
-            return getDialogResult() == StandardDialog.RESULT_AFFIRMED;
-        }
-
-        class EnterPanel {
-
-            private final JTextField tbValue;
-            private final JPanel enterPanel;
-
-            EnterPanel(String title) {
-                enterPanel = new JPanel();
-                enterPanel.setLayout(new BoxLayout(enterPanel, BoxLayout.LINE_AXIS));
-                enterPanel.add(new JLabel(title));
-                tbValue = new JTextField();
-                enterPanel.add(tbValue);
-            }
-
-            public JPanel getEnterPanel() {
-                return enterPanel;
-            }
-
-            public String getText() {
-                return tbValue.getText();
-            }
-
-            public void setText(String txt) {
-                tbValue.setText(txt);
-            }
-        }
-    }
 }

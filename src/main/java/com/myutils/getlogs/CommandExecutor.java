@@ -5,37 +5,27 @@
  */
 package com.myutils.getlogs;
 
-import Utils.Pair;
-import Utils.UTCTimeRange;
+import static Utils.SystemClipboard.getSystemClipboard;
+import Utils.*;
 import Utils.UnixProcess.*;
-import Utils.Util;
-import com.jidesoft.dialog.StandardDialog;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
-
-import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
+import static Utils.Util.rSyncAddClause;
+import com.jidesoft.dialog.*;
+import static com.myutils.getlogs.GetLogs.logger;
+import com.myutils.getlogs.InfoPanel;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.File;
-import java.io.IOException;
+import java.awt.datatransfer.*;
+import java.io.*;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static Utils.SystemClipboard.getSystemClipboard;
-import static Utils.Util.rSyncAddClause;
-import static com.myutils.getlogs.GetLogs.logger;
+import java.util.regex.*;
+import javax.swing.*;
+import javax.swing.table.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.*;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 
 /**
  * @author stepan_sydoruk
@@ -163,8 +153,8 @@ public final class CommandExecutor {
     private RequestProgress rp = null;
     private final ExtProcessManager extProcessManager;
     private int ret = StandardDialog.RESULT_CANCELLED;
-    SettingsPanel.InfoPanel lsOutput;
-    SettingsPanel.InfoPanel lsPasteOutput;
+    InfoPanel lsOutput;
+    InfoPanel lsPasteOutput;
     final ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
     JTableFileList lsTab = new JTableFileList();
     JTablePasteFileList lsGeneralTab = null;
@@ -1076,7 +1066,7 @@ public final class CommandExecutor {
                 lsGeneralTab = new JTablePasteFileList();
             }
             if (lsPasteOutput == null) {
-                lsPasteOutput = new SettingsPanel.InfoPanel(parent, "List of pasted", lsGeneralTab,
+                lsPasteOutput = new InfoPanel(parent, "List of pasted", lsGeneralTab,
                         "Download %d files");
             }
             ArrayList<JTableFileEntryGeneral> lsPasteFiles = new ArrayList<>();
@@ -1134,7 +1124,7 @@ public final class CommandExecutor {
                 lsTab = new JTableFileList();
             }
             if (lsOutput == null) {
-                lsOutput = new SettingsPanel.InfoPanel(parent, "List of files", lsTab,
+                lsOutput = new InfoPanel(parent, "List of files", lsTab,
                         "Download %d files");
             }
             lsTab.setFiles(lsFilesLast);
@@ -1573,24 +1563,6 @@ public final class CommandExecutor {
             add(new FilesToGet(findAppProfile.getKey(), findAppProfile.getValue(), file));
         }
 
-    }
-
-    /**
-     *
-     */
-    public interface ISubTask {
-
-        void task() throws InterruptedException, IOException;
-    }
-
-    public interface IThreadingSubTask {
-
-        ArrayList<ISubTask> task() throws InterruptedException, IOException;
-    }
-
-    public interface ISubTaskGroup {
-
-        ThreadGroup task() throws InterruptedException, IOException;
     }
 
     public final class QueryTask extends QueryTaskBase {

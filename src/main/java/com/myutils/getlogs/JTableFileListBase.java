@@ -5,37 +5,15 @@
  */
 package com.myutils.getlogs;
 
-import Utils.Pair;
+import Utils.*;
 import static com.myutils.getlogs.AColumnFilter.RECORD_EMPTY;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Frame;
-import java.awt.Rectangle;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.swing.AbstractAction;
-import static javax.swing.Action.SHORT_DESCRIPTION;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JTable;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.RowFilter;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
+import com.myutils.getlogs.InfoPanel;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import java.util.concurrent.atomic.*;
+import javax.swing.*;
+import javax.swing.table.*;
 
 /**
  *
@@ -180,7 +158,7 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
     protected class UniqueColumns extends AbstractAction {
 
         private final boolean showAll;
-        SettingsPanel.InfoPanel p = null;
+        InfoPanel p = null;
         private JTablePopup uniquePopup = null;
 
         public UniqueColumns(String menuTitle, boolean showAll) {
@@ -230,7 +208,7 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
             }
 
             String theTitle = "Unique values in column (total " + grandTotal + ")";
-            p = new SettingsPanel.InfoPanel((Window) table.getRootPane().getParent(), theTitle, tab,
+            p = new InfoPanel( (JFrame) table.getRootPane().getParent(), theTitle, tab,
                     "Download %d files");
 
             p.doShow();
