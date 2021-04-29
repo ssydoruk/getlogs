@@ -1,11 +1,8 @@
 package com.myutils.getlogs;
 
-import com.jidesoft.dialog.ButtonPanel;
-import com.jidesoft.dialog.StandardDialog;
-
+import com.jidesoft.dialog.*;
+import java.awt.event.*;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 class EditLFMTDialog extends StandardDialog {
 
@@ -17,6 +14,7 @@ class EditLFMTDialog extends StandardDialog {
     public EditLFMTDialog() {
         super();
         setTitle("Edit LFMT host");
+        setAlwaysOnTop(true);
     }
 
     public EnterPanel getLfmt() {
