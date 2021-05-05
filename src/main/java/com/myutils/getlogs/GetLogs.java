@@ -95,7 +95,7 @@ public class GetLogs {
 
     private static Options options;
     static ArrayList<String> apps = null;
-    static Logger logger = LogManager.getLogger();
+    static Logger logger = LogManager.getLogger("");
     private static final Pattern regCountDigitsCovered = Pattern.compile("(\\d|\\[[\\d\\-]+\\])");
     public static final HashMap<String, String> extUnpacker = getextUnpacker();
     final static public String filePrefix = "!file!";
