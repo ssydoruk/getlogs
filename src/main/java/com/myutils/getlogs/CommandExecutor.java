@@ -892,6 +892,15 @@ public final class CommandExecutor {
 
     }
 
+    private String appPrefix(App ap, String suffix) {
+        return ((StringUtils.isBlank(ap.getAppPrefix()))
+                ? ap.getName()
+                : ap.getAppPrefix())
+                + (StringUtils.isNotBlank(suffix)
+                ? suffix
+                : "");
+    }
+
     private String getGenesysNameClause(AppProfile appProfile, App ap, boolean lca, String suffix) {
         StringBuilder fileNameClause = new StringBuilder();
         String backSlash;
@@ -962,15 +971,16 @@ public final class CommandExecutor {
                     String suffix = entry.getKey();
                     Boolean isSelected = entry.getValue();
                     if (isSelected) {
-                        if (suffix.trim().equals(".")) {
-                            ret1.add(getGenesysNameClause(appProfile, ap, isLCA, ap.getName()));
-                        } else {
-                            ret1.add(getGenesysNameClause(appProfile, ap, isLCA, suffix));
-                        }
+                        ret1.add(getGenesysNameClause(appProfile, ap, isLCA,
+                                appPrefix(ap,
+                                        (suffix.trim().equals(".")
+                                        ? null
+                                        : suffix))));
+
                     }
                 }
             } else {
-                ret1.add(getGenesysNameClause(appProfile, ap, isLCA, null));
+                ret1.add(getGenesysNameClause(appProfile, ap, isLCA, appPrefix(ap, null)));
             }
 
         }

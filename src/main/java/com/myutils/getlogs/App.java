@@ -6,7 +6,7 @@
 package com.myutils.getlogs;
 
 import static com.myutils.getlogs.GetLogs.logger;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.*;
 
 /**
  *
@@ -16,6 +16,15 @@ class App implements Comparable {
 
     private String name;
     private String appDir;
+    private String appPrefix;
+
+    public String getAppPrefix() {
+        return appPrefix;
+    }
+
+    public void setAppPrefix(String appPrefix) {
+        this.appPrefix = appPrefix;
+    }
     private boolean checked;
 
     public App(App app) {
@@ -24,8 +33,12 @@ class App implements Comparable {
     }
 
     public App(String n, String appDir) {
+        this(n, appDir, n);
+    }
+        public App(String n, String appDir, String appPrefix) {
         name = n;
         this.appDir = appDir;
+        this.appPrefix=appPrefix;
 
     }
 
