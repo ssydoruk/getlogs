@@ -706,7 +706,7 @@ public final class CommandExecutor {
                 .append(appProfile.getLogDirectory()).append(" -cz ")
                 .append(StringUtils.join(fileNameClause, " "));
         try {
-            ThreadedUnTarGZ stdoutReader = new ThreadedUnTarGZ(ds.getOutputDir());
+            ThreadedUnTarGZ stdoutReader = new ThreadedUnTarGZ(FilenameUtils.concat(ds.getOutputDir(), ap.getName()));
             stdoutReader.setProgressProc(new IProcessOutputRead() {
                 @Override
                 public void lineRead(String s) {
