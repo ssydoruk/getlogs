@@ -17,6 +17,15 @@ class App implements Comparable {
     private String name;
     private String appDir;
     private String appPrefix;
+    private boolean isWindows;
+
+    public boolean isIsWindows() {
+        return isWindows;
+    }
+
+    public void setIsWindows(boolean isWindows) {
+        this.isWindows = isWindows;
+    }
 
     public String getAppPrefix() {
         return appPrefix;
@@ -35,10 +44,12 @@ class App implements Comparable {
     public App(String n, String appDir) {
         this(n, appDir, n);
     }
-        public App(String n, String appDir, String appPrefix) {
+
+    public App(String n, String appDir, String appPrefix) {
         name = n;
         this.appDir = appDir;
-        this.appPrefix=appPrefix;
+        this.appPrefix = appPrefix;
+        isWindows = true;
 
     }
 

@@ -561,6 +561,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         jlbAppFileNameBase.setEnabled(appIdx >= 0);
         jlbAppLogDirectory.setEnabled(appIdx >= 0);
         jtfAppFileNameBase.setEnabled(appIdx >= 0);
+        jrbOSLinux.setEnabled(appIdx >= 0);
+        jrbOSWindows.setEnabled(appIdx >= 0);
         jtfAppFileNameBase.setText((appIdx >= 0)
                 ? ((App) lmApps.getElementAt(appIdx)).getAppPrefix()
                 : "");
@@ -568,6 +570,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         jtfAppLogDirectory.setText((appIdx >= 0)
                 ? ((App) lmApps.getElementAt(appIdx)).getAppDir()
                 : "");
+        if (appIdx >= 0) {
+            if(((App) lmApps.getElementAt(appIdx)).isIsWindows())
+            jrbOSWindows.setSelected(true);
+            else
+                jrbOSLinux.setSelected(true);
+        }
 //        rbCloudLogs.setEnabled(singleSelection);
 //        rbGenesysLogs.setEnabled(singleSelection);
 //        cbLFMTs.setEnabled(singleSelection);
@@ -652,6 +660,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jpmAppSettings = new javax.swing.JPopupMenu();
         cbmShowHosts = new javax.swing.JCheckBoxMenuItem();
         cbmCopyHostName = new javax.swing.JMenuItem();
+        bgOS = new javax.swing.ButtonGroup();
         jpAllProfiles = new javax.swing.JPanel();
         jpProfileBase = new javax.swing.JPanel();
         jPanel17 = new javax.swing.JPanel();
@@ -694,6 +703,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel29 = new javax.swing.JPanel();
         jlbAppFileNameBase = new javax.swing.JLabel();
         jtfAppFileNameBase = new javax.swing.JTextField();
+        jPanel30 = new javax.swing.JPanel();
+        jrbOSLinux = new javax.swing.JRadioButton();
+        jrbOSWindows = new javax.swing.JRadioButton();
         jPanel2 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         cbLfmtLog = new javax.swing.JCheckBox();
@@ -955,7 +967,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpAppProperties.setLayout(new javax.swing.BoxLayout(jpAppProperties, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel28.setLayout(new java.awt.GridLayout());
+        jPanel28.setLayout(new java.awt.GridLayout(1, 0));
 
         jlbAppLogDirectory.setText("Log files directory");
         jPanel28.add(jlbAppLogDirectory);
@@ -969,7 +981,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpAppProperties.add(jPanel28);
 
-        jPanel29.setLayout(new java.awt.GridLayout());
+        jPanel29.setLayout(new java.awt.GridLayout(1, 0));
 
         jlbAppFileNameBase.setText("Log files name base");
         jPanel29.add(jlbAppFileNameBase);
@@ -982,6 +994,29 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel29.add(jtfAppFileNameBase);
 
         jpAppProperties.add(jPanel29);
+
+        jPanel30.setLayout(new javax.swing.BoxLayout(jPanel30, javax.swing.BoxLayout.LINE_AXIS));
+
+        bgOS.add(jrbOSLinux);
+        jrbOSLinux.setSelected(true);
+        jrbOSLinux.setText("Linux");
+        jrbOSLinux.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jrbOSLinuxItemStateChanged(evt);
+            }
+        });
+        jPanel30.add(jrbOSLinux);
+
+        bgOS.add(jrbOSWindows);
+        jrbOSWindows.setText("Windows");
+        jrbOSWindows.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jrbOSWindowsItemStateChanged(evt);
+            }
+        });
+        jPanel30.add(jrbOSWindows);
+
+        jpAppProperties.add(jPanel30);
 
         jpAppsBase.add(jpAppProperties);
 
@@ -1432,7 +1467,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void jtfAppLogDirectoryFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jtfAppLogDirectoryFocusLost
         // TODO add your handling code here:
         JTextField fld = (JTextField) evt.getSource();
-        if (fld.isEnabled() && appIdx>=0) {//single app selected
+        if (fld.isEnabled() && appIdx >= 0) {//single app selected
             ((App) clbApps.getModel().getElementAt(appIdx)).setAppDir(
                     fld.getText()
             );
@@ -1441,15 +1476,27 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void jtfAppFileNameBaseFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jtfAppFileNameBaseFocusLost
         JTextField fld = (JTextField) evt.getSource();
-        if (fld.isEnabled() && appIdx>=0) {//single app selected
+        if (fld.isEnabled() && appIdx >= 0) {//single app selected
             ((App) clbApps.getModel().getElementAt(appIdx)).setAppPrefix(
                     fld.getText()
             );
         }
     }//GEN-LAST:event_jtfAppFileNameBaseFocusLost
 
+    private void jrbOSLinuxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jrbOSLinuxItemStateChanged
+
+
+    }//GEN-LAST:event_jrbOSLinuxItemStateChanged
+
+    private void jrbOSWindowsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jrbOSWindowsItemStateChanged
+        if (jrbOSWindows.isEnabled() && appIdx >= 0) {//single app selected
+            ((App) clbApps.getModel().getElementAt(appIdx)).setIsWindows(evt.getStateChange() == ItemEvent.SELECTED);
+        }
+    }//GEN-LAST:event_jrbOSWindowsItemStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;
+    private javax.swing.ButtonGroup bgOS;
     private javax.swing.JButton btEditLFMTs;
     private javax.swing.JCheckBox cbAppLogs;
     private javax.swing.JComboBox cbCommand;
@@ -1488,6 +1535,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel28;
     private javax.swing.JPanel jPanel29;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel30;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
@@ -1522,6 +1570,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jpRegEx;
     private javax.swing.JPanel jpStatusScript;
     private javax.swing.JPopupMenu jpmAppSettings;
+    private javax.swing.JRadioButton jrbOSLinux;
+    private javax.swing.JRadioButton jrbOSWindows;
     private javax.swing.JTextField jtfAppFileNameBase;
     private javax.swing.JTextField jtfAppLogDirectory;
     private javax.swing.JTextField jtfFileNameBase;

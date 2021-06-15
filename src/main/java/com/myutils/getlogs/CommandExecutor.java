@@ -6,12 +6,18 @@
 package com.myutils.getlogs;
 
 import static Utils.SystemClipboard.getSystemClipboard;
+
 import Utils.*;
 import Utils.UnixProcess.*;
+
 import static Utils.Util.rSyncAddClause;
+
 import com.jidesoft.dialog.*;
+
 import static com.myutils.getlogs.GetLogs.logger;
+
 import com.myutils.getlogs.InfoPanel;
+
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.io.*;
@@ -22,6 +28,7 @@ import java.util.logging.Logger;
 import java.util.regex.*;
 import javax.swing.*;
 import javax.swing.table.*;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.*;
 import org.apache.commons.lang3.StringUtils;
@@ -229,8 +236,8 @@ public final class CommandExecutor {
             }
 
             logsDir.append("/").append(h) //                    .append("/")
-                    //                    .append(ap)
-                    ;
+            //                    .append(ap)
+            ;
         } else {
             logsDir.append(GetLogs.getProdBaseDir());
 
@@ -302,7 +309,7 @@ public final class CommandExecutor {
     }
 
     private String remoteSSHCmd(AppProfile appProfile, App ap, String logsDir,
-            ArrayList<String> fileNameClause, boolean lcaLog, boolean isLFMT) {
+                                ArrayList<String> fileNameClause, boolean lcaLog, boolean isLFMT) {
         StringBuilder sshCmd = new StringBuilder();
 
 //this is to play with permissions.
@@ -368,7 +375,37 @@ public final class CommandExecutor {
     }
 
     private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-            ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+                                                 ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+        if (ap.isIsWindows()) {
+            return executeLSWin(appProfile, ap, theAppHost, logsDir,
+                    fileNameClause, isLFMT, lcaLog);
+        } else {
+            return executeLSLinux(appProfile, ap, theAppHost, logsDir,
+                    fileNameClause, isLFMT, lcaLog);
+        }
+
+    }
+
+    private ArrayList<JTableFileEntry> executeLSWin(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
+                                                      ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+        StringBuilder cmd = new StringBuilder("net use \\\\");
+        cmd.append(ap.getHost()).append("\\c$").append(" /user:").append(GetLogs.getSshUser())
+                .append(" ").append(GetLogs.getSshPassword());
+        Pair<ArrayList<String>, ArrayList<String>> ret1 = executeCommand(cmd.toString(), true, true);
+        if(ret1!=null){ // success
+            String dir="\\\\"+ap.getHost()+"\\"+ap.getAppDir();
+            for(File f: FileUtils.listFiles(new File(dir), null, true)){
+                System.out.println(f.getAbsoluteFile().getAbsolutePath());
+            }
+            return null;
+        }
+        else {
+            return null;
+        }
+    }
+
+    private ArrayList<JTableFileEntry> executeLSLinux(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
+                                                      ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
 
         String remoteCmd = remoteSSHCmd(appProfile, ap, logsDir, fileNameClause, lcaLog, isLFMT);
         int executionResult;
@@ -598,8 +635,8 @@ public final class CommandExecutor {
     }
 
     private ArrayList<String> executeGrep(AppProfile appProfile, App ap,
-            HostAppdir appHost1, String logsDir, ArrayList<String> fileNameClause,
-            boolean isLFMT, boolean isLCA) throws IOException, InterruptedException {
+                                          HostAppdir appHost1, String logsDir, ArrayList<String> fileNameClause,
+                                          boolean isLFMT, boolean isLCA) throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
         sshParams.add("ssh");
         if (GetLogs.getsUserName() != null) {
@@ -742,7 +779,7 @@ public final class CommandExecutor {
      * @param ap
      * @param theAppHost
      * @param logsDir
-     * @param fileNames - expected to contain only list of file names, no path
+     * @param fileNames  - expected to contain only list of file names, no path
      * @param isLFMT
      * @param lcaLog
      * @throws IOException
@@ -974,8 +1011,8 @@ public final class CommandExecutor {
                         ret1.add(getGenesysNameClause(appProfile, ap, isLCA,
                                 appPrefix(ap,
                                         (suffix.trim().equals(".")
-                                        ? null
-                                        : suffix))));
+                                                ? null
+                                                : suffix))));
 
                     }
                 }
@@ -1161,11 +1198,11 @@ public final class CommandExecutor {
                     doExecuteCmd(parent, this,
                             latch,
                             new ISubTask() {
-                        @Override
-                        public void task() throws InterruptedException, IOException {
-                            executeRSync(r, latch);
-                        }
-                    }
+                                @Override
+                                public void task() throws InterruptedException, IOException {
+                                    executeRSync(r, latch);
+                                }
+                            }
                     );
 
                 }
@@ -1202,7 +1239,7 @@ public final class CommandExecutor {
     }
 
     private void executeRSync(HashMap<SavedSearchStorage, ArrayList<String>> r,
-            CountDownLatch latch) {
+                              CountDownLatch latch) {
 
         for (Map.Entry<SavedSearchStorage, ArrayList<String>> entry : r.entrySet()) {
             SavedSearchStorage key = entry.getKey();
@@ -1219,7 +1256,7 @@ public final class CommandExecutor {
     }
 
     private void executeRSyncFilesToGet(HashMap<FilesToGet, ArrayList<String>> r,
-            CountDownLatch latch) {
+                                        CountDownLatch latch) {
 
         for (Map.Entry<FilesToGet, ArrayList<String>> entry : r.entrySet()) {
             FilesToGet key = entry.getKey();
@@ -1407,8 +1444,8 @@ public final class CommandExecutor {
     }
 
     private void doExecuteCmd(Window parent1, CommandExecutor aThis,
-            CountDownLatch latch,
-            ISubTask subTask) {
+                              CountDownLatch latch,
+                              ISubTask subTask) {
 
         QueryTaskBase tsk = new QueryTask(aThis, latch, subTask);
         if (rp == null) {
@@ -1586,10 +1623,10 @@ public final class CommandExecutor {
         }
 
         private QueryTask(CommandExecutor aThis,
-                CountDownLatch latch,
-                ISubTask subTask,
-                CountDownLatch finishLatch,
-                ISubTask finishingTask) {
+                          CountDownLatch latch,
+                          ISubTask subTask,
+                          CountDownLatch finishLatch,
+                          ISubTask finishingTask) {
             this(aThis, latch, subTask);
             if (finishingTask != null) {
                 setFinishingTask(finishingTask);
@@ -1618,7 +1655,9 @@ public final class CommandExecutor {
             cancelExecutor();
         }
 
-    };
+    }
+
+    ;
 
     public class QueryThreadingTask extends QueryTaskBase {
 
@@ -1699,7 +1738,9 @@ public final class CommandExecutor {
             }
         }
 
-    };
+    }
+
+    ;
 
     public abstract class QueryTaskBase extends SwingWorker<Void, String> {
 
@@ -1880,23 +1921,23 @@ public final class CommandExecutor {
                 setStartingLatch(startingLatch);
                 setStartingTask(
                         new ISubTask() {
-                    @Override
-                    public void task() throws InterruptedException, IOException {
-
-                        executor.execute(new CallbackThreadLatched(startingLatch, new ISubTask() {
                             @Override
                             public void task() throws InterruptedException, IOException {
-                                for (String beforeAction : beforeActions) {
-                                    executeCommand(beforeAction);
-                                }
 
-                                startingLatch.countDown();
+                                executor.execute(new CallbackThreadLatched(startingLatch, new ISubTask() {
+                                    @Override
+                                    public void task() throws InterruptedException, IOException {
+                                        for (String beforeAction : beforeActions) {
+                                            executeCommand(beforeAction);
+                                        }
+
+                                        startingLatch.countDown();
+                                    }
+
+                                }));
+
                             }
-
-                        }));
-
-                    }
-                }
+                        }
                 );
             }
         }
@@ -1907,26 +1948,28 @@ public final class CommandExecutor {
                 setFinishLatch(finalLatch);
                 setFinishingTask(
                         new ISubTask() {
-                    @Override
-                    public void task() throws InterruptedException, IOException {
-                        executor.execute(new CallbackThreadLatched(finalLatch, new ISubTask() {
                             @Override
                             public void task() throws InterruptedException, IOException {
-                                for (String afterAction : afterActions) {
-                                    executeCommand(afterAction);
-                                }
+                                executor.execute(new CallbackThreadLatched(finalLatch, new ISubTask() {
+                                    @Override
+                                    public void task() throws InterruptedException, IOException {
+                                        for (String afterAction : afterActions) {
+                                            executeCommand(afterAction);
+                                        }
 
-                                finalLatch.countDown();
+                                        finalLatch.countDown();
+                                    }
+
+                                }));
                             }
-
-                        }));
-                    }
-                }
+                        }
                 );
             }
         }
 
-    };
+    }
+
+    ;
 
     class CallbackThreadLatched implements Runnable {
 
