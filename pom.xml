@@ -7,7 +7,7 @@
     <version>1.0</version>
     <packaging>jar</packaging>
     <properties>
-        <installdir>c:\Users\Stepan\GCTI\lib</installdir>
+        <installdir>c:\GCTI\lib</installdir>
         <!--installdir>/Users/stepan_sydoruk/GCTI/lib/getlogs</installdir-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -78,11 +78,6 @@
             <groupId>com.mycompany</groupId>
             <artifactId>Utils</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>unknown.binary</groupId>
-            <artifactId>AbsoluteLayout</artifactId>
-            <version>SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>
