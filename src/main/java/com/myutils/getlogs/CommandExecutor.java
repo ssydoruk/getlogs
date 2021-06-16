@@ -387,19 +387,24 @@ public final class CommandExecutor {
     }
 
     private ArrayList<JTableFileEntry> executeLSWin(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-                                                      ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+                                                    ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         StringBuilder cmd = new StringBuilder("net use \\\\");
         cmd.append(ap.getHost()).append("\\c$").append(" /user:").append(GetLogs.getSshUser())
                 .append(" ").append(GetLogs.getSshPassword());
         Pair<ArrayList<String>, ArrayList<String>> ret1 = executeCommand(cmd.toString(), true, true);
-        if(ret1!=null){ // success
-            String dir="\\\\"+ap.getHost()+"\\"+ap.getAppDir();
-            for(File f: FileUtils.listFiles(new File(dir), null, true)){
-                System.out.println(f.getAbsoluteFile().getAbsolutePath());
+        if (ret1 != null) { // success
+            String dir = "\\\\" + ap.getHost() + "\\" + ap.getAppDir();
+            ArrayList<JTableFileEntry> lsFiles = null;
+
+            lsFiles = new ArrayList<>();
+            for (File f : FileUtils.listFiles(new File(dir), null, true)) {
+                String string = f.getAbsoluteFile().getAbsolutePath();
+                System.out.println(string);
+                lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
             }
-            return null;
-        }
-        else {
+            ((AbstractTableModel) lsTab.getModel()).fireTableDataChanged();
+            return lsFiles;
+        } else {
             return null;
         }
     }
@@ -761,8 +766,27 @@ public final class CommandExecutor {
 //        stdout = ret1.getStdout();
     }
 
+    private void executeWinDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) {
+        String outDir = FilenameUtils.concat(getDs().getOutputDir(), ap.getName());
+        try {
+            FileUtils.forceMkdir(new File(outDir));
+        } catch (IOException e) {
+            logMessage(Level.ERROR, "Not created output dir: "+ e.getMessage());
+        }
+        for (String file : fileNameClause) {
+            try {
+                FileUtils.copyFileToDirectory(new File(file), new File(outDir), true);
+            } catch (IOException e) {
+                logMessage(Level.ERROR, "Failed to copy ["+file+"] to dir ["
+                        +outDir+"]: "+ e.getMessage());
+            }
+        }
+    }
+
     private void executeDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
-        if (GetLogs.isbIsSSHJava()) {
+        if (ap.isIsWindows()) {
+            executeWinDownload(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+        } else if (GetLogs.isbIsSSHJava()) {
             executeSSHDownload(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         } else {
             executeRSync(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
