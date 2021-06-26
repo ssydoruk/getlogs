@@ -22,6 +22,8 @@ class JTableFileEntry extends JTableFileEntryGeneral {
         ret1.put(2, "LFMT?");
         ret1.put(3, "host");
         ret1.put(4, "file");
+        ret1.put(5, "size");
+        ret1.put(6, "size MB");
 
         return ret1;
     }

@@ -294,7 +294,7 @@ public final class CommandExecutor {
 
     }
 
-    protected SavedSearchStorage getStorage(AppProfile appProfile, App ap, HostAppdir theAppHost, String searchFile,
+    protected SavedSearchStorage getStorage(AppProfile appProfile, App ap, HostAppdir theAppHost,
             String logsDir, boolean lfmt, boolean lcaLog) {
         SavedSearchStorage _ret = new SavedSearchStorage(appProfile, ap, theAppHost, logsDir, lfmt, lcaLog);
 
@@ -373,7 +373,7 @@ public final class CommandExecutor {
             sshCmd.append(" | head -").append(ds.getHours());
         }
 
-        sshCmd.append(" ; done");
+        sshCmd.append("| xargs stat -c \\\"%n %s\\\" ; done");
 
         sshCmd.append(quoteDouble());
         logMessage(Level.INFO, sshCmd.toString(), appProfile, ap);
@@ -536,7 +536,7 @@ public final class CommandExecutor {
                         }
                         String string = f.getKey().getAbsoluteFile().getAbsolutePath();
                         lsFiles.add(new JTableFileEntry(appProfile,
-                                getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
+                                getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog), string));
                     }
                 }
             } else if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX) {
@@ -544,7 +544,7 @@ public final class CommandExecutor {
                     for (Pair<File, BasicFileAttributes> f : files) {
                         String string = f.getKey().getAbsoluteFile().getAbsolutePath();
                         lsFiles.add(new JTableFileEntry(appProfile,
-                                getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
+                                getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog), string));
                     }
                 }
 
@@ -628,11 +628,13 @@ public final class CommandExecutor {
                 lsFiles = new ArrayList<>();
                 boolean startFound = false;
                 String savedPrefix = null;
-                for (String string : stdout) {
+                for (String stdoutLine : stdout) {
                     // lsTab.addRow(appProfile, ap, theAppHost, string, logsDir.toString(), isLFMT,
                     // lcaLog);
+                    String[] split = StringUtils.split(stdoutLine);
+                    String fileName = split[0];
                     if (ds.getTimeProfile() == SettingsPanel.TimeProfile.RANGE) {
-                        Pair<Long, String> utcTime = appProfile.getFileNameTime(string);
+                        Pair<Long, String> utcTime = appProfile.getFileNameTime(fileName);
                         boolean shouldAdd = true;
                         UTCTimeRange timeRange = ds.getTimeRange();
                         if (utcTime != null) { // was able to parse time name
@@ -656,19 +658,19 @@ public final class CommandExecutor {
                                 }
                             }
                         }
-                        logger.debug("file [" + string + "] range: " + timeRange.toString()
+                        logger.debug("file [" + fileName + "] range: " + timeRange.toString()
                         // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
                         // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
                         // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
                                 + " shouldadd: " + shouldAdd);
                         if (shouldAdd) {
                             lsFiles.add(new JTableFileEntry(appProfile,
-                                    getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
+                                    getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog), fileName));
                         }
 
                     } else {
                         lsFiles.add(new JTableFileEntry(appProfile,
-                                getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
+                                getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog), fileName));
                     }
                 }
                 logMessage("ls successful " + ((isLFMT) ? " on LFMT" : "") + " : got " + lsFiles.size() + " files",
