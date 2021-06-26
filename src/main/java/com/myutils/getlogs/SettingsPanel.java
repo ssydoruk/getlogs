@@ -555,7 +555,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         jbAppDelete.setEnabled(!lsm.isSelectionEmpty());
         jpProfileProperties.setEnabled(!lsm.isSelectionEmpty());
 
-        this.appIdx = (!lsm.isSelectionEmpty() && lsm.getMaxSelectionIndex() == lsm.getMinSelectionIndex())
+        this.appIdx = (!lsm.isSelectionEmpty() && lsm.getMaxSelectionIndex() == lsm.getMinSelectionIndex()
+        && lmApps.getElementAt(lsm.getMinSelectionIndex())!= CheckBoxList.ALL_ENTRY)
                 ? lsm.getMinSelectionIndex()
                 : -1;
         jlbAppFileNameBase.setEnabled(appIdx >= 0);

@@ -16,11 +16,11 @@ import com.jidesoft.dialog.*;
 
 import static com.myutils.getlogs.GetLogs.logger;
 
-import com.myutils.getlogs.InfoPanel;
-
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
@@ -370,7 +370,7 @@ public final class CommandExecutor {
         sshCmd.append(" ; done");
 
         sshCmd.append(quoteDouble());
-
+        logMessage(Level.INFO, sshCmd.toString());
         return sshCmd.toString();
     }
 
@@ -386,27 +386,202 @@ public final class CommandExecutor {
 
     }
 
+    /**
+     * Connects to windows share
+     *
+     * @param host
+     * @param logDir
+     * @return path to shared log directory
+     */
+    private String connectWindowsShare(String host, String logDir) {
+        Pair<String, String> winPath = getWinDrive(logDir);
+        String logPath = "\\\\" + host + "\\" + winPath.getKey();
+        String ret = logPath + winPath.getValue();
+        if (shareConnected(logPath)) {
+            return ret;
+        }
+        StringBuilder cmd = new StringBuilder("net use ");
+        cmd.append(logPath)
+                .append(" /user:").append(GetLogs.getSshUser())
+                .append(" ").append(GetLogs.getSshPassword());
+        Pair<ArrayList<String>, ArrayList<String>> ret1 = null;
+        try {
+            ret1 = executeCommand(cmd.toString(), true, true);
+            if (ret1 != null) { // success
+                ArrayList<String> stdOut = ret1.getKey();
+                if (!stdOut.isEmpty() && stdOut.size() > 1 &&
+                        stdOut.get(0).equals("The command completed successfully.")) {
+                    return ret;
+                }
+                logMessage(Level.ERROR,
+                        (new StringBuilder())
+                                .append("\n\tstdout [")
+                                .append(StringUtils.join(stdOut, "\n"))
+                                .append("]\n\t")
+                                .append("\n\tstderr [")
+                                .append(StringUtils.join(ret1.getValue(), "\n"))
+                                .append("]\n\t")
+                                .toString());
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * executes 'net use' to check if shared path is already mounted
+     *
+     * @param logPath
+     * @return
+     */
+    private boolean shareConnected(String logPath) {
+        Pair<ArrayList<String>, ArrayList<String>> ret1 = null;
+        String logPathLower = logPath.toLowerCase();
+        try {
+            ret1 = executeCommand("net use", true, true);
+            if (ret1 != null) { // success
+                for (String s : ret1.getKey()) {
+                    String[] s1 = StringUtils.split(s, " ", 3);
+                    if (s1.length >= 3
+                            && s1[0].equals("OK")
+                            && s1[1].toLowerCase().equals(logPathLower))
+                        return true;
+                }
+            }
+
+        } catch (IOException e) {
+            logMessage("Not able to check connected share", e);
+        } catch (InterruptedException e) {
+            logMessage("Not able to check connected share", e);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if first two letters of 'logDir' is windows drive
+     * if so, returns
+     * By default returns d$
+     *
+     * @param logDir
+     * @return Pair of [1st letter to lower case with $ attached], [Path without dir]
+     */
+    private Pair<String, String> getWinDrive(String logDir) {
+        if (StringUtils.isNotEmpty(logDir) && logDir.length() > 1 && (logDir.charAt(1) == ':'
+                || logDir.charAt(1) == '$')) {
+            return new Pair(((new StringBuilder()).append(Character.toLowerCase(logDir.charAt(0))).append('$')).toString(),
+                    logDir.substring(2));
+        } else {
+            return new Pair<>("d$", StringUtils.isNotBlank(logDir) ? logDir : "");
+        }
+    }
+
     private ArrayList<JTableFileEntry> executeLSWin(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
                                                     ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
-        StringBuilder cmd = new StringBuilder("net use \\\\");
-        cmd.append(ap.getHost()).append("\\c$").append(" /user:").append(GetLogs.getSshUser())
-                .append(" ").append(GetLogs.getSshPassword());
-        Pair<ArrayList<String>, ArrayList<String>> ret1 = executeCommand(cmd.toString(), true, true);
-        if (ret1 != null) { // success
-            String dir = "\\\\" + ap.getHost() + "\\" + ap.getAppDir();
-            ArrayList<JTableFileEntry> lsFiles = null;
 
-            lsFiles = new ArrayList<>();
-            for (File f : FileUtils.listFiles(new File(dir), null, true)) {
-                String string = f.getAbsoluteFile().getAbsolutePath();
-                System.out.println(string);
-                lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
+        String logPath = connectWindowsShare(ap.getHost(), ap.getAppDir());
+        if (logPath != null) { // success
+
+            HashMap<String, ArrayList<Pair<File, BasicFileAttributes>>> nameSuffixes = new HashMap<>();
+            HashMap<String, Boolean> profileNameSuffixes = appProfile.getNameSuffixes();
+            if (profileNameSuffixes != null) {
+                for (Map.Entry<String, Boolean> entry :
+                        profileNameSuffixes.entrySet()) {
+                    if (entry.getValue()) {
+                        nameSuffixes.put(entry.getKey(), new ArrayList<>());
+                    }
+                }
+            } else {
+                nameSuffixes.put("", new ArrayList<>());
+            }
+            if (nameSuffixes.isEmpty()) return null;
+
+            ArrayList<ArrayList<Pair<File, BasicFileAttributes>>> filesByType = new ArrayList<>();
+            ArrayList<Pair<File, BasicFileAttributes>> allFiles = new ArrayList<>();
+            Matcher rxDateTime = null;
+            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX) {
+                rxDateTime = Pattern.compile(getFileRegexMatch(ds.getDateSpec(), ds.getTimeSpec())).matcher("");
+            }
+            Collection<File> filesList = FileUtils.listFiles(new File(logPath), null, true);
+            for (File f : filesList) {
+                String fileName = f.getName().toLowerCase();
+                if (!f.getName().toLowerCase().contains("snapshot.log")) {
+                    for (Map.Entry<String, ArrayList<Pair<File, BasicFileAttributes>>> entryNameSuffix :
+                            nameSuffixes.entrySet()) {
+
+                        if (entryNameSuffix.getKey().isEmpty()
+                                ||
+                                (entryNameSuffix.getKey().equals(".") ||
+                                        fileName.contains(ap.getName().toLowerCase()))
+                                ||
+                                (fileName.contains(entryNameSuffix.getKey().toLowerCase()))) {
+                            if (rxDateTime == null
+                                    || rxDateTime.reset(fileName).find())
+                                entryNameSuffix.getValue().add(new Pair<>(f, Files.readAttributes(f.toPath(), BasicFileAttributes.class)));
+                            break;
+                        }
+                    }
+                }
+            }
+            for (ArrayList<Pair<File, BasicFileAttributes>> files : nameSuffixes.values()) {
+                files.sort(new Comparator<Pair<File, BasicFileAttributes>>() {
+                    @Override
+                    public int compare(Pair<File, BasicFileAttributes> o1, Pair<File, BasicFileAttributes> o2) {
+                        return o2.getValue().creationTime().compareTo(o1.getValue().creationTime());
+                    }
+                });
+            }
+
+            ArrayList<JTableFileEntry> lsFiles = new ArrayList<JTableFileEntry>();
+            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES) {
+                int cnt = 0;
+                int max = Integer.parseInt(ds.getHours());
+                if (max <= 0)
+                    max = 99999999;
+                for (ArrayList<Pair<File, BasicFileAttributes>> files : nameSuffixes.values()) {
+                    for (Pair<File, BasicFileAttributes> f : files) {
+                        if (cnt++ >= max) {
+                            break;
+                        }
+                        String string = f.getKey().getAbsoluteFile().getAbsolutePath();
+                        lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
+                    }
+                }
+            }
+            else  if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX) {
+                for (ArrayList<Pair<File, BasicFileAttributes>> files : nameSuffixes.values()) {
+                    for (Pair<File, BasicFileAttributes> f : files) {
+                        String string = f.getKey().getAbsoluteFile().getAbsolutePath();
+                        lsFiles.add(new JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, string, logsDir, isLFMT, lcaLog), string));
+                    }
+                }
+
             }
             ((AbstractTableModel) lsTab.getModel()).fireTableDataChanged();
             return lsFiles;
         } else {
             return null;
         }
+    }
+
+    private String getFileRegexMatch(String dateSpec, String hours) {
+        StringBuilder rx = new StringBuilder("\\.");
+        if (StringUtils.isNotBlank(dateSpec)) {
+            rx.append(dateSpec).append("\\d*");
+        } else {
+            rx.append("\\d{8}");
+        }
+        rx.append("_");
+        if (StringUtils.isNotBlank(hours)) {
+            rx.append(hours).append("\\d*");
+        } else {
+            rx.append("\\d{6}");
+        }
+        rx.append("_\\d{3}\\.");
+        return rx.toString();
     }
 
     private ArrayList<JTableFileEntry> executeLSLinux(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
@@ -720,10 +895,10 @@ public final class CommandExecutor {
         for (String string : split) {
             cmdParams.add(replacePostActionVars(string));
         }
-        logMessage(Level.INFO, "Executing [" + StringUtils.join(cmdParams, " "));
+        logMessage(Level.INFO, "Executing [" + StringUtils.join(cmdParams, " ")+"]");
 //        logger.trace("executing: " + rsyncParams);
         ExtProcess proc = extProcessManager.addProcess(new ExtProcessFinishing(
-                cmdParams, true, true));
+                cmdParams, false, true));
         proc.startProcess(saveStdOut, saveStdErr);
         int waitFor = proc.waitFor();
         logger.debug("process terminated, result: " + waitFor);
@@ -771,14 +946,14 @@ public final class CommandExecutor {
         try {
             FileUtils.forceMkdir(new File(outDir));
         } catch (IOException e) {
-            logMessage(Level.ERROR, "Not created output dir: "+ e.getMessage());
+            logMessage(Level.ERROR, "Not created output dir: " + e.getMessage());
         }
         for (String file : fileNameClause) {
             try {
                 FileUtils.copyFileToDirectory(new File(file), new File(outDir), true);
             } catch (IOException e) {
-                logMessage(Level.ERROR, "Failed to copy ["+file+"] to dir ["
-                        +outDir+"]: "+ e.getMessage());
+                logMessage(Level.ERROR, "Failed to copy [" + file + "] to dir ["
+                        + outDir + "]: " + e.getMessage());
             }
         }
     }
@@ -1379,6 +1554,12 @@ public final class CommandExecutor {
             return null;
         }
 
+    }
+
+    private void logMessage(String str, Exception e) {
+        logMessage(Level.ERROR, (new StringBuilder(str))
+                .append(", Exception: ")
+                .append(StringUtils.join(e.getStackTrace(), "\n")).toString());
     }
 
     private void logMessage(Level lvl, String str) {

@@ -10,6 +10,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Utils" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-api:2.13.3" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-slf4j-impl:2.13.1" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.25" level="project" />
@@ -22,20 +23,12 @@
     <orderEntry type="library" name="Maven: com.jidesoft:jide-oss:3.6.18" level="project" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.6" level="project" />
     <orderEntry type="library" name="Maven: com.github.lgooddatepicker:LGoodDatePicker:11.0.0" level="project" />
-    <orderEntry type="library" name="Maven: com.mycompany:Utils:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="Utils" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-compress:1.20" level="project" />
     <orderEntry type="library" name="Maven: org.apache.sshd:sshd-core:2.5.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.sshd:sshd-common:2.5.1" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-netty:2.5.1" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-transport:4.1.50.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-resolver:4.1.50.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-handler:4.1.50.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-codec:4.1.50.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-transport-native-epoll:4.1.49.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-common:4.1.49.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-buffer:4.1.49.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-transport-native-unix-common:4.1.49.Final" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.tomcat:tomcat-jni:9.0.5" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-mina:2.5.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.mina:mina-core:2.0.21" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jna:jna:5.5.0" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jna:jna-platform:5.5.0" level="project" />
   </component>
