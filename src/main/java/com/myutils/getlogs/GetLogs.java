@@ -721,46 +721,47 @@ public class GetLogs {
     }
 
     private static ArrayList<String> executeGrep(String ap, String appHost1, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
-        ArrayList<String> sshParams = new ArrayList<>();
-        sshParams.add("ssh");
-        if (sshOptions != null) {
-            sshParams.addAll(Arrays.asList(new String[]{"-l", sshOptions}));
-        }
-        sshParams.add(((lfmtHost != null)) ? lfmtHost : appHost1);
-
-        StringBuilder fileClause = new StringBuilder();
-//        fileClause.append("\\("); 
-
-        if (fileNameClause.length() > 0) {
-            fileClause.append(" -name ")
-                    .append(fileNameClause);
-        }
-
-//        fileClause.append(" \\) ");
-        StringBuilder sshCmd = new StringBuilder();
-
-        sshCmd.append("cd ").append(logsDir).append("; ");
-        sshCmd.append("find -maxdepth 1 ")
-                .append(ap)
-                .append(" ")
-                .append(fileClause);
-        sshCmd.append(" ");
-//        sshCmd.append("\\( ")
-//                .append(" -iname *.log -execdir grep Trc {} \\; -true ");
-//        sshCmd.append("\\)");
-//        sshCmd.append(" -o ");
-        ArrayList<String> matchedFiles = new ArrayList<>();
-        for (Map.Entry<String, String> extUnp : extUnpacker.entrySet()) {
-            for (String matchedFile : execGrep(extUnp.getKey(), extUnp.getValue(), sshParams, sshCmd, sGrep)) {
-                if (matchedFile.startsWith(filePrefix)) {
-                    matchedFiles.add(matchedFile.substring(filePrefix.length()));
-                } else {
-                    logger.error("Not file name: [" + matchedFile + "]Ï");
-                }
-            }
-
-        }
-        return matchedFiles;
+//        ArrayList<String> sshParams = new ArrayList<>();
+//        sshParams.add("ssh");
+//        if (sshOptions != null) {
+//            sshParams.addAll(Arrays.asList(new String[]{"-l", sshOptions}));
+//        }
+//        sshParams.add(((lfmtHost != null)) ? lfmtHost : appHost1);
+//
+//        StringBuilder fileClause = new StringBuilder();
+////        fileClause.append("\\(");
+//
+//        if (fileNameClause.length() > 0) {
+//            fileClause.append(" -name ")
+//                    .append(fileNameClause);
+//        }
+//
+////        fileClause.append(" \\) ");
+//        StringBuilder sshCmd = new StringBuilder();
+//
+//        sshCmd.append("cd ").append(logsDir).append("; ");
+//        sshCmd.append("find -maxdepth 1 ")
+//                .append(ap)
+//                .append(" ")
+//                .append(fileClause);
+//        sshCmd.append(" ");
+////        sshCmd.append("\\( ")
+////                .append(" -iname *.log -execdir grep Trc {} \\; -true ");
+////        sshCmd.append("\\)");
+////        sshCmd.append(" -o ");
+//        ArrayList<String> matchedFiles = new ArrayList<>();
+//        for (Map.Entry<String, String> extUnp : extUnpacker.entrySet()) {
+//            for (String matchedFile : execGrep(extUnp.getKey(), extUnp.getValue(), sshParams, sshCmd, sGrep)) {
+//                if (matchedFile.startsWith(filePrefix)) {
+//                    matchedFiles.add(matchedFile.substring(filePrefix.length()));
+//                } else {
+//                    logger.error("Not file name: [" + matchedFile + "]Ï");
+//                }
+//            }
+//
+//        }
+//        return matchedFiles;
+    return null;
     }
 
     private static HashMap<String, String> getextUnpacker() {
@@ -770,23 +771,23 @@ public class GetLogs {
         return ret;
     }
 
-    public static ArrayList<String> execGrep(String ext, String unp, ArrayList<String> sshParams, StringBuilder sshCmd,
+    public static ArrayList<OSFile> execGrep(String ext, String unp, ArrayList<String> sshParams, StringBuilder sshCmd,
                                              String regex) throws IOException, InterruptedException {
-        StringBuilder grepCmd = new StringBuilder();
-        grepCmd.append(sshCmd)
-                .append(" -iname ").append(ext)
-                .append(" | xargs bash -c '")
-                //                .append("echo bash is here; echo params: $*; ")
-                .append("for f in $*; do if ")
-                .append(unp)
-                .append("| egrep -q \"").append(regex).append("\"; then echo ").append(filePrefix).append("${f}; fi; done'" + "");
-        ArrayList<String> paramsRun = new ArrayList<>(sshParams);
-        paramsRun.add(grepCmd.toString());
-        ExtProcess procSSH = new ExtProcess(paramsRun);
-
-        procSSH.startProcess(true, true);
-        return procSSH.getSTDOut();
-
+//        StringBuilder grepCmd = new StringBuilder();
+//        grepCmd.append(sshCmd)
+//                .append(" -iname ").append(ext)
+//                .append(" | xargs bash -c '")
+//                //                .append("echo bash is here; echo params: $*; ")
+//                .append("for f in $*; do if ")
+//                .append(unp)
+//                .append("| egrep -q \"").append(regex).append("\"; then echo ").append(filePrefix).append("${f}; fi; done'" + "");
+//        ArrayList<String> paramsRun = new ArrayList<>(sshParams);
+//        paramsRun.add(grepCmd.toString());
+//        ExtProcess procSSH = new ExtProcess(paramsRun);
+//
+//        procSSH.startProcess(true, true);
+//        return procSSH.getSTDOut();
+        return null;
     }
 
     private static void executeGrepGet(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {

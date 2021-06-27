@@ -11,9 +11,14 @@ import java.util.HashMap;
  *
  * @author stepan_sydoruk
  */
-class JTableFileEntry extends JTableFileEntryGeneral {
+class JTableFileEntry  {
 
     public static final HashMap<Integer, String> fileTableColls = initCalls();
+    private final OSFile file;
+
+    public OSFile getFile() {
+        return file;
+    }
 
     private static HashMap<Integer, String> initCalls() {
         HashMap<Integer, String> ret1 = new HashMap<>();
@@ -34,23 +39,22 @@ class JTableFileEntry extends JTableFileEntryGeneral {
 
     private final SavedSearchStorage storage;
 
-    public JTableFileEntry(AppProfile appProfile, SavedSearchStorage s, String fileName) {
-        super(new FilesToGet(appProfile, s.getAp(), fileName), fileName);
+    public JTableFileEntry(AppProfile appProfile, SavedSearchStorage s, OSFile file) {
         this.storage = s;
+        this.file=file;
     }
 
     public SavedSearchStorage getStorage() {
         return storage;
     }
 
-    @Override
     public Object getColumn(int columnIndex) {
         switch (columnIndex) {
             case 0:
-                return getAppProfile().getName();
+                return storage.getAppProfile().getName();
 
             case 1:
-                return getAp().getName();
+                return storage.getAp().getName();
 
             case 2:
                 return storage.isLfmt();
@@ -59,7 +63,13 @@ class JTableFileEntry extends JTableFileEntryGeneral {
                 return storage.getAppHost();
 
             case 4:
-                return getFileName();
+                return file.getFileName();
+
+            case 5:
+                return file.getSize();
+
+            case 6:
+                return String.format("%.2f", new Double(file.getSize())/1024/1024);
 
         }
         return null;
