@@ -65,8 +65,6 @@ public class GetLogs {
     private static Option optLoaderLog;
     private static Option optGrep;
     private static Option optForceHost;
-    private static Option optSSHUser;
-    private static Option optSSHPassword;
     private static Option optHelp;
     private static Option optDay;
     private static Option optArchives;
@@ -100,17 +98,6 @@ public class GetLogs {
     public static final HashMap<String, String> extUnpacker = getextUnpacker();
     final static public String filePrefix = "!file!";
     public static final Pattern regRegDigits = Pattern.compile("(\\d|\\[[\\-\\d]*\\])");
-    private static String sshUser;
-
-    public static String getSshUser() {
-        return sshUser;
-    }
-
-    public static String getSshPassword() {
-        return sshPassword;
-    }
-
-    private static String sshPassword;
 
     public static Hosts getHosts() {
         return hosts;
@@ -268,22 +255,6 @@ public class GetLogs {
                 .build();
         options.addOption(optForceHost);
 
-        optSSHUser = Option.builder()
-                .hasArg(true)
-                .required(false)
-                .desc("ssh user to use to connect to remote linux server")
-                .longOpt("ssh-user")
-                .build();
-        options.addOption(optSSHUser);
-
-        optSSHPassword = Option.builder()
-                .hasArg(true)
-                .required(false)
-                .desc("ssh password to use to connect to remote linux server")
-                .longOpt("ssh-password")
-                .build();
-        options.addOption(optSSHPassword);
-
         optGrep = Option.builder("g")
                 .hasArg(true)
                 .required(false)
@@ -384,8 +355,6 @@ public class GetLogs {
         sshOptions = (String) cmd.getParsedOptionValue(optSSHOptions.getLongOpt());
         sUserName = (String) cmd.getParsedOptionValue(optUserName.getLongOpt());
         bIsSSHJava = cmd.hasOption(optIsSSHJava.getLongOpt());
-        sshUser = (String) cmd.getParsedOptionValue(optSSHUser.getLongOpt());
-        sshPassword = (String) cmd.getParsedOptionValue(optSSHPassword.getLongOpt());
 
 
         sRSyncUserName = (String) cmd.getParsedOptionValue(optRSyncUserName.getLongOpt());
@@ -1040,8 +1009,6 @@ public class GetLogs {
 
         appHost = (String) cmd.getParsedOptionValue(optForceHost.getLongOpt());
 
-        sshUser = (String) cmd.getParsedOptionValue(optSSHUser.getLongOpt());
-        sshPassword = (String) cmd.getParsedOptionValue(optSSHPassword.getLongOpt());
 
         dateSpec = (String) cmd.getParsedOptionValue(optDay.getOpt());
         timeSpec = (String) cmd.getParsedOptionValue(optTime.getOpt());

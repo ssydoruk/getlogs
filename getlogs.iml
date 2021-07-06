@@ -23,10 +23,12 @@
     <orderEntry type="library" name="Maven: com.jidesoft:jide-oss:3.6.18" level="project" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.6" level="project" />
     <orderEntry type="library" name="Maven: com.github.lgooddatepicker:LGoodDatePicker:11.0.0" level="project" />
-    <orderEntry type="library" name="Maven: com.mycompany:Utils:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="Utils" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-compress:1.20" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-core:2.4.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-common:2.4.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-core:2.5.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-common:2.5.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-mina:2.5.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.mina:mina-core:2.0.21" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jna:jna:5.5.0" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jna:jna-platform:5.5.0" level="project" />
   </component>

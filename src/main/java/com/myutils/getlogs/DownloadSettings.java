@@ -340,28 +340,28 @@ public class DownloadSettings {
         }
     }
 
-    String getUser(AppProfile appProfile) throws Exception {
+    String getUser(AppProfile appProfile) throws ConfigException {
         for (LoginProfile loginProfile : loginProfiles) {
             if (loginProfile.getName().equalsIgnoreCase(appProfile.getLoginProfile())) {
                 return loginProfile.getUsername();
             }
         }
-        throw new Exception("Not found login profile for " + appProfile.getLoginProfile());
+        throw new ConfigException("Not found login profile for " + appProfile.getLoginProfile());
     }
 
-    String getPassword(AppProfile appProfile) throws Exception {
+    String getPassword(AppProfile appProfile) throws ConfigException {
         for (LoginProfile loginProfile : loginProfiles) {
             if (loginProfile.getName().equalsIgnoreCase(appProfile.getLoginProfile())) {
                 return loginProfile.getPassword();
             }
         }
-        throw new Exception("Not found login profile for " + appProfile.getLoginProfile());
+        throw new ConfigException("Not found login profile for " + appProfile.getLoginProfile());
     }
 
     public static class LFMTHostInstance {
 
-        private String host;
-        private String instance;
+        private final String host;
+        private final String instance;
         private String baseDir;
 
         public LFMTHostInstance(String host, String instance, String baseDir) {
