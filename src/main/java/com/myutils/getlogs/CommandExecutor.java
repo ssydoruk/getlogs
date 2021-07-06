@@ -1038,10 +1038,10 @@ public final class CommandExecutor {
             fileTransfer(file, outDir, appProfile, ap, (f, src, dst) -> {
                 try {
                     FileUtils.copyFile(src, dst, true);
-                    logMessage("Copied [" + file + "] to dir [" + outDir + "]: ",
+                    logMessage("Copied [" + file.getFileName() + "] to dir [" + outDir + "]: ",
                             appProfile, ap);
                 } catch (IOException e) {
-                    logMessage("Failed to copy [" + file + "] to dir [" + outDir + "]: ", e,
+                    logMessage("Failed to copy [" + file.getFileName() + "] to dir [" + outDir + "]: ", e,
                             appProfile, ap);
                 }
             });
