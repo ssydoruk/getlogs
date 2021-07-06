@@ -1872,7 +1872,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         for (LoginProfile lp : ds.getLoginProfiles()) {
             loginProfiles.add(new EditableValue[]{new StringValue(lp.getName()),
                 new StringValue(lp.getUsername()),
-                lp.getPassword()});
+                new PasswordValue(lp.getPassword())});
         }
         loginProfilesEditor.setData(loginProfiles);
         if (loginProfilesEditor.doShow()) {
