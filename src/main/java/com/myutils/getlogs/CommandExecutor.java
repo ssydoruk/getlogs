@@ -1035,6 +1035,8 @@ public final class CommandExecutor {
             fileTransfer(file, outDir, appProfile, ap, (f, src, dst) -> {
                 try {
                     FileUtils.copyFile(src, dst, true);
+                    logMessage("Copied [" + file + "] to dir [" + outDir + "]: ",
+                            appProfile, ap);
                 } catch (IOException e) {
                     logMessage("Failed to copy [" + file + "] to dir [" + outDir + "]: ", e,
                             appProfile, ap);
@@ -1645,7 +1647,7 @@ public final class CommandExecutor {
 
     private void logMessage(String str, Exception e) {
         logMessage(Level.ERROR, (new StringBuilder(str)).append(", Exception: ")
-                .append(StringUtils.join(e.getStackTrace(), "\n")).toString());
+                .append(e.getMessage()).toString());
     }
 
     private void logMessage(String str, AppProfile appProfile, App ap) {
