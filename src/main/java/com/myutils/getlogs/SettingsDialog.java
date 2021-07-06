@@ -116,17 +116,17 @@ public final class SettingsDialog extends StandardDialog {
 
         });
         buttonPanel.addButton(cancelButton);
-        
+
         lw.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 showLog.setSelected(false);
-                super.windowClosing(e); 
+                super.windowClosing(e);
             }
 
             @Override
             public void windowGainedFocus(WindowEvent e) {
-                super.windowGainedFocus(e); 
+                super.windowGainedFocus(e);
             }
 
         });
@@ -147,6 +147,7 @@ public final class SettingsDialog extends StandardDialog {
         });
 
         buttonPanel.addButton(pasteFiles);
+
 
         JButton lastLSButton = new JButton(new AbstractAction("recent list") {
             @Override
@@ -208,6 +209,11 @@ public final class SettingsDialog extends StandardDialog {
     private void prepareDS() {
         settingsPanel.saveConfig();
         ce.setDs(settingsPanel.getDs());
+
+    }
+
+    private void loginProfiles() {
+        settingsPanel.editLoginProfiles();
 
     }
 

@@ -1,7 +1,6 @@
 package com.myutils.getlogs;
 
 import static Utils.ScreenInfo.CenterWindow;
-import Utils.*;
 import com.jidesoft.dialog.*;
 import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.*;
@@ -16,7 +15,7 @@ public class InfoPanel extends StandardDialog {
     private final JTable theTab;
     private final ArrayList<JButton> addButtons;
     private final String selectedFormat;
-    private final TableColumnAdjuster tca;
+    private final Utils.swing.TableColumnAdjuster tca;
     JScrollPane jScrollPane;
     JButton jbFilter;
     ButtonPanel buttonPanel;
@@ -27,7 +26,7 @@ public class InfoPanel extends StandardDialog {
         this.addButtons = new ArrayList<>();
         this.theTab = tab;
         this.selectedFormat = selectedFormat;
-        tca = new TableColumnAdjuster(theTab);
+        tca = new Utils.swing.TableColumnAdjuster(theTab);
         tca.setColumnHeaderIncluded(true);
         jScrollPane = new JScrollPane(theTab);
         theTab.getTableHeader().setVisible(true);

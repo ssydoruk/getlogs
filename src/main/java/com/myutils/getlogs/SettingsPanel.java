@@ -6,6 +6,8 @@
 package com.myutils.getlogs;
 
 import Utils.*;
+import Utils.TDateRange;
+import Utils.swing.*;
 import com.google.gson.*;
 import com.jidesoft.swing.*;
 import static com.myutils.getlogs.GetLogs.logger;
@@ -35,7 +37,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     private DownloadSettings ds;
     private InfoPanel p = null;
     private InfoPanel lfmtPanes = null;
-    private ValuesEditor lfmtEditor = null;
+    private Utils.swing.ValuesEditor lfmtEditor = null;
+    private Utils.swing.ValuesEditor loginProfilesEditor = null;
     private final StringListEdit ext;
     private final StringListEdit afterActions;
     private final StringListEdit beforeActions;
@@ -141,7 +144,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
 
-        ext.setAddChoices(new ValuesEditor.IAddChoices() {
+        ext.setAddChoices(new Utils.swing.ValuesEditor.IAddChoices() {
             @Override
             public HashSet<String> getAddChoices() {
                 HashSet<String> ret = new HashSet<>();
@@ -176,23 +179,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
         pBeforeActions.add(beforeActions);
-//        tfFilenameSuffixes.getDocument().addDocumentListener(new DocumentListener() {
-//            @Override
-//            public void insertUpdate(DocumentEvent e) {
-//                tfFilenameSuffixesChanged();
-//            }
-//
-//            @Override
-//            public void removeUpdate(DocumentEvent e) {
-//                tfFilenameSuffixesChanged();
-//            }
-//
-//            @Override
-//            public void changedUpdate(DocumentEvent e) {
-//                tfFilenameSuffixesChanged();
-//            }
-//        });
-//        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
         tfGrepText.setMaximumSize(new Dimension(tfGrepText.getMaximumSize().width, tfGrepText.getMinimumSize().height));
         jtfOutputDir.setMaximumSize(new Dimension(jtfOutputDir.getMaximumSize().width, jtfOutputDir.getMinimumSize().height));
         jtfStatusScript.setMaximumSize(new Dimension(jtfStatusScript.getMaximumSize().width, jtfStatusScript.getMinimumSize().height));
@@ -467,6 +454,8 @@ public class SettingsPanel extends javax.swing.JPanel {
             ext.setData(pr.getNameSuffixes());
             jtfLogDirectory.setText(pr.getLogDirectory());
             jtfFileNameBase.setText(pr.getLogFileNameBase());
+            cbLoginProfile.setSelectedItem(pr.getLoginProfile());
+            
 //        tfFilenameSuffixes.setText(pr.getNameSuffixes());
 
             DownloadSettings.LFMTHostInstance lfmtHostInstance = pr.getLFMT();
@@ -556,7 +545,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jpProfileProperties.setEnabled(!lsm.isSelectionEmpty());
 
         this.appIdx = (!lsm.isSelectionEmpty() && lsm.getMaxSelectionIndex() == lsm.getMinSelectionIndex()
-        && lmApps.getElementAt(lsm.getMinSelectionIndex())!= CheckBoxList.ALL_ENTRY)
+                && lmApps.getElementAt(lsm.getMinSelectionIndex()) != CheckBoxList.ALL_ENTRY)
                 ? lsm.getMinSelectionIndex()
                 : -1;
         jlbAppFileNameBase.setEnabled(appIdx >= 0);
@@ -572,10 +561,11 @@ public class SettingsPanel extends javax.swing.JPanel {
                 ? ((App) lmApps.getElementAt(appIdx)).getAppDir()
                 : "");
         if (appIdx >= 0) {
-            if(((App) lmApps.getElementAt(appIdx)).isIsWindows())
-            jrbOSWindows.setSelected(true);
-            else
+            if (((App) lmApps.getElementAt(appIdx)).isIsWindows()) {
+                jrbOSWindows.setSelected(true);
+            } else {
                 jrbOSLinux.setSelected(true);
+            }
         }
 //        rbCloudLogs.setEnabled(singleSelection);
 //        rbGenesysLogs.setEnabled(singleSelection);
@@ -608,6 +598,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jtfFileNameBase.setEnabled(numSelected == 1);
         jlbLogDirectory.setEnabled(numSelected == 1);
         jtfLogDirectory.setEnabled(numSelected == 1);
+        cbLoginProfile.setEnabled(numSelected == 1);
 
         appSelected(clbApps.getSelectionModel());
 
@@ -689,6 +680,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel13 = new javax.swing.JPanel();
         cbLFMTs = new javax.swing.JComboBox();
         btEditLFMTs = new javax.swing.JButton();
+        jPanel31 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        cbLoginProfile = new javax.swing.JComboBox<>();
+        btEditLoginProfile = new javax.swing.JButton();
         pExtensions = new javax.swing.JPanel();
         jpAppsBase = new javax.swing.JPanel();
         jPanel19 = new javax.swing.JPanel();
@@ -922,6 +917,28 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel6.add(jPanel13);
 
         jpProfileProperties.add(jPanel6);
+
+        jPanel31.setLayout(new javax.swing.BoxLayout(jPanel31, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabel1.setText("Login profile");
+        jPanel31.add(jLabel1);
+
+        cbLoginProfile.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbLoginProfileItemStateChanged(evt);
+            }
+        });
+        jPanel31.add(cbLoginProfile);
+
+        btEditLoginProfile.setText("...");
+        btEditLoginProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btEditLoginProfileActionPerformed(evt);
+            }
+        });
+        jPanel31.add(btEditLoginProfile);
+
+        jpProfileProperties.add(jPanel31);
 
         pExtensions.setBorder(javax.swing.BorderFactory.createTitledBorder("Name suffixes (.=empty)"));
         pExtensions.setLayout(new java.awt.BorderLayout());
@@ -1354,13 +1371,15 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void btEditLFMTsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btEditLFMTsActionPerformed
 
         if (lfmtEditor == null) {
-            lfmtEditor = new ValuesEditor((Window) this.getRootPane().getParent(), "List of LFMTs",
+            lfmtEditor = new Utils.swing.ValuesEditor((Window) this.getRootPane().getParent(), "List of LFMTs",
                     "Select %d LFMTs");
 
         }
-        ArrayList<Object[]> values = new ArrayList<>();
+        ArrayList<EditableValue[]> values = new ArrayList<>();
         for (DownloadSettings.LFMTHostInstance hi : ds.getLfmtHostInstances()) {
-            values.add(new Object[]{hi.getHost(), hi.getInstance(), hi.getBaseDir()});
+            values.add(new EditableValue[]{new StringValue(hi.getHost()),
+                new StringValue(hi.getInstance()),
+                new StringValue(hi.getBaseDir())});
         }
         lfmtEditor.setData(new Object[]{"LFMT host", "LFMT instance", "Base directory"},
                 values
@@ -1370,43 +1389,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             updateLFMTs();
         }
 
-//        if (lfmtPanes == null) {
-//            tabLFMT = getJTablePopup();
-//            lfmtPanes = new InfoPanel((Window) this.getRootPane().getParent(), "List of LFMTs", tabLFMT,
-//                    "Select %d LFMTs");
-//        }
-//        DefaultTableModel infoTableModel = new DefaultTableModel();
-//        infoTableModel.addColumn("LFMT host");
-//        infoTableModel.addColumn("LFMT instance");
-//        infoTableModel.addColumn("Base directory");
-//        for (DownloadSettings.LFMTHostInstance hi : ds.getLfmtHostInstances()) {
-//            infoTableModel.addRow(new Object[]{hi.getHost(), hi.getInstance(), hi.getBaseDir()});
-//        }
-//        tabLFMT.setModel(infoTableModel);
-//        JButton bt;
-//        bt = new JButton(new AbstractAction("add") {
-//            private EditLFMTDialog dlg = null;
-//
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                if (dlg == null) {
-//                    dlg = new EditLFMTDialog();
-//                }
-//                if (dlg.doShow()) {
-//                    newLFMTInstance(dlg.getLfmt().tbValue.getText(), dlg.getLfmtInstance().tbValue.getText(), dlg.getBaseDir().tbValue.getText());
-//                }
-//            }
-//
-//            private void newLFMTInstance(String host, String instance, String baseDir) {
-//                DownloadSettings.LFMTHostInstance lfmt = ds.addLFMTInstance(host, instance, baseDir);
-//                DefaultTableModel mod = (DefaultTableModel) tabLFMT.getModel();
-//                mod.addRow(new Object[]{lfmt.getHost(), lfmt.getInstance(), lfmt.getBaseDir()});
-//            }
-//        });
-//        lfmtPanes.addButton(bt);
-//
-//        lfmtPanes.doShow();
-//        updateLFMTs();
+
     }//GEN-LAST:event_btEditLFMTsActionPerformed
 
     private void cbLFMTsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbLFMTsItemStateChanged
@@ -1495,21 +1478,38 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_jrbOSWindowsItemStateChanged
 
+    private void btEditLoginProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btEditLoginProfileActionPerformed
+        editLoginProfiles();
+    }//GEN-LAST:event_btEditLoginProfileActionPerformed
+
+    private void cbLoginProfileItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbLoginProfileItemStateChanged
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            Object item = evt.getItem();
+            AppProfile prof = (AppProfile) clbProfile.getSelectedValue();
+            if (prof != null) {
+                prof.setLoginProfile(item.toString());
+            }
+        }
+    }//GEN-LAST:event_cbLoginProfileItemStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;
     private javax.swing.ButtonGroup bgOS;
     private javax.swing.JButton btEditLFMTs;
+    private javax.swing.JButton btEditLoginProfile;
     private javax.swing.JCheckBox cbAppLogs;
     private javax.swing.JComboBox cbCommand;
     private javax.swing.JCheckBox cbLCALogs;
     private javax.swing.JComboBox cbLFMTs;
     private javax.swing.JCheckBox cbLfmtLog;
+    private javax.swing.JComboBox<String> cbLoginProfile;
     private javax.swing.JCheckBox cbProdLog;
     private javax.swing.JComboBox<String> cbTimeProfile;
     private javax.swing.JCheckBox cbUseRSync;
     private javax.swing.JMenuItem cbmCopyHostName;
     private javax.swing.JCheckBoxMenuItem cbmShowHosts;
     private javax.swing.JFormattedTextField ftHours;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1537,6 +1537,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel29;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel30;
+    private javax.swing.JPanel jPanel31;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
@@ -1665,6 +1666,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 //        cbCommand.addItemListener(aListener);
         tfGrepText.setText(ds.getGrepText());
         updateLFMTs();
+        reloadLoginProfiles();
         updateProfileTitle();
     }
 
@@ -1851,6 +1853,40 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         }
 
+    }
+
+    void editLoginProfiles() {
+        if (loginProfilesEditor == null) {
+            FieldProfile[] fieldProfiles = new FieldProfile[3];
+            loginProfilesEditor = new Utils.swing.ValuesEditor(
+                    (Window) this.getRootPane().getParent(),
+                    "Login profiles",
+                    "Select %d profiles",
+                    new FieldProfile("Name", EditType.COMBOBOX, StringValue.class),
+                    new FieldProfile("Username", EditType.COMBOBOX, StringValue.class),
+                    new FieldProfile("Password", EditType.PASSWORD, PasswordValue.class)
+            );
+
+        }
+        ArrayList<EditableValue[]> loginProfiles = new ArrayList<>();
+        for (LoginProfile lp : ds.getLoginProfiles()) {
+            loginProfiles.add(new EditableValue[]{new StringValue(lp.getName()),
+                new StringValue(lp.getUsername()),
+                lp.getPassword()});
+        }
+        loginProfilesEditor.setData(loginProfiles);
+        if (loginProfilesEditor.doShow()) {
+            ds.setLoginProfiles(loginProfilesEditor.getData());
+            reloadLoginProfiles();
+        }
+
+    }
+
+    private void reloadLoginProfiles() {
+        cbLoginProfile.removeAllItems();
+        for (LoginProfile loginProfile : ds.getLoginProfiles()) {
+            cbLoginProfile.addItem(loginProfile.getName());
+        }
     }
 
     public enum TimeProfile {

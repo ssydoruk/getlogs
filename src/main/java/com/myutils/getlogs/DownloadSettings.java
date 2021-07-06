@@ -5,12 +5,10 @@
  */
 package com.myutils.getlogs;
 
-import Utils.Pair;
-import Utils.UTCTimeRange;
+import Utils.*;
+import Utils.swing.*;
 import static com.myutils.getlogs.GetLogs.logger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -35,6 +33,8 @@ public class DownloadSettings {
     private boolean listFiles;
     ArrayList<LFMTHostInstance> lfmtHostInstances;
     private ArrayList<AppProfile> appProfiles;
+    private ArrayList<LoginProfile> loginProfiles;
+
     private boolean lfmt;
     private boolean prod;
     private String hours;
@@ -47,10 +47,15 @@ public class DownloadSettings {
         this.actionCommand = GetCommand.LS;
         this.lfmtHostInstances = new ArrayList();
         this.appProfiles = new ArrayList<>();
+        this.loginProfiles = new ArrayList<>();
         lfmt = true;
         prod = true;
         rangeStart = 0;
         rangeEnd = 0;
+    }
+
+    public ArrayList<LoginProfile> getLoginProfiles() {
+        return loginProfiles;
     }
 
     public String getStatusScript() {
@@ -187,7 +192,7 @@ public class DownloadSettings {
 
     }
 
-    void loadLFMTs(ArrayList<Object[]> data) {
+    void loadLFMTs(ArrayList<EditableValue[]> data) {
         lfmtHostInstances = new ArrayList<>();
         for (Object[] objects : data) {
             lfmtHostInstances.add(new LFMTHostInstance(objects));
@@ -312,6 +317,27 @@ public class DownloadSettings {
     void setTimeRange(UTCTimeRange timeRange) {
         rangeStart = timeRange.getStart();
         rangeEnd = timeRange.getEnd();
+    }
+
+    void setLoginProfiles(ArrayList<EditableValue[]> data) {
+        if (loginProfiles == null) {
+            loginProfiles = new ArrayList<>();
+        } else {
+            loginProfiles.clear();
+        }
+        for (EditableValue[] objects : data) {
+            LoginProfile lp = new LoginProfile();
+            if (objects.length > 0) {
+                lp.setName((String) objects[0].getValue());
+            }
+            if (objects.length >= 1) {
+                lp.setUsername((String) objects[1].getValue());
+            }
+            if (objects.length >= 2) {
+                lp.setPassword((PasswordValue) objects[2]);
+            }
+            loginProfiles.add(lp);
+        }
     }
 
     public static class LFMTHostInstance {

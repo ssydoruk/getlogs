@@ -5,27 +5,15 @@
  */
 package com.myutils.getlogs;
 
-import Utils.Pair;
-import Utils.ValuesEditor;
-import com.jidesoft.swing.CheckBoxList;
-import com.jidesoft.swing.CheckBoxListSelectionModel;
-import com.jidesoft.swing.SearchableUtils;
+import Utils.*;
+import Utils.swing.*;
+import com.jidesoft.swing.*;
 import static com.myutils.getlogs.GetLogs.logger;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.AbstractAction;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.event.*;
 
 /**
  *
@@ -33,11 +21,11 @@ import javax.swing.event.ListSelectionListener;
  */
 public class StringListEdit extends JPanel {
 
-    private ValuesEditor.IAddChoices addChoices;
+    private Utils.swing.ValuesEditor.IAddChoices addChoices;
 
     private final DefaultListModel<Object> lmItems;
     private final JButton btChange;
-    private ValuesEditor stringsEditor;
+    private Utils.swing.ValuesEditor stringsEditor;
     private final String columnTitle;
     private ArrayList<Pair<String, Boolean>> data;
     CheckBoxList clbItems;
@@ -94,45 +82,27 @@ public class StringListEdit extends JPanel {
 
     private void btChangePressed(ActionEvent e) {
 
-        ArrayList<Object[]> values = new ArrayList<>();
-//        for (DownloadSettings.LFMTHostInstance hi : ds.getLfmtHostInstances()) {
-//            values.add(new Object[]{hi.getHost(), hi.getInstance(), hi.getBaseDir()});
+        ArrayList<EditableValue[]> values = new ArrayList<>();
+
+//        for (Object entry : lmItems.toArray()) {
+//            if (!entry.equals(CheckBoxList.ALL_ENTRY)) {
+//                values.add(
+//                        
+//                        new String[]{((ListEntry) entry).toString()});
+//            }
+//
 //        }
-        for (Object entry : lmItems.toArray()) {
-            if (!entry.equals(CheckBoxList.ALL_ENTRY)) {
-                values.add(new String[]{((ListEntry) entry).toString()});
-            }
 
-        }
-
-        getStringsEditor().setData(new Object[]{columnTitle
-        },
+            getStringsEditor().setData(new Object[]{columnTitle        },
                 values
         );
         getStringsEditor()
                 .setAddChoices(addChoices);
         getStringsEditor()
                 .doShow();
-//        ArrayList<Object[]> data1 = getStringsEditor().getData();
-//        for (Object object
-//                : lmItems.toArray()) {
-//            if (!object.equals(CheckBoxList.ALL_ENTRY)) {
-//                ListEntry le = (ListEntry) object;
-//                int idx = leIdx(data1, le);
-//                if (idx < 0) {
-//                    lmItems.removeElement(le);
-//                } else {
-//                    data1.set(idx, null);
-//                }
-//            }
-//        }
-//        for (Object[] objects : data1) {
-//            if (objects != null) {
-//                lmItems.addElement(new ListEntry(objects[0].toString(), Boolean.TRUE));
-//            }
-//        }
 
-        ArrayList<Object[]> data1 = getStringsEditor().getData();
+
+        ArrayList<EditableValue[]> data1 = getStringsEditor().getData();
         ArrayList<Pair<String, Boolean>> itemsState = new ArrayList<>();
 
         for (int i = 0; i < data1.size(); i++) {
@@ -285,13 +255,13 @@ public class StringListEdit extends JPanel {
         }
     }
 
-    void setAddChoices(ValuesEditor.IAddChoices iAddChoices) {
+    void setAddChoices(Utils.swing.ValuesEditor.IAddChoices iAddChoices) {
         this.addChoices = iAddChoices;
     }
 
-    private ValuesEditor getStringsEditor() {
+    private Utils.swing.ValuesEditor getStringsEditor() {
         if (stringsEditor == null) {
-            stringsEditor = new ValuesEditor(SwingUtilities.getWindowAncestor(this), "Edit list",
+            stringsEditor = new Utils.swing.ValuesEditor(SwingUtilities.getWindowAncestor(this), "Edit list",
                     "Select %d LFMTs");
 
         }

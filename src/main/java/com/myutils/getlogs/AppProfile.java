@@ -27,6 +27,15 @@ public final class AppProfile {
     private HashMap<String, Boolean> nameSuffixes;
     private String logDirectory;
     private String logFileNameBase;
+    private String loginProfile;
+
+    public String getLoginProfile() {
+        return loginProfile;
+    }
+
+    public void setLoginProfile(String loginProfile) {
+        this.loginProfile = loginProfile;
+    }
 
     public String getLogDirectory() {
         return (StringUtils.isEmpty(logDirectory))?GetLogs.getProdBaseDir(): logDirectory;
