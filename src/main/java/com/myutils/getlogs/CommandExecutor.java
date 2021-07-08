@@ -436,12 +436,17 @@ public final class CommandExecutor {
         Pair<ArrayList<String>, ArrayList<String>> ret1 = null;
         String logPathLower = logPath.toLowerCase();
         try {
-            ret1 = executeCommand("net use", true, true, appProfile, ap);
+            ret1 = executeCommand("net use "+logPathLower, true, true, appProfile, ap);
             if (ret1 != null) { // success
                 for (String s : ret1.getKey()) {
-                    String[] s1 = StringUtils.split(s, " ", 3);
-                    if (s1.length >= 3 && s1[0].equals("OK") && s1[1].toLowerCase().equals(logPathLower)) {
-                        return true;
+                    String[] s1 = StringUtils.split(s, " ", 2);
+                    if (s1.length >= 2 && s1[0].toLowerCase().equals("Status")) {
+                        if( s1[1].equals("OK") )
+                            return true;
+                        else if( s1[1].equals("Disconnected") ){
+                            disconnectShare(logPathLower, appProfile, ap);
+                            return false;
+                        }
                     }
                 }
             }
@@ -450,6 +455,36 @@ public final class CommandExecutor {
             logMessage("Not able to check connected share", e, appProfile, ap);
         } catch (InterruptedException e) {
             logMessage("Not able to check connected share", e, appProfile, ap);
+        }
+        return false;
+    }
+
+    private boolean disconnectShare(String logPath, AppProfile appProfile, App ap) {
+        Pair<ArrayList<String>, ArrayList<String>> ret1 = null;
+        try {
+            ret1 = executeCommand("net use "+logPath+" /delete",
+                    true, true, appProfile, ap);
+            if (ret1 != null) { // success
+                ArrayList<String> stdOut = ret1.getKey();
+                if (!stdOut.isEmpty() && stdOut.size() > 1
+                        && stdOut.get(0).equals("The command completed successfully.")) {
+                    return true;
+                }
+                logMessage(Level.ERROR,
+                        (new StringBuilder("Failed to disconnect share ["))
+                                .append(logPath)
+                                .append("]")
+                                .append("\n\tstdout [")
+                                .append(StringUtils.join(stdOut, "\n")).append("]\n\t").append("\n\tstderr [")
+                                .append(StringUtils.join(ret1.getValue(), "\n")).append("]\n\t").toString(),
+                        appProfile, ap);
+
+            }
+
+        } catch (IOException e) {
+            logMessage("Not able to disconnected share", e, appProfile, ap);
+        } catch (InterruptedException e) {
+            logMessage("Not able to disconnected share", e, appProfile, ap);
         }
         return false;
     }
