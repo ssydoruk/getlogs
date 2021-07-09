@@ -440,7 +440,7 @@ public final class CommandExecutor {
             if (ret1 != null) { // success
                 for (String s : ret1.getKey()) {
                     String[] s1 = StringUtils.split(s, " ", 2);
-                    if (s1.length >= 2 && s1[0].toLowerCase().equals("Status")) {
+                    if (s1.length >= 2 && s1[0].toLowerCase().equals("status")) {
                         if( s1[1].equals("OK") )
                             return true;
                         else if( s1[1].equals("Disconnected") ){
