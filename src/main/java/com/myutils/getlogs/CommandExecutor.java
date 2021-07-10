@@ -512,7 +512,14 @@ public final class CommandExecutor {
                                                     String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog)
             throws IOException, InterruptedException {
 
-        String logPath = connectWindowsShare(appProfile, ap);
+        String logPath=null;
+        for(int i=0; i<3; i++) {
+            logMessage("attempt to connect to share "+i, appProfile, ap);
+            logPath = connectWindowsShare(appProfile, ap);
+            if(logPath!=null)
+                break;
+            Thread.sleep(5000);
+        }
         if (logPath != null) { // success
 
             HashMap<String, ArrayList<OSFile>> nameSuffixes = new HashMap<>();
