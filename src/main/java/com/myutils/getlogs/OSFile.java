@@ -1,8 +1,9 @@
 package com.myutils.getlogs;
 
-import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.*;
 
 public class OSFile {
+
     private String fileName;
     private long size;
     private FileTime creationTime;
@@ -10,11 +11,13 @@ public class OSFile {
     public OSFile(String fileName, long size) {
         this(fileName, size, null);
     }
+
     public OSFile(String fileName, long size, FileTime creationTime) {
         this.fileName = fileName;
         this.size = size;
-        this.creationTime=creationTime;
+        this.creationTime = creationTime;
     }
+
     public String getFileName() {
         return fileName;
     }

@@ -208,7 +208,7 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
             }
 
             String theTitle = "Unique values in column (total " + grandTotal + ")";
-            p = new InfoPanel( (JFrame) table.getRootPane().getParent(), theTitle, tab,
+            p = new InfoPanel((JFrame) table.getRootPane().getParent(), theTitle, tab,
                     "Download %d files");
 
             p.doShow();

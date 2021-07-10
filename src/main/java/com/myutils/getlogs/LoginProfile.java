@@ -22,7 +22,7 @@ public class LoginProfile {
     private String name;
     private String username;
     private String password;
-    
+
     private static final StrongTextEncryptor textEncryptor = getTextEncryptor();
 
     public String getName() {

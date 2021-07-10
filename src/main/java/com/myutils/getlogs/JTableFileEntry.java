@@ -5,13 +5,13 @@
  */
 package com.myutils.getlogs;
 
-import java.util.HashMap;
+import java.util.*;
 
 /**
  *
  * @author stepan_sydoruk
  */
-class JTableFileEntry  {
+class JTableFileEntry {
 
     public static final HashMap<Integer, String> fileTableColls = initCalls();
     private final OSFile file;
@@ -41,7 +41,7 @@ class JTableFileEntry  {
 
     public JTableFileEntry(AppProfile appProfile, SavedSearchStorage s, OSFile file) {
         this.storage = s;
-        this.file=file;
+        this.file = file;
     }
 
     public SavedSearchStorage getStorage() {
@@ -69,7 +69,7 @@ class JTableFileEntry  {
                 return file.getSize();
 
             case 6:
-                return String.format("%.2f", new Double(file.getSize())/1024/1024);
+                return String.format("%.2f", new Double(file.getSize()) / 1024 / 1024);
 
         }
         return null;

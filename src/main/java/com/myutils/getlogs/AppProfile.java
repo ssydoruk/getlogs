@@ -38,7 +38,7 @@ public final class AppProfile {
     }
 
     public String getLogDirectory() {
-        return (StringUtils.isEmpty(logDirectory))?GetLogs.getProdBaseDir(): logDirectory;
+        return (StringUtils.isEmpty(logDirectory)) ? GetLogs.getProdBaseDir() : logDirectory;
     }
 
     public void setLogDirectory(String logDirectory) {
@@ -52,7 +52,7 @@ public final class AppProfile {
     public void setLogFileNameBase(String logFileNameBase) {
         this.logFileNameBase = logFileNameBase;
     }
-    
+
     HashSet<App> apps = new HashSet<>();
 
     public AppProfile(String newName, AppProfile appPr) {

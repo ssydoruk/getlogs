@@ -7,12 +7,9 @@ package com.myutils.getlogs;
 
 import Utils.*;
 import Utils.UnixProcess.*;
-
 import static Utils.Util.rSyncAddClause;
-
 import com.google.gson.*;
 import com.myutils.getlogs.LogFiles.LogFile;
-
 import java.io.*;
 import java.lang.reflect.*;
 import java.nio.file.*;
@@ -20,7 +17,6 @@ import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 import javax.swing.*;
-
 import org.apache.commons.cli.*;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
@@ -160,8 +156,8 @@ public class GetLogs {
         optIsSSHJava = Option.builder()
                 .hasArg(false)
                 .required(false)
-                .desc("if specified, remote commands and file download will be performed vis java SSH client; " +
-                        "by default using local commands (ssh, rsync, etc)")
+                .desc("if specified, remote commands and file download will be performed vis java SSH client; "
+                        + "by default using local commands (ssh, rsync, etc)")
                 .longOpt("ssh-java")
                 .build();
         options.addOption(optIsSSHJava);
@@ -173,7 +169,6 @@ public class GetLogs {
                 .longOpt("lfmt-instance")
                 .build();
         options.addOption(optLFMTInstance);
-
 
         optLogLevel = Option.builder("d")
                 .hasArg(true)
@@ -356,7 +351,6 @@ public class GetLogs {
         sUserName = (String) cmd.getParsedOptionValue(optUserName.getLongOpt());
         bIsSSHJava = cmd.hasOption(optIsSSHJava.getLongOpt());
 
-
         sRSyncUserName = (String) cmd.getParsedOptionValue(optRSyncUserName.getLongOpt());
 
         prodBaseDir = (String) cmd.getParsedOptionValue(optProdBaseDir.getLongOpt());
@@ -416,8 +410,8 @@ public class GetLogs {
                     .append(lfmtInstance).append("/")
                     .append(lfmtInstance).append("_cls/")
                     .append(theAppHost) //                    .append("/")
-            //                    .append(ap)
-            ;
+                    //                    .append(ap)
+                    ;
         } else {
             logsDir.append("/AppLog/GCTI");
 
@@ -730,7 +724,7 @@ public class GetLogs {
 //
 //        }
 //        return matchedFiles;
-    return null;
+        return null;
     }
 
     private static HashMap<String, String> getextUnpacker() {
@@ -741,7 +735,7 @@ public class GetLogs {
     }
 
     public static ArrayList<OSFile> execGrep(String ext, String unp, ArrayList<String> sshParams, StringBuilder sshCmd,
-                                             String regex) throws IOException, InterruptedException {
+            String regex) throws IOException, InterruptedException {
 //        StringBuilder grepCmd = new StringBuilder();
 //        grepCmd.append(sshCmd)
 //                .append(" -iname ").append(ext)
@@ -809,8 +803,8 @@ public class GetLogs {
             StringBuilder buf = new StringBuilder();
             buf.append(sshOptions).append("@").append((lfmtHost != null ? lfmtHost : "")).append(":")
                     .append(listLogFiles.get(0).getLfmtName()) //                .append(" :").append(logFiles.get(1));
-            //                .append("/*")
-            ;
+                    //                .append("/*")
+                    ;
             rsyncParams.add(buf.toString());
 
             for (int i = 1; i < listLogFiles.size(); i++) {
@@ -972,25 +966,20 @@ public class GetLogs {
     }
 
     static void showGui(DownloadSettings ds) throws InterruptedException, InvocationTargetException {
+        try {
+            UIManager.setLookAndFeel(
+                    UIManager.getCrossPlatformLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            logger.fatal("Cannot load look and feel", ex);
+        }
 
         java.awt.EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
-                try {
-                    UIManager.setLookAndFeel(
-                            UIManager.getCrossPlatformLookAndFeelClassName());
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-                    java.util.logging.Logger.getLogger(GetLogs.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                }
 
-                SettingsDialog dlg = new SettingsDialog(
-                        new DummyFrame("Log downloader", null),
-                        ds, sGUIProfile);
+                SettingsForm dlg = new SettingsForm(ds, sGUIProfile);
                 dlg.getCe().setSettingsFile(sGUIProfile);
-                dlg.pack();
-                dlg.invalidate();
-                ScreenInfo.CenterWindow(dlg);
-                dlg.setVisible(true);
+                dlg.doShow();
             }
         });
     }
@@ -1008,7 +997,6 @@ public class GetLogs {
         bIsSSHJava = cmd.hasOption(optIsSSHJava.getLongOpt());
 
         appHost = (String) cmd.getParsedOptionValue(optForceHost.getLongOpt());
-
 
         dateSpec = (String) cmd.getParsedOptionValue(optDay.getOpt());
         timeSpec = (String) cmd.getParsedOptionValue(optTime.getOpt());

@@ -55,7 +55,7 @@ class App implements Comparable {
 
     public String getAppDir() {
         if (appDir != null && !appDir.isEmpty()) {
-            return  appDir;
+            return appDir;
         } else {
             return name;
         }

@@ -5,8 +5,10 @@
  */
 package com.myutils.getlogs;
 
+import Utils.*;
 import com.jidesoft.dialog.*;
 import static com.myutils.getlogs.GetLogs.logger;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.logging.*;
@@ -16,7 +18,7 @@ import javax.swing.*;
  *
  * @author Stepan
  */
-public final class SettingsDialog extends StandardDialog {
+public final class SettingsForm extends JFrame {
 
     private static LogWindow lw;
 
@@ -36,28 +38,25 @@ public final class SettingsDialog extends StandardDialog {
     private JButton jbRun;
     private JToggleButton showLog;
 
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        if (!visible) {
-            ((DummyFrame) getParent()).dispose();
-        }
-    }
+    public SettingsForm(DownloadSettings ds, String guiProfile) {
 
-    public SettingsDialog(DummyFrame parent, DownloadSettings ds, String guiProfile) {
+        super();
 
-        super(parent);
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.PAGE_AXIS));
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         settingsPanel = new SettingsPanel(ds, this);
         ce = new CommandExecutor(this);
         lw = new LogWindow(this);
-        setModal(false);
+
+        getContentPane().add(settingsPanel);
+        getContentPane().add(createButtonPanel());
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
-                closeDialog(RESULT_CANCELLED);
+                closeForm();
             }
 
             @Override
@@ -65,8 +64,23 @@ public final class SettingsDialog extends StandardDialog {
 
             }
         });
+
+        addWindowStateListener(new WindowStateListener() {
+            @Override
+            public void windowStateChanged(WindowEvent e) {
+                if ((e.getNewState() & Frame.ICONIFIED) == Frame.ICONIFIED) {
+                    if (lw.isVisible()) {
+                        lw.setVisible(false);
+                        showLog.setSelected(false);
+                    }
+                } else if (((e.getNewState() & Frame.NORMAL) == Frame.NORMAL)) {
+                    lw.setVisible(true);
+                    showLog.setSelected(true);
+
+                }
+            }
+        });
         setTitle("GetLogs" + "(" + guiProfile + ")");
-        this.setVisible(true);
     }
 
     public void setJBRunEnabled(boolean b) {
@@ -80,17 +94,6 @@ public final class SettingsDialog extends StandardDialog {
         return ce;
     }
 
-    @Override
-    public JComponent createBannerPanel() {
-        return null;
-    }
-
-    @Override
-    public JComponent createContentPanel() {
-        return settingsPanel;
-    }
-
-    @Override
     public ButtonPanel createButtonPanel() {
         ButtonPanel buttonPanel = new ButtonPanel();
 
@@ -107,11 +110,7 @@ public final class SettingsDialog extends StandardDialog {
         JButton cancelButton = new JButton(new AbstractAction("Close") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                settingsPanel.saveConfig();
-
-                closeDialog(RESULT_CANCELLED);
-
-//                    cancelButtonAction(e);
+                closeForm();
             }
 
         });
@@ -138,16 +137,15 @@ public final class SettingsDialog extends StandardDialog {
                     pasteFiles();
 //                    cancelButtonAction(e);
                 } catch (IOException ex) {
-                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SettingsForm.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SettingsForm.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
 
         });
 
         buttonPanel.addButton(pasteFiles);
-
 
         JButton lastLSButton = new JButton(new AbstractAction("recent list") {
             @Override
@@ -156,9 +154,9 @@ public final class SettingsDialog extends StandardDialog {
                     showRecent();
 //                    cancelButtonAction(e);
                 } catch (IOException ex) {
-                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SettingsForm.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SettingsForm.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
 
@@ -172,9 +170,9 @@ public final class SettingsDialog extends StandardDialog {
                     uncheckBackup();
 //                    cancelButtonAction(e);
                 } catch (IOException ex) {
-                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SettingsForm.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(SettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SettingsForm.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
 
@@ -197,8 +195,6 @@ public final class SettingsDialog extends StandardDialog {
         buttonPanel.addButton(jbRun);
         jbRun.setEnabled(settingsPanel.canRun());
 
-        setDefaultCancelAction(cancelButton.getAction());
-        setDefaultAction(jbRun.getAction());
         getRootPane().setDefaultButton(jbRun);
 
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -247,9 +243,8 @@ public final class SettingsDialog extends StandardDialog {
         ce.pasteFiles(this, settingsPanel.getDs());
     }
 
-    private void closeDialog(int dialogResult) {
+    private void closeForm() {
         settingsPanel.saveConfig();
-        setDialogResult(dialogResult);
         setVisible(false);
         dispose();
         System.exit(0);
@@ -257,6 +252,13 @@ public final class SettingsDialog extends StandardDialog {
 
     private void logWindowToggled(ActionEvent e) {
         lw.doShow(((JToggleButton) e.getSource()).isSelected());
+    }
+
+    void doShow() {
+        pack();
+        ScreenInfo.CenterWindow(this);
+        setVisible(true);
+
     }
 
 }

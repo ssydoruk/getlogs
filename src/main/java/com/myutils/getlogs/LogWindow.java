@@ -21,7 +21,7 @@ import org.apache.logging.log4j.core.layout.*;
  *
  * @author stepan_sydoruk
  */
-public final class LogWindow extends JFrame {
+public final class LogWindow extends JDialog {
 
     static void info(String command_executed) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -66,6 +66,7 @@ public final class LogWindow extends JFrame {
         add(createContentPanel());
         setSize(new Dimension(600, 400));
         invalidate();
+        setModal(false);
 //        setModal(false);
 //        setMaximumSize(new Dimension(500, 200));
 //        setFocusable(true);
