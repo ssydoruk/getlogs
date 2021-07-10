@@ -22,6 +22,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import javax.swing.text.*;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -209,6 +210,18 @@ public class SettingsPanel extends javax.swing.JPanel {
             @Override
             public void focusLost(FocusEvent e) {
                 jtfFileNameBaseTextChanged(e);
+            }
+        });
+
+        JComponent comp = jsMaxThreads.getEditor();
+        JFormattedTextField field = (JFormattedTextField) comp.getComponent(0);
+        DefaultFormatter formatter = (DefaultFormatter) field.getFormatter();
+        formatter.setCommitsOnValidEdit(true);
+        jsMaxThreads.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                ds.setMaxThreads((int) jsMaxThreads.getValue());
             }
         });
     }
@@ -455,9 +468,8 @@ public class SettingsPanel extends javax.swing.JPanel {
             jtfLogDirectory.setText(pr.getLogDirectory());
             jtfFileNameBase.setText(pr.getLogFileNameBase());
             cbLoginProfile.setSelectedItem(pr.getLoginProfile());
-            
-//        tfFilenameSuffixes.setText(pr.getNameSuffixes());
 
+//        tfFilenameSuffixes.setText(pr.getNameSuffixes());
             DownloadSettings.LFMTHostInstance lfmtHostInstance = pr.getLFMT();
             int sel = -1;
             if (lfmtHostInstance != null) {
@@ -702,26 +714,32 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel30 = new javax.swing.JPanel();
         jrbOSLinux = new javax.swing.JRadioButton();
         jrbOSWindows = new javax.swing.JRadioButton();
+        jPanel34 = new javax.swing.JPanel();
+        jPanel33 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         cbLfmtLog = new javax.swing.JCheckBox();
         cbProdLog = new javax.swing.JCheckBox();
+        cbLCALogs = new javax.swing.JCheckBox();
+        cbAppLogs = new javax.swing.JCheckBox();
         jpRangeSelect = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
         cbTimeProfile = new javax.swing.JComboBox<>();
         jpRangeParams = new javax.swing.JPanel();
+        jPanel35 = new javax.swing.JPanel();
         jPanel9 = new javax.swing.JPanel();
         jpCommandParams = new javax.swing.JPanel();
         jPanel16 = new javax.swing.JPanel();
+        jPanel23 = new javax.swing.JPanel();
         lCommand = new javax.swing.JLabel();
         cbCommand = new javax.swing.JComboBox();
+        jPanel32 = new javax.swing.JPanel();
+        jlbLogDirectory1 = new javax.swing.JLabel();
+        jsMaxThreads = new javax.swing.JSpinner();
         jPanel18 = new javax.swing.JPanel();
         jPanel20 = new javax.swing.JPanel();
         jPanel22 = new javax.swing.JPanel();
         cbUseRSync = new javax.swing.JCheckBox();
-        jPanel23 = new javax.swing.JPanel();
-        cbLCALogs = new javax.swing.JCheckBox();
-        cbAppLogs = new javax.swing.JCheckBox();
         jPanel21 = new javax.swing.JPanel();
         lGrepText = new javax.swing.JLabel();
         tfGrepText = new javax.swing.JTextField();
@@ -985,7 +1003,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpAppProperties.setLayout(new javax.swing.BoxLayout(jpAppProperties, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel28.setLayout(new java.awt.GridLayout(1, 0));
+        jPanel28.setLayout(new java.awt.GridLayout());
 
         jlbAppLogDirectory.setText("Log files directory");
         jPanel28.add(jlbAppLogDirectory);
@@ -999,7 +1017,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpAppProperties.add(jPanel28);
 
-        jPanel29.setLayout(new java.awt.GridLayout(1, 0));
+        jPanel29.setLayout(new java.awt.GridLayout());
 
         jlbAppFileNameBase.setText("Log files name base");
         jPanel29.add(jlbAppFileNameBase);
@@ -1038,10 +1056,17 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpAppsBase.add(jpAppProperties);
 
+        jPanel34.setLayout(new java.awt.BorderLayout());
+        jpAppsBase.add(jPanel34);
+
         jpAllProfiles.add(jpAppsBase);
+
+        jPanel33.setLayout(new java.awt.BorderLayout());
+        jpAllProfiles.add(jPanel33);
 
         add(jpAllProfiles);
 
+        jPanel2.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
 
         jPanel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -1058,10 +1083,26 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbProdLog.setText("logs from prod");
         jPanel7.add(cbProdLog);
 
+        cbLCALogs.setText("LCA logs");
+        cbLCALogs.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbLCALogsItemStateChanged(evt);
+            }
+        });
+        jPanel7.add(cbLCALogs);
+
+        cbAppLogs.setText("Application logs");
+        cbAppLogs.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbAppLogsItemStateChanged(evt);
+            }
+        });
+        jPanel7.add(cbAppLogs);
+
         jPanel2.add(jPanel7);
 
         jpRangeSelect.setBorder(javax.swing.BorderFactory.createTitledBorder("Range select"));
-        jpRangeSelect.setLayout(new javax.swing.BoxLayout(jpRangeSelect, javax.swing.BoxLayout.LINE_AXIS));
+        jpRangeSelect.setLayout(new javax.swing.BoxLayout(jpRangeSelect, javax.swing.BoxLayout.PAGE_AXIS));
 
         jPanel11.setLayout(new javax.swing.BoxLayout(jPanel11, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1077,18 +1118,24 @@ public class SettingsPanel extends javax.swing.JPanel {
         jpRangeParams.setLayout(new java.awt.BorderLayout());
         jpRangeSelect.add(jpRangeParams);
 
+        jPanel35.setLayout(new java.awt.BorderLayout());
+        jpRangeSelect.add(jPanel35);
+
         jPanel2.add(jpRangeSelect);
 
         add(jPanel2);
 
+        jPanel9.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         jPanel9.setLayout(new javax.swing.BoxLayout(jPanel9, javax.swing.BoxLayout.PAGE_AXIS));
 
         jpCommandParams.setLayout(new javax.swing.BoxLayout(jpCommandParams, javax.swing.BoxLayout.LINE_AXIS));
 
-        jPanel16.setLayout(new javax.swing.BoxLayout(jPanel16, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel16.setLayout(new javax.swing.BoxLayout(jPanel16, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jPanel23.setLayout(new javax.swing.BoxLayout(jPanel23, javax.swing.BoxLayout.LINE_AXIS));
 
         lCommand.setText("Command");
-        jPanel16.add(lCommand);
+        jPanel23.add(lCommand);
 
         cbCommand.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cbCommand.addActionListener(new java.awt.event.ActionListener() {
@@ -1096,7 +1143,17 @@ public class SettingsPanel extends javax.swing.JPanel {
                 cbCommandActionPerformed(evt);
             }
         });
-        jPanel16.add(cbCommand);
+        jPanel23.add(cbCommand);
+
+        jPanel16.add(jPanel23);
+
+        jPanel32.setLayout(new javax.swing.BoxLayout(jPanel32, javax.swing.BoxLayout.LINE_AXIS));
+
+        jlbLogDirectory1.setText("Max threads");
+        jPanel32.add(jlbLogDirectory1);
+        jPanel32.add(jsMaxThreads);
+
+        jPanel16.add(jPanel32);
 
         jpCommandParams.add(jPanel16);
 
@@ -1110,26 +1167,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel22.add(cbUseRSync, java.awt.BorderLayout.CENTER);
 
         jPanel20.add(jPanel22);
-
-        jPanel23.setLayout(new java.awt.BorderLayout());
-
-        cbLCALogs.setText("LCA logs");
-        cbLCALogs.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbLCALogsItemStateChanged(evt);
-            }
-        });
-        jPanel23.add(cbLCALogs, java.awt.BorderLayout.CENTER);
-
-        cbAppLogs.setText("Application logs");
-        cbAppLogs.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbAppLogsItemStateChanged(evt);
-            }
-        });
-        jPanel23.add(cbAppLogs, java.awt.BorderLayout.PAGE_START);
-
-        jPanel20.add(jPanel23);
 
         jPanel18.add(jPanel20);
 
@@ -1538,6 +1575,10 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel30;
     private javax.swing.JPanel jPanel31;
+    private javax.swing.JPanel jPanel32;
+    private javax.swing.JPanel jPanel33;
+    private javax.swing.JPanel jPanel34;
+    private javax.swing.JPanel jPanel35;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
@@ -1556,6 +1597,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jlbAppLogDirectory;
     private javax.swing.JLabel jlbFileNameBase;
     private javax.swing.JLabel jlbLogDirectory;
+    private javax.swing.JLabel jlbLogDirectory1;
     private javax.swing.JPanel jpAllProfiles;
     private javax.swing.JPanel jpAppProperties;
     private javax.swing.JPanel jpApps;
@@ -1574,6 +1616,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPopupMenu jpmAppSettings;
     private javax.swing.JRadioButton jrbOSLinux;
     private javax.swing.JRadioButton jrbOSWindows;
+    private javax.swing.JSpinner jsMaxThreads;
     private javax.swing.JTextField jtfAppFileNameBase;
     private javax.swing.JTextField jtfAppLogDirectory;
     private javax.swing.JTextField jtfFileNameBase;
@@ -1668,6 +1711,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         updateLFMTs();
         reloadLoginProfiles();
         updateProfileTitle();
+        jsMaxThreads.setValue(ds.getMaxThreads());
     }
 
     private void addProfile(String showInputDialog) {

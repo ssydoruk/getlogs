@@ -41,6 +41,17 @@ public class DownloadSettings {
     private long rangeStart;
     private long rangeEnd;
 
+    private int maxThreads;
+
+    public int getMaxThreads() {
+
+        return (maxThreads > 0) ? maxThreads : Integer.MAX_VALUE;
+    }
+
+    public void setMaxThreads(int maxThreads) {
+        this.maxThreads = maxThreads;
+    }
+
     public DownloadSettings() {
         this.appLogs = true;
         this.lcaLogs = false;

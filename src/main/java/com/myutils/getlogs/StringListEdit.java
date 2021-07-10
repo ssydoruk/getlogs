@@ -84,44 +84,42 @@ public class StringListEdit extends JPanel {
 
         ArrayList<EditableValue[]> values = new ArrayList<>();
 
-//        for (Object entry : lmItems.toArray()) {
-//            if (!entry.equals(CheckBoxList.ALL_ENTRY)) {
-//                values.add(
-//                        
-//                        new String[]{((ListEntry) entry).toString()});
-//            }
-//
-//        }
-
-            getStringsEditor().setData(new Object[]{columnTitle        },
-                values
-        );
-        getStringsEditor()
-                .setAddChoices(addChoices);
-        getStringsEditor()
-                .doShow();
-
-
-        ArrayList<EditableValue[]> data1 = getStringsEditor().getData();
-        ArrayList<Pair<String, Boolean>> itemsState = new ArrayList<>();
-
-        for (int i = 0; i < data1.size(); i++) {
-            Object[] objArr = data1.get(i);
-            if (objArr != null && objArr.length > 0) {
-                String elem = (String) objArr[0];
-                ListEntry le = leIdx(elem);
-                if (le != null) {
-                    itemsState.add(new Pair(elem, le.isSelected()));
-                } else {
-                    itemsState.add(new Pair(elem, true));
-                }
+        for (Object entry : lmItems.toArray()) {
+            if (!entry.equals(CheckBoxList.ALL_ENTRY)) {
+                values.add(
+                        new EditableValue[]{new StringValue(entry.toString())});
             }
 
         }
 
-        setData(itemsState);
+        getStringsEditor().setData(new Object[]{columnTitle},
+                values
+        );
+        getStringsEditor()
+                .setAddChoices(addChoices);
+        if (getStringsEditor().doShow()) {
 
-        dataChanged();
+            ArrayList<EditableValue[]> data1 = getStringsEditor().getData();
+            ArrayList<Pair<String, Boolean>> itemsState = new ArrayList<>();
+
+            for (int i = 0; i < data1.size(); i++) {
+                EditableValue[] objArr = data1.get(i);
+                if (objArr != null && objArr.length > 0) {
+                    String elem = objArr[0].toString();
+                    ListEntry le = leIdx(elem);
+                    if (le != null) {
+                        itemsState.add(new Pair(elem, le.isSelected()));
+                    } else {
+                        itemsState.add(new Pair(elem, true));
+                    }
+                }
+
+            }
+
+            setData(itemsState);
+
+            dataChanged();
+        }
 //            ds.loadLFMTs(stringsEditor.getData());
     }
 
