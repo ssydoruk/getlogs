@@ -392,7 +392,9 @@ public final class CommandExecutor {
 
     }
 
-    private String connectWindowsShare(AppProfile appProfile, App ap) {
+    private static final Matcher mWindowsErrorCode = Pattern.compile("error (\\d+) has occurred").matcher("");
+
+    private synchronized String connectWindowsShare(AppProfile appProfile, App ap) throws IncorrectPasswordException {
         Pair<String, String> winPath = getWinDrive(ap.getAppDir());
         String logPath = "\\\\" + ap.getHost() + "\\" + winPath.getKey();
         String ret = logPath + winPath.getValue();
@@ -410,6 +412,15 @@ public final class CommandExecutor {
                         && stdOut.get(0).equals("The command completed successfully.")) {
                     return ret;
                 }
+                for (String s: ret1.getValue()
+                     ) {
+                    if(mWindowsErrorCode.reset(s).find()){
+                        int code=Integer.parseInt(mWindowsErrorCode.group(1));
+                        if(code==86){ //
+                            throw new IncorrectPasswordException("");
+                        }
+                    }
+                }
                 logMessage(Level.ERROR,
                         (new StringBuilder(getLogPrefix(appProfile, ap))).append("\n\tstdout [")
                                 .append(StringUtils.join(stdOut, "\n")).append("]\n\t").append("\n\tstderr [")
@@ -420,8 +431,8 @@ public final class CommandExecutor {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } catch (Exception ex) {
-            Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (ConfigException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -515,7 +526,12 @@ public final class CommandExecutor {
         String logPath = null;
         for (int i = 0; i < 3; i++) {
             logMessage("attempt to connect to share " + i, appProfile, ap);
-            logPath = connectWindowsShare(appProfile, ap);
+            try {
+                logPath = connectWindowsShare(appProfile, ap);
+            } catch (IncorrectPasswordException e) {
+                logMessage("The specified network password is not correct.", appProfile, ap);
+                break;
+            }
             if (logPath != null) {
                 break;
             }
