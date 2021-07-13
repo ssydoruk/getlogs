@@ -7,8 +7,8 @@
     <version>1.0</version>
     <packaging>jar</packaging>
     <properties>
-        <installdir>c:\GCTI\lib</installdir>
-        <!--installdir>/Users/stepan_sydoruk/GCTI/lib/getlogs</installdir-->
+        <!-- <installdir>c:\GCTI\lib</installdir> -->
+        installdir>/Users/stepan_sydoruk/GCTI/lib/getlogs</installdir
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
