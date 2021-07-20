@@ -6,12 +6,18 @@
 package com.myutils.getlogs;
 
 import static Utils.SystemClipboard.getSystemClipboard;
+
 import Utils.*;
 import Utils.UnixProcess.*;
+
 import static Utils.Util.rSyncAddClause;
+
 import com.jidesoft.dialog.*;
+
 import static com.myutils.getlogs.GetLogs.logger;
+
 import com.myutils.getlogs.InfoPanel;
+
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.io.*;
@@ -24,6 +30,7 @@ import java.util.logging.Logger;
 import java.util.regex.*;
 import javax.swing.*;
 import javax.swing.table.*;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.*;
 import org.apache.commons.lang3.StringUtils;
@@ -50,12 +57,9 @@ public final class CommandExecutor {
     private ThreadPoolExecutor executor = null;
 
     private void initExecutor(int maxThreads) {
-        if (executor == null) {
-            executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxThreads);
-        } else {
-            executor.setCorePoolSize(maxThreads);
-            executor.setMaximumPoolSize(maxThreads);
-        }
+        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxThreads);
+        executor.setCorePoolSize(maxThreads);
+        executor.setMaximumPoolSize(maxThreads);
     }
 
     private static String cloudPattern(String fileNameRegex, String datePattern, String timePattern, App ap) {
@@ -242,8 +246,8 @@ public final class CommandExecutor {
             }
 
             logsDir.append("/").append(h) // .append("/")
-                    // .append(ap)
-                    ;
+            // .append(ap)
+            ;
         } else {
             logsDir.append(GetLogs.getProdBaseDir());
 
@@ -297,7 +301,7 @@ public final class CommandExecutor {
     }
 
     protected SavedSearchStorage getStorage(AppProfile appProfile, App ap, HostAppdir theAppHost,
-            String logsDir, boolean lfmt, boolean lcaLog) {
+                                            String logsDir, boolean lfmt, boolean lcaLog) {
         SavedSearchStorage _ret = new SavedSearchStorage(appProfile, ap, theAppHost, logsDir, lfmt, lcaLog);
 
         synchronized (savedSearch) {
@@ -318,7 +322,7 @@ public final class CommandExecutor {
     }
 
     private String remoteSSHCmd(AppProfile appProfile, App ap, String logsDir, ArrayList<String> fileNameClause,
-            boolean lcaLog, boolean isLFMT) {
+                                boolean lcaLog, boolean isLFMT) {
         StringBuilder sshCmd = new StringBuilder();
 
         // this is to play with permissions.
@@ -383,7 +387,7 @@ public final class CommandExecutor {
     }
 
     private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-            ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException, ConfigException {
+                                                 ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException, ConfigException {
         if (ap.isIsWindows()) {
             return executeLSWin(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         } else {
@@ -412,11 +416,13 @@ public final class CommandExecutor {
                         && stdOut.get(0).equals("The command completed successfully.")) {
                     return ret;
                 }
-                for (String s: ret1.getValue()
-                     ) {
-                    if(mWindowsErrorCode.reset(s).find()){
-                        int code=Integer.parseInt(mWindowsErrorCode.group(1));
-                        if(code==86){ //
+                for (String s : ret1.getValue()
+                ) {
+                    if (mWindowsErrorCode.reset(s).find()) {
+                        int code = Integer.parseInt(mWindowsErrorCode.group(1));
+                        if (code == 86 ||
+                                code == 1909 //! The referenced account is currently locked out and may not be logged on to.
+                        ) { //
                             throw new IncorrectPasswordException("");
                         }
                     }
@@ -520,7 +526,7 @@ public final class CommandExecutor {
     }
 
     private ArrayList<JTableFileEntry> executeLSWin(AppProfile appProfile, App ap, HostAppdir theAppHost,
-            String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog)
+                                                    String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog)
             throws IOException, InterruptedException {
 
         String logPath = null;
@@ -639,7 +645,7 @@ public final class CommandExecutor {
     }
 
     private ArrayList<JTableFileEntry> executeLSLinux(AppProfile appProfile, App ap, HostAppdir theAppHost,
-            String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws ConfigException, IOException, InterruptedException {
+                                                      String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws ConfigException, IOException, InterruptedException {
 
         String remoteCmd = remoteSSHCmd(appProfile, ap, logsDir, fileNameClause, lcaLog, isLFMT);
         int executionResult;
@@ -913,17 +919,17 @@ public final class CommandExecutor {
     }
 
     private Pair<ArrayList<String>, ArrayList<String>> executeCommand(String key, boolean saveStdOut,
-            boolean saveStdErr, AppProfile appProfile, App ap) throws IOException, InterruptedException {
+                                                                      boolean saveStdErr, AppProfile appProfile, App ap) throws IOException, InterruptedException {
         return executeCommand(key, saveStdOut, saveStdErr, getLogPrefix(appProfile, ap));
     }
 
     private Pair<ArrayList<String>, ArrayList<String>> executeCommand(String key, boolean saveStdOut,
-            boolean saveStdErr) throws IOException, InterruptedException {
+                                                                      boolean saveStdErr) throws IOException, InterruptedException {
         return executeCommand(key, saveStdOut, saveStdErr, "");
     }
 
     private Pair<ArrayList<String>, ArrayList<String>> executeCommand(String key, boolean saveStdOut,
-            boolean saveStdErr, String logPrefix) throws IOException, InterruptedException {
+                                                                      boolean saveStdErr, String logPrefix) throws IOException, InterruptedException {
         ArrayList<String> cmdParams = new ArrayList<>();
         String[] split = StringUtils.split(key);
         for (String string : split) {
@@ -952,7 +958,7 @@ public final class CommandExecutor {
     private static final int MAX_FILE_LIST_LEN = 80;
 
     private void executeSSHDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-            ArrayList<OSFile> filesList, boolean isLFMT, boolean lcaLog) {
+                                    ArrayList<OSFile> filesList, boolean isLFMT, boolean lcaLog) {
         ArrayList<OSFile> filesToGet = new ArrayList<>();
         String outDir = FilenameUtils.concat(getDs().getOutputDir(), ap.getName());
         for (OSFile file
@@ -1017,7 +1023,7 @@ public final class CommandExecutor {
     }
 
     private void fileTransfer(OSFile file, String outDir,
-            AppProfile appProfile, App ap, IFileTransferAction action) {
+                              AppProfile appProfile, App ap, IFileTransferAction action) {
         File srcFile = new File(file.getFileName());
         final File destFile = Paths.get(outDir, srcFile.getParent(), srcFile.getName()).toFile();
         Path destPath = destFile.toPath();
@@ -1046,7 +1052,7 @@ public final class CommandExecutor {
     }
 
     private void executeWinDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-            ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) {
+                                    ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) {
         String outDir = FilenameUtils.concat(getDs().getOutputDir(), ap.getName());
         try {
             FileUtils.forceMkdir(new File(outDir));
@@ -1068,7 +1074,7 @@ public final class CommandExecutor {
     }
 
     private void executeDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-            ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+                                 ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         if (ap.isIsWindows()) {
             executeWinDownload(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         } else if (GetLogs.isbIsSSHJava()) {
@@ -1088,14 +1094,14 @@ public final class CommandExecutor {
      * @param ap
      * @param theAppHost
      * @param logsDir
-     * @param fileNames - expected to contain only list of file names, no path
+     * @param fileNames  - expected to contain only list of file names, no path
      * @param isLFMT
      * @param lcaLog
      * @throws IOException
      * @throws InterruptedException
      */
     private void executeRSync(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-            ArrayList<OSFile> fileNames, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+                              ArrayList<OSFile> fileNames, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
 
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
@@ -1890,7 +1896,7 @@ public final class CommandExecutor {
         }
 
         private QueryTask(CommandExecutor aThis, CountDownLatch latch, ISubTask subTask, CountDownLatch finishLatch,
-                ISubTask finishingTask) {
+                          ISubTask finishingTask) {
             this(aThis, latch, subTask);
             if (finishingTask != null) {
                 setFinishingTask(finishingTask);
