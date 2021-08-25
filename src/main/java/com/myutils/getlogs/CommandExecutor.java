@@ -35,6 +35,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
+import org.apache.mina.util.Base64;
 
 /**
  * @author stepan_sydoruk
@@ -388,6 +389,8 @@ public final class CommandExecutor {
 
     private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
                                                  ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException, ConfigException {
+//        prepareZips(appProfile, ap, theAppHost, logsDir, null);
+
         if (ap.isIsWindows()) {
             return executeLSWin(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         } else {
@@ -1059,7 +1062,17 @@ public final class CommandExecutor {
         } catch (IOException e) {
             logMessage(Level.ERROR, "Not created output dir: " + e.getMessage(), appProfile, ap);
         }
-        for (OSFile file : fileNameClause) {
+        ArrayList<OSFile> zippedFiles = null;
+        try {
+            zippedFiles = prepareZips(appProfile, ap, theAppHost, logsDir, fileNameClause);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ConfigException e) {
+            e.printStackTrace();
+        }
+        for (OSFile file : zippedFiles) {
             fileTransfer(file, outDir, appProfile, ap, (f, src, dst) -> {
                 try {
                     FileUtils.copyFile(src, dst, true);
@@ -1069,8 +1082,78 @@ public final class CommandExecutor {
                     logMessage("Failed to copy [" + file.getFileName() + "] to dir [" + outDir + "]: ", e,
                             appProfile, ap);
                 }
+                try {
+                    Files.delete(src.toPath());
+                } catch (IOException e) {
+                    logMessage("Failed to delete [" + src.toString() + "]: ", e,
+                            appProfile, ap);
+                }
             });
         }
+    }
+
+    private static final String zipExt = ".zip";
+
+    private ArrayList<OSFile> prepareZips(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, ArrayList<OSFile> fileNameClause) throws IOException, InterruptedException, ConfigException {
+        ArrayList<String> fileNames = new ArrayList<>(fileNameClause.size());
+        ArrayList<OSFile> ret = new ArrayList<>();
+        for (OSFile f : fileNameClause) {
+            String fn = getLocalFileName(f.getFileName(), appProfile, ap);
+            if (fn != null) {
+                fileNames.add("'" + fn + "'");
+                ret.add(new OSFile(f.getFileName() + zipExt, 0));
+            }
+        }
+        if (fileNames.isEmpty())
+            return null;
+
+        StringBuilder zipCommand = new StringBuilder();
+        zipCommand.append("Add-Type -assembly 'System.IO.Compression'\n" +
+                "Add-Type -assembly 'System.IO.Compression.FileSystem'\n" +
+                "\n" +
+                "foreach ($fileToZip in ");
+        zipCommand.append(StringUtils.join(fileNames, ','));
+        zipCommand.append(") {\n" +
+                "    [System.IO.Compression.ZipArchive]$ZipFile = [System.IO.Compression.ZipFile]::Open($fileToZip+'" + zipExt + "',([System.IO.Compression.ZipArchiveMode]::Create))\n" +
+                "    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($ZipFile, $fileToZip, (Split-Path $fileToZip -Leaf))\n" +
+                "    $ZipFile.Dispose()\n" +
+                "}");
+        logger.info("executing [" + zipCommand.toString() + "]");
+
+        if (StringUtils.isEmpty(zipCommand))
+            return null;
+        StringBuilder cmd = new StringBuilder();
+
+        cmd.append("winrs ")
+                .append("/remote:")
+                .append(theAppHost.getHost())
+                .append(" /username:")
+                .append(ds.getUser(appProfile))
+                .append(" /password:")
+                .append(ds.getPassword(appProfile))
+                .append(" Powershell -NoLogo -NonInteractive -encodedCommand ")
+                .append(base64Encode(zipCommand.toString()));
+        Pair<ArrayList<String>, ArrayList<String>> arrayListArrayListPair = executeCommand(cmd.toString(), true, true, appProfile, ap);
+
+        return ret;
+    }
+
+
+    private static final Matcher mFileName = Pattern.compile("(\\w)(?:\\$|:)(.+)$").matcher("");
+
+    private String getLocalFileName(String fileName, AppProfile appProfile, App ap) {
+        if ((mFileName.reset(fileName)).find()) {
+            return mFileName.group(1) + ":" + mFileName.group(2);
+        } else {
+            logMessage("Unrecognized file name [" + fileName.replace("\\", "\\\\") + "]", appProfile, ap);
+            return null;
+        }
+    }
+
+    private String base64Encode(String s) {
+        byte[] bytes = Base64.encodeBase64(s.getBytes(Charsets.UTF_16LE));
+
+        return new String(bytes);
     }
 
     private void executeDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
