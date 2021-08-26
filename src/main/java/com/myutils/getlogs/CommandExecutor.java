@@ -56,11 +56,18 @@ public final class CommandExecutor {
     private static final Pattern regPostAction = Pattern.compile("\\{(NAME|OUTDIR)\\}");
     private static final Pattern ptFullFileName = Pattern.compile("([^/]+)/([^/]+)$");
     private ThreadPoolExecutor executor = null;
+    private ThreadPoolExecutor helperExecutor = null;
 
     private void initExecutor(int maxThreads) {
+        if (executor != null)
+            executor.purge();
+        if (helperExecutor != null)
+            helperExecutor.purge();
+
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxThreads);
         executor.setCorePoolSize(maxThreads);
         executor.setMaximumPoolSize(maxThreads);
+        helperExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     }
 
     private static String cloudPattern(String fileNameRegex, String datePattern, String timePattern, App ap) {
@@ -141,10 +148,19 @@ public final class CommandExecutor {
     synchronized private void cancelExecutor() {
         logger.debug("Cancelling...");
         boolean terminatedOK = true;
-        List<Runnable> shutdownNow = executor.shutdownNow();
+        shutdownExecutor(helperExecutor, "helper executor");
+        shutdownExecutor(executor, "main executor");
+
+        initExecutor(ds.getMaxThreads());
+    }
+
+    private void shutdownExecutor(ThreadPoolExecutor _executor, String helper_executor) {
+        boolean terminatedOK = true;
+
+        List<Runnable> shutdownNow = _executor.shutdownNow();
         if (shutdownNow != null && !shutdownNow.isEmpty()) {
             try {
-                if (!executor.awaitTermination(500, TimeUnit.MILLISECONDS)) {
+                if (!_executor.awaitTermination(500, TimeUnit.MILLISECONDS)) {
                     terminatedOK = false;
                     logger.error("Not all thread terminated after timeout");
                 }
@@ -153,12 +169,12 @@ public final class CommandExecutor {
             }
         }
         if (terminatedOK) {
-            executor.purge();
-            initExecutor(ds.getMaxThreads());
+            _executor.purge();
         }
-        if (executor.isTerminated()) {
-            logger.error("executor terminated");
+        if (_executor.isTerminated()) {
+            logger.error(helper_executor + " terminated");
         }
+
     }
 
     private DownloadSettings ds;
@@ -569,7 +585,7 @@ public final class CommandExecutor {
             }
             for (File f : FileUtils.listFiles(new File(logPath), null, true)) {
                 String fileName = f.getName().toLowerCase();
-                if (!f.getName().toLowerCase().contains("snapshot.log")) {
+                if (!fileName.contains("snapshot.log") && !fileName.endsWith(".zip")) {
                     for (Map.Entry<String, ArrayList<OSFile>> entryNameSuffix : nameSuffixes
                             .entrySet()) {
 
@@ -961,7 +977,7 @@ public final class CommandExecutor {
     private static final int MAX_FILE_LIST_LEN = 80;
 
     private void executeSSHDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-                                    ArrayList<OSFile> filesList, boolean isLFMT, boolean lcaLog) {
+                                    ArrayList<OSFile> filesList, boolean isLFMT, boolean lcaLog) throws InterruptedException {
         ArrayList<OSFile> filesToGet = new ArrayList<>();
         String outDir = FilenameUtils.concat(getDs().getOutputDir(), ap.getName());
         for (OSFile file
@@ -1022,11 +1038,11 @@ public final class CommandExecutor {
 
     interface IFileTransferAction {
 
-        void TransferActionOK(OSFile file, File src, File dst);
+        void TransferActionOK(OSFile file, File src, File dst) throws InterruptedException;
     }
 
     private void fileTransfer(OSFile file, String outDir,
-                              AppProfile appProfile, App ap, IFileTransferAction action) {
+                              AppProfile appProfile, App ap, IFileTransferAction action) throws InterruptedException {
         File srcFile = new File(file.getFileName());
         final File destFile = Paths.get(outDir, srcFile.getParent(), srcFile.getName()).toFile();
         Path destPath = destFile.toPath();
@@ -1055,38 +1071,94 @@ public final class CommandExecutor {
     }
 
     private void executeWinDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-                                    ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) {
+                                    ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) throws InterruptedException {
+
+        // preparing list of zip files and list of files to archive
+        ArrayList<String> filesToArchive = new ArrayList<>(fileNameClause.size());
+        ArrayList<OSFile> zippedFiles = new ArrayList<>();
+        String filesPath = null;
+        for (OSFile f : fileNameClause) {
+            String fn = getLocalFileName(f.getFileName(), appProfile, ap);
+            if (fn != null) {
+                String n = FilenameUtils.getName(fn);
+                String newPath = FilenameUtils.getFullPath(fn);
+                if (filesPath != null && newPath != null && !filesPath.equalsIgnoreCase(newPath)) {
+                    logMessage(Level.ERROR, "Different paths??? filesPath [" + filesPath + "] filename[" + fn + "]", appProfile, ap);
+                    return;
+                } else {
+                    filesPath = newPath;
+                }
+                filesToArchive.add("'" + n + "'");
+                zippedFiles.add(new OSFile(f.getFileName() + zipExt, Long.MAX_VALUE));
+            }
+        }
+        if (filesToArchive.isEmpty())
+            return;
+
+
         String outDir = FilenameUtils.concat(getDs().getOutputDir(), ap.getName());
         try {
             FileUtils.forceMkdir(new File(outDir));
         } catch (IOException e) {
             logMessage(Level.ERROR, "Not created output dir: " + e.getMessage(), appProfile, ap);
         }
-        ArrayList<OSFile> zippedFiles = null;
-        try {
-            zippedFiles = prepareZips(appProfile, ap, theAppHost, logsDir, fileNameClause);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ConfigException e) {
-            e.printStackTrace();
-        }
-        for (OSFile file : zippedFiles) {
-            fileTransfer(file, outDir, appProfile, ap, (f, src, dst) -> {
+
+        String finalFilesPath = filesPath;
+        helperExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
                 try {
-                    FileUtils.copyFile(src, dst, true);
-                    logMessage("Copied [" + file.getFileName() + "] to dir [" + outDir + "]: ",
-                            appProfile, ap);
+                    prepareZips(appProfile, ap, theAppHost, finalFilesPath, filesToArchive);
                 } catch (IOException e) {
-                    logMessage("Failed to copy [" + file.getFileName() + "] to dir [" + outDir + "]: ", e,
-                            appProfile, ap);
+                    logMessage("Exception preparing zip", e, appProfile, ap);
+                } catch (ConfigException e) {
+                    logMessage("Exception preparing zip", e, appProfile, ap);
+                } catch (InterruptedException e) {
+                    logMessage("Exception preparing zip", e, appProfile, ap);
                 }
-                try {
-                    Files.delete(src.toPath());
-                } catch (IOException e) {
-                    logMessage("Failed to delete [" + src.toString() + "]: ", e,
-                            appProfile, ap);
+            }
+        });
+
+        for (OSFile file : zippedFiles) {
+            logMessage("Transfering file [" + file.getFileName() + "] to dir [" + outDir + "]: ",
+                    appProfile, ap);
+
+            fileTransfer(file, outDir, appProfile, ap, (f, src, dst) -> {
+                for (int i = 0; i < 30; i++) {
+                    if (Files.exists(src.toPath())) {
+                        long srcSize = -1;
+                        long destSize = -1;
+                        try {
+                            if (Files.exists(dst.toPath())) {
+                                 destSize = Files.size(dst.toPath());
+                                 srcSize = Files.size(src.toPath());
+                            }
+                        } catch (IOException e) {
+                        }
+                        if( srcSize<0 || destSize <0 || destSize < srcSize){
+                            try {
+                                FileUtils.copyFile(src, dst, true);
+                                logMessage("Copied [" + file.getFileName() + "] to dir [" + outDir + "]: ",
+                                        appProfile, ap);
+                            } catch (IOException e) {
+                                logMessage("Failed to copy [" + file.getFileName() + "] to dir [" + outDir + "]: ", e,
+                                        appProfile, ap);
+                            }
+                        }
+
+                        try {
+                            Files.delete(src.toPath());
+                        } catch (IOException e) {
+                            logMessage("Failed to delete [" + src.toString() + "]: ", e,
+                                    appProfile, ap);
+                        } finally {
+                            break;
+                        }
+                    } else {
+                        logMessage("File [" + file.getFileName() + "] not found yet. Waiting",
+                                appProfile, ap);
+                        Thread.sleep(1000);
+                    }
                 }
             });
         }
@@ -1094,37 +1166,27 @@ public final class CommandExecutor {
 
     private static final String zipExt = ".zip";
 
-    private ArrayList<OSFile> prepareZips(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir, ArrayList<OSFile> fileNameClause) throws IOException, InterruptedException, ConfigException {
-        ArrayList<String> fileNames = new ArrayList<>(fileNameClause.size());
-        ArrayList<OSFile> ret = new ArrayList<>();
-        for (OSFile f : fileNameClause) {
-            String fn = getLocalFileName(f.getFileName(), appProfile, ap);
-            if (fn != null) {
-                fileNames.add("'" + fn + "'");
-                ret.add(new OSFile(f.getFileName() + zipExt, 0));
-            }
-        }
-        if (fileNames.isEmpty())
-            return null;
+    private void prepareZips(AppProfile appProfile, App ap, HostAppdir theAppHost, String destLogsDir, ArrayList<String> fileNames) throws IOException, InterruptedException, ConfigException {
 
-        StringBuilder zipCommand = new StringBuilder();
-        zipCommand.append("Add-Type -assembly 'System.IO.Compression'\n" +
-                "Add-Type -assembly 'System.IO.Compression.FileSystem'\n" +
-                "\n" +
-                "foreach ($fileToZip in ");
-        zipCommand.append(StringUtils.join(fileNames, ','));
-        zipCommand.append(") {\n" +
-                "    [System.IO.Compression.ZipArchive]$ZipFile = [System.IO.Compression.ZipFile]::Open($fileToZip+'" + zipExt + "',([System.IO.Compression.ZipArchiveMode]::Create))\n" +
-                "    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($ZipFile, $fileToZip, (Split-Path $fileToZip -Leaf))\n" +
-                "    $ZipFile.Dispose()\n" +
-                "}");
+        StringBuilder zipCommand = new StringBuilder()
+                .append("Add-Type -assembly 'System.IO.Compression'\n" +
+                        "Add-Type -assembly 'System.IO.Compression.FileSystem'\n" +
+                        "$d='" + destLogsDir + "'\n" +
+                        "foreach ($f in " +
+                        StringUtils.join(fileNames, ',') +
+                        ") {\n" +
+                        "$zn = $d+$f+'" + zipExt + "';$t=$d+'.'+$f+'" + zipExt + "'\n" +
+                        "if(Test-Path $zn){Remove-Item $zn};if(Test-Path $t){Remove-Item $t}\n" +
+                        "[System.IO.Compression.ZipArchive]$z=[System.IO.Compression.ZipFile]::Open($t,([System.IO.Compression.ZipArchiveMode]::Create))\n" +
+                        "[System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z,$d+$f,$f)|out-null\n" +
+                        "$z.Dispose()\n" +
+                        "Rename-Item -Path $t -NewName $zn\n" +
+                        "}");
         logger.info("executing [" + zipCommand.toString() + "]");
 
-        if (StringUtils.isEmpty(zipCommand))
-            return null;
-        StringBuilder cmd = new StringBuilder();
 
-        cmd.append("winrs ")
+        StringBuilder cmd = new StringBuilder()
+                .append("winrs ")
                 .append("/remote:")
                 .append(theAppHost.getHost())
                 .append(" /username:")
@@ -1134,8 +1196,11 @@ public final class CommandExecutor {
                 .append(" Powershell -NoLogo -NonInteractive -encodedCommand ")
                 .append(base64Encode(zipCommand.toString()));
         Pair<ArrayList<String>, ArrayList<String>> arrayListArrayListPair = executeCommand(cmd.toString(), true, true, appProfile, ap);
+        logMessage("Output of zip prepare: stdout:\n" +
+                StringUtils.join(arrayListArrayListPair.getKey(), '\n')
+                + "\nstderr:\n"
+                + StringUtils.join(arrayListArrayListPair.getValue()), appProfile, ap);
 
-        return ret;
     }
 
 
