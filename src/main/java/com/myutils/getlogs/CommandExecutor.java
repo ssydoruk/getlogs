@@ -1165,42 +1165,48 @@ public final class CommandExecutor {
     }
 
     private static final String zipExt = ".zip";
+    private static int MAX_FILES_IN_BANCH = 5;
 
     private void prepareZips(AppProfile appProfile, App ap, HostAppdir theAppHost, String destLogsDir, ArrayList<String> fileNames) throws IOException, InterruptedException, ConfigException {
+        ArrayList<String> filesToGet = new ArrayList<>();
+        for (int i = 0; i < fileNames.size(); i++) {
+            filesToGet.add(fileNames.get(i));
+            if( i % MAX_FILES_IN_BANCH == 0 || (i+1>=fileNames.size())){
+                StringBuilder zipCommand = new StringBuilder()
+                        .append("Add-Type -assembly 'System.IO.Compression'\n" +
+                                "Add-Type -assembly 'System.IO.Compression.FileSystem'\n" +
+                                "$d='" + destLogsDir + "'\n" +
+                                "foreach ($f in " +
+                                StringUtils.join(filesToGet, ',') +
+                                ") {\n" +
+                                "$zn = $d+$f+'" + zipExt + "';$t=$d+'.'+$f+'" + zipExt + "'\n" +
+                                "if(Test-Path $zn){Remove-Item $zn};if(Test-Path $t){Remove-Item $t}\n" +
+                                "[System.IO.Compression.ZipArchive]$z=[System.IO.Compression.ZipFile]::Open($t,([System.IO.Compression.ZipArchiveMode]::Create))\n" +
+                                "[System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z,$d+$f,$f)|out-null\n" +
+                                "$z.Dispose()\n" +
+                                "Rename-Item -Path $t -NewName $zn\n" +
+                                "}");
+                logger.info("executing [" + zipCommand.toString() + "]");
 
-        StringBuilder zipCommand = new StringBuilder()
-                .append("Add-Type -assembly 'System.IO.Compression'\n" +
-                        "Add-Type -assembly 'System.IO.Compression.FileSystem'\n" +
-                        "$d='" + destLogsDir + "'\n" +
-                        "foreach ($f in " +
-                        StringUtils.join(fileNames, ',') +
-                        ") {\n" +
-                        "$zn = $d+$f+'" + zipExt + "';$t=$d+'.'+$f+'" + zipExt + "'\n" +
-                        "if(Test-Path $zn){Remove-Item $zn};if(Test-Path $t){Remove-Item $t}\n" +
-                        "[System.IO.Compression.ZipArchive]$z=[System.IO.Compression.ZipFile]::Open($t,([System.IO.Compression.ZipArchiveMode]::Create))\n" +
-                        "[System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z,$d+$f,$f)|out-null\n" +
-                        "$z.Dispose()\n" +
-                        "Rename-Item -Path $t -NewName $zn\n" +
-                        "}");
-        logger.info("executing [" + zipCommand.toString() + "]");
 
-
-        StringBuilder cmd = new StringBuilder()
-                .append("winrs ")
-                .append("/remote:")
-                .append(theAppHost.getHost())
-                .append(" /username:")
-                .append(ds.getUser(appProfile))
-                .append(" /password:")
-                .append(ds.getPassword(appProfile))
-                .append(" Powershell -NoLogo -NonInteractive -encodedCommand ")
-                .append(base64Encode(zipCommand.toString()));
-        Pair<ArrayList<String>, ArrayList<String>> arrayListArrayListPair = executeCommand(cmd.toString(), true, true, appProfile, ap);
-        logMessage("Output of zip prepare: stdout:\n" +
-                StringUtils.join(arrayListArrayListPair.getKey(), '\n')
-                + "\nstderr:\n"
-                + StringUtils.join(arrayListArrayListPair.getValue()), appProfile, ap);
-
+                StringBuilder cmd = new StringBuilder()
+                        .append("winrs ")
+                        .append("/remote:")
+                        .append(theAppHost.getHost())
+                        .append(" /username:")
+                        .append(ds.getUser(appProfile))
+                        .append(" /password:")
+                        .append(ds.getPassword(appProfile))
+                        .append(" Powershell -NoLogo -NonInteractive -encodedCommand ")
+                        .append(base64Encode(zipCommand.toString()));
+                Pair<ArrayList<String>, ArrayList<String>> arrayListArrayListPair = executeCommand(cmd.toString(), true, true, appProfile, ap);
+                logMessage("Output of zip prepare: stdout:\n" +
+                        StringUtils.join(arrayListArrayListPair.getKey(), '\n')
+                        + "\nstderr:\n"
+                        + StringUtils.join(arrayListArrayListPair.getValue()), appProfile, ap);
+                filesToGet.clear();
+            }
+        }
     }
 
 
