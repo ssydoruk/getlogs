@@ -106,8 +106,8 @@ public final class LogWindow extends JDialog {
             public void run() {
 //                setVisible(false);
                 jt.append(str + "\n");
+//                jt.setCaretPosition(jt.getText().length() - 1);
                 jt.invalidate();
-                jt.setCaretPosition(jt.getText().length() - 1);
 
 //                jt.update(jt.getGraphics());
 //                setVisible(true);
