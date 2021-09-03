@@ -25,6 +25,15 @@ public class DownloadSettings {
     private String grepText;
     private boolean useRSync;
     private boolean appLogs;
+    private boolean zipDest;
+
+    public boolean isZipDest() {
+        return zipDest;
+    }
+
+    public void setZipDest(boolean zipDest) {
+        this.zipDest = zipDest;
+    }
     private boolean lcaLogs;
     private String statusScript = "/Users/stepan_sydoruk/bin/getAppStatus";
 

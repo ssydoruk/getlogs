@@ -540,6 +540,14 @@
                 <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="cbAppLogsItemStateChanged"/>
               </Events>
             </Component>
+            <Component class="javax.swing.JCheckBox" name="cbZipDest">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Zip destination"/>
+              </Properties>
+              <Events>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="cbZipDestItemStateChanged"/>
+              </Events>
+            </Component>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="jpRangeSelect">

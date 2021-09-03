@@ -10,11 +10,8 @@ import Utils.TDateRange;
 import Utils.swing.*;
 import com.google.gson.*;
 import com.jidesoft.swing.*;
-
 import static com.myutils.getlogs.GetLogs.logger;
-
 import com.myutils.getlogs.InfoPanel;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -26,7 +23,6 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.text.*;
-
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -731,6 +727,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbProdLog = new javax.swing.JCheckBox();
         cbLCALogs = new javax.swing.JCheckBox();
         cbAppLogs = new javax.swing.JCheckBox();
+        cbZipDest = new javax.swing.JCheckBox();
         jpRangeSelect = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
         cbTimeProfile = new javax.swing.JComboBox<>();
@@ -1012,7 +1009,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpAppProperties.setLayout(new javax.swing.BoxLayout(jpAppProperties, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel28.setLayout(new java.awt.GridLayout());
+        jPanel28.setLayout(new java.awt.GridLayout(1, 0));
 
         jlbAppLogDirectory.setText("Log files directory");
         jPanel28.add(jlbAppLogDirectory);
@@ -1026,7 +1023,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpAppProperties.add(jPanel28);
 
-        jPanel29.setLayout(new java.awt.GridLayout());
+        jPanel29.setLayout(new java.awt.GridLayout(1, 0));
 
         jlbAppFileNameBase.setText("Log files name base");
         jPanel29.add(jlbAppFileNameBase);
@@ -1108,6 +1105,14 @@ public class SettingsPanel extends javax.swing.JPanel {
         });
         jPanel7.add(cbAppLogs);
 
+        cbZipDest.setText("Zip destination");
+        cbZipDest.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbZipDestItemStateChanged(evt);
+            }
+        });
+        jPanel7.add(cbZipDest);
+
         jPanel2.add(jPanel7);
 
         jpRangeSelect.setBorder(javax.swing.BorderFactory.createTitledBorder("Range select"));
@@ -1146,7 +1151,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         lCommand.setText("Command");
         jPanel23.add(lCommand);
 
-        cbCommand.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
+        cbCommand.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cbCommand.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbCommandActionPerformed(evt);
@@ -1536,6 +1541,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_cbLoginProfileItemStateChanged
 
+    private void cbZipDestItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbZipDestItemStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbZipDestItemStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;
     private javax.swing.ButtonGroup bgOS;
@@ -1550,6 +1559,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbProdLog;
     private javax.swing.JComboBox<String> cbTimeProfile;
     private javax.swing.JCheckBox cbUseRSync;
+    private javax.swing.JCheckBox cbZipDest;
     private javax.swing.JMenuItem cbmCopyHostName;
     private javax.swing.JCheckBoxMenuItem cbmShowHosts;
     private javax.swing.JFormattedTextField ftHours;
@@ -1692,6 +1702,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbLfmtLog.setSelected(ds.isLfmt());
         cbProdLog.setSelected(ds.isProd());
         cbAppLogs.setSelected(ds.isAppLogs());
+        cbZipDest.setSelected(ds.isZipDest());
         cbLCALogs.setSelected(ds.isLcaLogs());
         jtfOutputDir.setText(ds.getOutputDir());
         cbUseRSync.setSelected(ds.isUseRSync());
@@ -1744,6 +1755,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         ds.setProd(cbProdLog.isSelected());
         ds.setLcaLogs(cbLCALogs.isSelected());
         ds.setAppLogs(cbAppLogs.isSelected());
+        ds.setZipDest(cbZipDest.isSelected());
         ds.setTimeProfile((TimeProfile) cbTimeProfile.getSelectedItem());
         ds.setHours(ftHours.getText());
         ds.setActionCommand((GetCommand) cbCommand.getSelectedItem());

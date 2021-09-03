@@ -6,18 +6,12 @@
 package com.myutils.getlogs;
 
 import static Utils.SystemClipboard.getSystemClipboard;
-
 import Utils.*;
 import Utils.UnixProcess.*;
-
 import static Utils.Util.rSyncAddClause;
-
 import com.jidesoft.dialog.*;
-
 import static com.myutils.getlogs.GetLogs.logger;
-
 import com.myutils.getlogs.InfoPanel;
-
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.io.*;
@@ -30,7 +24,6 @@ import java.util.logging.Logger;
 import java.util.regex.*;
 import javax.swing.*;
 import javax.swing.table.*;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.*;
 import org.apache.commons.lang3.StringUtils;
@@ -1017,7 +1010,8 @@ public final class CommandExecutor {
         StringBuilder remoteCmd = new StringBuilder().append("tar -C ").append(appProfile.getLogDirectory())
                 .append(" -cz ").append(fileListForTar);
         try {
-            ThreadedUnTarGZ stdoutReader = new ThreadedUnTarGZ(FilenameUtils.concat(ds.getOutputDir(), ap.getName()));
+            ThreadedUnTarGZ stdoutReader = new ThreadedUnTarGZ(FilenameUtils.concat(ds.getOutputDir(), ap.getName())
+            ,ds.isZipDest());
             stdoutReader.setProgressProc(new IProcessOutputRead() {
                 @Override
                 public void lineRead(String s) {
