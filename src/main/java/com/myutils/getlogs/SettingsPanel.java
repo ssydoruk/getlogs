@@ -467,11 +467,13 @@ public class SettingsPanel extends javax.swing.JPanel {
             ext.setData(pr.getNameSuffixes());
             jtfLogDirectory.setText(pr.getLogDirectory());
             jtfFileNameBase.setText(pr.getLogFileNameBase());
-            if (StringUtils.isNotEmpty(pr.getLoginProfile()))
+            if (StringUtils.isNotEmpty(pr.getLoginProfile())) {
                 cbLoginProfile.setSelectedItem(pr.getLoginProfile());
-            else {
-                cbLoginProfile.setSelectedIndex(0);
-                pr.setLoginProfile((String) cbLoginProfile.getSelectedItem());
+            } else {
+                if (cbLoginProfile.getItemCount() > 0) {
+                    cbLoginProfile.setSelectedIndex(0);
+                    pr.setLoginProfile((String) cbLoginProfile.getSelectedItem());
+                }
             }
 
 //        tfFilenameSuffixes.setText(pr.getNameSuffixes());
@@ -1429,8 +1431,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         ArrayList<EditableValue[]> values = new ArrayList<>();
         for (DownloadSettings.LFMTHostInstance hi : ds.getLfmtHostInstances()) {
             values.add(new EditableValue[]{new StringValue(hi.getHost()),
-                    new StringValue(hi.getInstance()),
-                    new StringValue(hi.getBaseDir())});
+                new StringValue(hi.getInstance()),
+                new StringValue(hi.getBaseDir())});
         }
         lfmtEditor.setData(new Object[]{"LFMT host", "LFMT instance", "Base directory"},
                 values
@@ -1934,8 +1936,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         ArrayList<EditableValue[]> loginProfiles = new ArrayList<>();
         for (LoginProfile lp : ds.getLoginProfiles()) {
             loginProfiles.add(new EditableValue[]{new StringValue(lp.getName()),
-                    new StringValue(lp.getUsername()),
-                    new PasswordValue(lp.getPassword())});
+                new StringValue(lp.getUsername()),
+                new PasswordValue(lp.getPassword())});
         }
         loginProfilesEditor.setData(loginProfiles);
         if (loginProfilesEditor.doShow()) {

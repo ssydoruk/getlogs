@@ -10,8 +10,11 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Dlog4j.configurationFile=/Users/stepan_sydoruk/GCTI/etc/logdownloaderOnPrem.xml -Dlog4j.logPath=/Users/stepan_sydoruk/tmp -classpath %classpath com.myutils.getlogs.GetLogs --gui-profile=/Users/stepan_sydoruk/GCTI/var/onpremPPE.txt --hosts=/Users/stepan_sydoruk/GCTI/etc/onprem_PPEHosts.txt --debug=TRACE "--ssh-opt=-l stepan_sydoruk -o ConnectTimeout=300" --rsync-username=svc-gsys-ppe --prod-base-dir=/applog/gcti --log-file=/Users/stepan_sydoruk/GCTI/tmp/logdown 2</exec.args>
+                <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
+                <exec.appArgs>--gui-profile=/Users/stepan_sydoruk/GCTI/var/onprem.txt --hosts=/Users/stepan_sydoruk/GCTI/etc/onprem_prodHosts.txt --debug=TRACE "--ssh-opt=-l stepan_sydoruk -o ConnectTimeout=300" --rsync-username=svc-gsys --prod-base-dir=/applog/gcti --log-file=/Users/stepan_sydoruk/GCTI/tmp/logdown 2</exec.appArgs>
+                <exec.vmArgs>-Dlog4j.configurationFile=/Users/stepan_sydoruk/GCTI/etc/logdownloaderOnPrem.xml -Dlog4j.logPath=/Users/stepan_sydoruk/tmp</exec.vmArgs>
+                <exec.mainClass>com.myutils.getlogs.GetLogs</exec.mainClass>
             </properties>
         </action>
         <action>
@@ -24,9 +27,12 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -Dlog4j.configurationFile=/Users/stepan_sydoruk/GCTI/etc/logdownloaderOnPrem.xml -Dlog4j.logPath=/Users/stepan_sydoruk/tmp -classpath %classpath com.myutils.getlogs.GetLogs --gui-profile=/Users/stepan_sydoruk/GCTI/var/onpremPPE.txt --hosts=/Users/stepan_sydoruk/GCTI/etc/onprem_PPEHosts.txt --debug=TRACE "--ssh-opt=-l stepan_sydoruk -o ConnectTimeout=300" --rsync-username=svc-gsys-ppe --prod-base-dir=/applog/gcti --log-file=/Users/stepan_sydoruk/GCTI/tmp/logdown 2</exec.args>
+                <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
+                <exec.appArgs>--gui-profile=/Users/stepan_sydoruk/GCTI/var/onprem.txt --hosts=/Users/stepan_sydoruk/GCTI/etc/onprem_prodHosts.txt --debug=TRACE "--ssh-opt=-l stepan_sydoruk -o ConnectTimeout=300" --rsync-username=svc-gsys --prod-base-dir=/applog/gcti --log-file=/Users/stepan_sydoruk/GCTI/tmp/logdown 2</exec.appArgs>
+                <exec.vmArgs>-Dlog4j.configurationFile=/Users/stepan_sydoruk/GCTI/etc/logdownloaderOnPrem.xml -Dlog4j.logPath=/Users/stepan_sydoruk/tmp -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
+                <exec.mainClass>com.myutils.getlogs.GetLogs</exec.mainClass>
             </properties>
         </action>
         <action>
@@ -39,8 +45,11 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Dlog4j.configurationFile=/Users/stepan_sydoruk/GCTI/etc/logdownloaderOnPrem.xml -Dlog4j.logPath=/Users/stepan_sydoruk/tmp -classpath %classpath com.myutils.getlogs.GetLogs --gui-profile=/Users/stepan_sydoruk/GCTI/var/onpremPPE.txt --hosts=/Users/stepan_sydoruk/GCTI/etc/onprem_PPEHosts.txt --debug=TRACE "--ssh-opt=-l stepan_sydoruk -o ConnectTimeout=300" --rsync-username=svc-gsys-ppe --prod-base-dir=/applog/gcti --log-file=/Users/stepan_sydoruk/GCTI/tmp/logdown 2</exec.args>
+                <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
+                <exec.appArgs>--gui-profile=/Users/stepan_sydoruk/GCTI/var/onprem.txt --hosts=/Users/stepan_sydoruk/GCTI/etc/onprem_prodHosts.txt --debug=TRACE "--ssh-opt=-l stepan_sydoruk -o ConnectTimeout=300" --rsync-username=svc-gsys --prod-base-dir=/applog/gcti --log-file=/Users/stepan_sydoruk/GCTI/tmp/logdown 2</exec.appArgs>
+                <exec.vmArgs>-Dlog4j.configurationFile=/Users/stepan_sydoruk/GCTI/etc/logdownloaderOnPrem.xml -Dlog4j.logPath=/Users/stepan_sydoruk/tmp</exec.vmArgs>
+                <exec.mainClass>com.myutils.getlogs.GetLogs</exec.mainClass>
             </properties>
         </action>
     </actions>
