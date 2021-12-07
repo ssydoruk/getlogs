@@ -7,5 +7,5 @@ import java.io.IOException;
  */
 public interface ISubTask {
 
-    void task() throws InterruptedException, IOException;
+    void task() throws Exception;
 }

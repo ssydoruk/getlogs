@@ -5,62 +5,93 @@
  */
 package com.myutils.getlogs;
 
-import static Utils.SystemClipboard.getSystemClipboard;
-import Utils.*;
+import Utils.Pair;
+import Utils.UTCTimeRange;
 import Utils.UnixProcess.*;
-import static Utils.Util.rSyncAddClause;
-import com.jidesoft.dialog.*;
-import static com.myutils.getlogs.GetLogs.logger;
-import com.myutils.getlogs.InfoPanel;
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.io.*;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
-import java.util.List;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.Logger;
-import java.util.regex.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import com.jidesoft.dialog.StandardDialog;
+import com.myutils.logbrowser.common.ExecutionEnvironment;
+import com.myutils.logbrowser.indexer.Main;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.*;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.mina.util.Base64;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static Utils.SystemClipboard.getSystemClipboard;
+import static Utils.Util.rSyncAddClause;
+import static com.myutils.getlogs.GetLogs.logger;
 
 /**
  * @author stepan_sydoruk
  */
 public final class CommandExecutor {
 
-    // public static void main(String[] args) throws Exception {
-    // System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190",
-    // "1"));
-    // System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "201901",
-    // "1"));
-    // System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "2019012",
-    // "1"));
-    // System.out.println(cloudPattern("bb{YYYY}_{MM}_{DD}_{HH}aa.log", "20190124",
-    // "1"));
-    // }
     private static final Pattern regVariable = Pattern.compile("\\{([A-Z]{2,4}|NAME)\\}");
     private static final Pattern regPostAction = Pattern.compile("\\{(NAME|OUTDIR)\\}");
     private static final Pattern ptFullFileName = Pattern.compile("([^/]+)/([^/]+)$");
+    private static final Matcher mWindowsErrorCode = Pattern.compile("error (\\d+) has occurred").matcher("");
+    private static final int MAX_FILE_LIST_LEN = 80;
+    private static final String zipExt = ".zip";
+    private static final Matcher mFileName = Pattern.compile("(\\w)(?:\\$|:)(.+)$").matcher("");
+    private static int MAX_FILES_IN_BANCH = 5;
+    final ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
+    private final boolean isText;
+    final private ArrayList<JTableFileEntry> lsFilesAll = new ArrayList<>();
+    private final ExtProcessManager extProcessManager;
+    private final int ret = StandardDialog.RESULT_CANCELLED;
+    Main indexer;
+    InfoPanel lsOutput;
+    InfoPanel lsPasteOutput;
+    JTableFileList lsTab = new JTableFileList();
+    JTablePasteFileList lsGeneralTab = null;
+    SSHClientWrapper sshClient = null;
     private ThreadPoolExecutor executor = null;
     private ThreadPoolExecutor helperExecutor = null;
+    private DownloadSettings ds;
+    private Window parent;
+    private ArrayList<JTableFileEntry> lsFilesLast = new ArrayList<>();
+    private RequestProgress rp = null;
 
-    private void initExecutor(int maxThreads) {
-        if (executor != null)
-            executor.purge();
-        if (helperExecutor != null)
-            helperExecutor.purge();
+    public CommandExecutor(boolean isText) {
+        this.isText = isText;
+        extProcessManager = new ExtProcessManager();
+        if (GetLogs.isbIsSSHJava()) {
+            // todo: make defaultTimeoutSeconds configurable
+            sshClient = new SSHClientWrapper(20000);
+        }
+    }
 
-        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxThreads);
-        executor.setCorePoolSize(maxThreads);
-        executor.setMaximumPoolSize(maxThreads);
-        helperExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+    public CommandExecutor(Window p) {
+        this(false);
+        parent = p;
+    }
+
+    CommandExecutor(boolean b, DownloadSettings ds) {
+        this(b);
+        setDs(ds);
     }
 
     private static String cloudPattern(String fileNameRegex, String datePattern, String timePattern, App ap) {
@@ -138,6 +169,18 @@ public final class CommandExecutor {
         return ret1;
     }
 
+    private void initExecutor(int maxThreads) {
+        if (executor != null)
+            executor.purge();
+        if (helperExecutor != null)
+            helperExecutor.purge();
+
+        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxThreads);
+        executor.setCorePoolSize(maxThreads);
+        executor.setMaximumPoolSize(maxThreads);
+        helperExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+    }
+
     synchronized private void cancelExecutor() {
         logger.debug("Cancelling...");
         boolean terminatedOK = true;
@@ -168,41 +211,6 @@ public final class CommandExecutor {
             logger.error(helper_executor + " terminated");
         }
 
-    }
-
-    private DownloadSettings ds;
-
-    private final boolean isText;
-    private Window parent;
-    final private ArrayList<JTableFileEntry> lsFilesAll = new ArrayList<>();
-    private ArrayList<JTableFileEntry> lsFilesLast = new ArrayList<>();
-    private RequestProgress rp = null;
-    private final ExtProcessManager extProcessManager;
-    private final int ret = StandardDialog.RESULT_CANCELLED;
-    InfoPanel lsOutput;
-    InfoPanel lsPasteOutput;
-    final ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
-    JTableFileList lsTab = new JTableFileList();
-    JTablePasteFileList lsGeneralTab = null;
-    SSHClientWrapper sshClient = null;
-
-    public CommandExecutor(boolean isText) {
-        this.isText = isText;
-        extProcessManager = new ExtProcessManager();
-        if (GetLogs.isbIsSSHJava()) {
-            // todo: make defaultTimeoutSeconds configurable
-            sshClient = new SSHClientWrapper(20000);
-        }
-    }
-
-    public CommandExecutor(Window p) {
-        this(false);
-        parent = p;
-    }
-
-    CommandExecutor(boolean b, DownloadSettings ds) {
-        this(b);
-        setDs(ds);
     }
 
     public DownloadSettings getDs() {
@@ -265,7 +273,7 @@ public final class CommandExecutor {
         return logsDir.toString();
     }
 
-    protected void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws IOException, InterruptedException, ConfigException {
+    protected void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws Exception {
         logMessage("executing command lfmt: " + isLFMT, appProfile, ap);
         HostAppdir theAppHost;
         if (GetLogs.appHost == null || GetLogs.appHost.isEmpty()) {
@@ -369,7 +377,7 @@ public final class CommandExecutor {
         // sshCmd.append(" echo ").append("\\${ext}").append(" ; ");
         // this is used for testing
         // sshCmd.append(" pwd; echo \\$ext; echo \\${ext}; ");
-        sshCmd.append(" find ").append((lcaLog) ? "lca" : ap.getAppDir()).append(" -maxdepth 1 ")
+        sshCmd.append(" find ").append((lcaLog) ? "lca" : ap.getAppDir()).append(" -maxdepth 5 ")
                 .append("-name \\${ext} ");
         // sshCmd.append(" -a -type f ");
         if (appProfile.isIsGenesysName()) {
@@ -407,8 +415,6 @@ public final class CommandExecutor {
         }
 
     }
-
-    private static final Matcher mWindowsErrorCode = Pattern.compile("error (\\d+) has occurred").matcher("");
 
     private synchronized String connectWindowsShare(AppProfile appProfile, App ap) throws IncorrectPasswordException {
         Pair<String, String> winPath = getWinDrive(ap.getAppDir());
@@ -967,8 +973,6 @@ public final class CommandExecutor {
 
     }
 
-    private static final int MAX_FILE_LIST_LEN = 80;
-
     private void executeSSHDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
                                     ArrayList<OSFile> filesList, boolean isLFMT, boolean lcaLog) throws InterruptedException {
         ArrayList<OSFile> filesToGet = new ArrayList<>();
@@ -1011,11 +1015,21 @@ public final class CommandExecutor {
                 .append(" -cz ").append(fileListForTar);
         try {
             ThreadedUnTarGZ stdoutReader = new ThreadedUnTarGZ(FilenameUtils.concat(ds.getOutputDir(), ap.getName())
-            ,ds.isZipDest());
+                    , ds.isZipDest());
             stdoutReader.setProgressProc(new IProcessOutputRead() {
                 @Override
                 public void lineRead(String s) {
                     logMessage(s, appProfile, ap);
+                }
+            });
+            stdoutReader.setDoneFileAction(new IDoneFileAction() {
+                @Override
+                public void fileDone(Path path) {
+                    try {
+                        indexer.processAddedFile(path);
+                    } catch (Exception e) {
+                        logMessage("exception adding file " + path, e);
+                    }
                 }
             });
             RemoteExecutionResult ret1 = sshClient.executePipedRemoteCommand(
@@ -1028,11 +1042,6 @@ public final class CommandExecutor {
         // executionResult = ret1.getRetCode();
         // stderr = ret1.getStderr();
         // stdout = ret1.getStdout();
-    }
-
-    interface IFileTransferAction {
-
-        void TransferActionOK(OSFile file, File src, File dst) throws InterruptedException;
     }
 
     private void fileTransfer(OSFile file, String outDir,
@@ -1124,14 +1133,15 @@ public final class CommandExecutor {
                         long destSize = -1;
                         try {
                             if (Files.exists(dst.toPath())) {
-                                 destSize = Files.size(dst.toPath());
-                                 srcSize = Files.size(src.toPath());
+                                destSize = Files.size(dst.toPath());
+                                srcSize = Files.size(src.toPath());
                             }
                         } catch (IOException e) {
                         }
-                        if( srcSize<0 || destSize <0 || destSize < srcSize){
+                        if (srcSize < 0 || destSize < 0 || destSize < srcSize) {
                             try {
                                 FileUtils.copyFile(src, dst, true);
+                                indexer.processAddedFile(dst);
                                 logMessage("Copied [" + file.getFileName() + "] to dir [" + outDir + "]: ",
                                         appProfile, ap);
                             } catch (IOException e) {
@@ -1158,14 +1168,11 @@ public final class CommandExecutor {
         }
     }
 
-    private static final String zipExt = ".zip";
-    private static int MAX_FILES_IN_BANCH = 5;
-
     private void prepareZips(AppProfile appProfile, App ap, HostAppdir theAppHost, String destLogsDir, ArrayList<String> fileNames) throws IOException, InterruptedException, ConfigException {
         ArrayList<String> filesToGet = new ArrayList<>();
         for (int i = 0; i < fileNames.size(); i++) {
             filesToGet.add(fileNames.get(i));
-            if( i % MAX_FILES_IN_BANCH == 0 || (i+1>=fileNames.size())){
+            if (i % MAX_FILES_IN_BANCH == 0 || (i + 1 >= fileNames.size())) {
                 StringBuilder zipCommand = new StringBuilder()
                         .append("Add-Type -assembly 'System.IO.Compression'\n" +
                                 "Add-Type -assembly 'System.IO.Compression.FileSystem'\n" +
@@ -1202,9 +1209,6 @@ public final class CommandExecutor {
             }
         }
     }
-
-
-    private static final Matcher mFileName = Pattern.compile("(\\w)(?:\\$|:)(.+)$").matcher("");
 
     private String getLocalFileName(String fileName, AppProfile appProfile, App ap) {
         if ((mFileName.reset(fileName)).find()) {
@@ -1617,7 +1621,7 @@ public final class CommandExecutor {
 
                     doExecuteCmd(parent, this, latch, new ISubTask() {
                         @Override
-                        public void task() throws InterruptedException, IOException {
+                        public void task() throws Exception {
                             executeDownload(r, latch);
                         }
                     });
@@ -1655,8 +1659,7 @@ public final class CommandExecutor {
 
     }
 
-    private void executeDownload(HashMap<SavedSearchStorage, ArrayList<OSFile>> r, CountDownLatch latch) {
-
+    private void executeDownload(HashMap<SavedSearchStorage, ArrayList<OSFile>> r, CountDownLatch latch) throws Exception {
         for (Map.Entry<SavedSearchStorage, ArrayList<OSFile>> entry : r.entrySet()) {
             SavedSearchStorage key = entry.getKey();
             ArrayList<OSFile> value = entry.getValue();
@@ -1667,12 +1670,33 @@ public final class CommandExecutor {
                             key.isLfmt(), key.isLcaLog());
                 }
             }));
-
         }
-
     }
 
-    private void executeDownload(ArrayList<JTableFileEntry> selectedRows) {
+    private void initParser() {
+        try {
+            ExecutionEnvironment ee = new ExecutionEnvironment();
+            ee.setXmlCFG(GetLogs.getsXMLCfg());
+            String s = GetLogs.getsDBName();
+            ee.setDbname((StringUtils.isEmpty(s)) ? Paths.get(getDs().getOutputDir(), "logbr").toString() : s);
+            ee.setBaseDir(getDs().getOutputDir());
+            s = GetLogs.getsDBAlias();
+            ee.setAlias((StringUtils.isEmpty(s)) ? "logbr" : s);
+            ee.setIgnoreZIP(GetLogs.isbIgnoreZIP());
+            ee.setParseTDiff(GetLogs.isbTDiffParse());
+            ee.setSqlPragma(GetLogs.isbSQLPragma());
+            System.setProperty("logPath", ee.getLogbrowserDir());
+            System.setProperty("log4j2.saveDirectory", ee.getLogbrowserDir());
+
+            indexer = Main.getInstance().init(ee);
+            logger.info("Init parser: " + ((indexer == null) ? "FAIL" : "ok"));
+
+        } catch (Exception e) {
+            logMessage("Failed to init logbrowser", e);
+        }
+    }
+
+    private void executeDownload(ArrayList<JTableFileEntry> selectedRows) throws Exception {
         if (selectedRows == null || selectedRows.isEmpty()) {
             SettingsForm.info("No rows selected");
         } else {
@@ -1689,6 +1713,8 @@ public final class CommandExecutor {
                 rSyncFiles.add(row.getFile());
             }
             if (r.size() > 0) {
+//                initParser();
+
                 for (Map.Entry<SavedSearchStorage, ArrayList<OSFile>> entry : r.entrySet()) {
                     SavedSearchStorage key = entry.getKey();
                     ArrayList<OSFile> value = entry.getValue();
@@ -1793,7 +1819,10 @@ public final class CommandExecutor {
     private void doExecuteCmd(java.awt.Window parent1, CommandExecutor aThis) {
         QueryTaskBase tsk;
 
-        tsk = new QueryThreadingTask(aThis, new IThreadingSubTask() {
+        if (ds.getActionCommand() == GetCommand.GET || ds.getActionCommand() == GetCommand.GREPGET) {
+            initParser();
+        }
+            tsk = new QueryThreadingTask(aThis, new IThreadingSubTask() {
             @Override
             public ArrayList<ISubTask> task() throws InterruptedException, IOException {
                 lsFilesAll.clear();
@@ -1815,7 +1844,7 @@ public final class CommandExecutor {
                                 if (ds.isProd()) {
                                     ret1.add(new ISubTask() {
                                         @Override
-                                        public void task() throws InterruptedException, IOException {
+                                        public void task() throws Exception {
                                             try {
                                                 executeCmd(appProfile, app, false);
                                             } catch (ConfigException e) {
@@ -1827,7 +1856,7 @@ public final class CommandExecutor {
                                 if (ds.isLfmt()) {
                                     ret1.add(new ISubTask() {
                                         @Override
-                                        public void task() throws InterruptedException, IOException {
+                                        public void task() throws Exception {
                                             try {
                                                 executeCmd(appProfile, app, true);
                                             } catch (ConfigException e) {
@@ -1848,8 +1877,8 @@ public final class CommandExecutor {
         }
         tsk.setRp(rp);
         if (ds.getActionCommand() == GetCommand.GET || ds.getActionCommand() == GetCommand.GREPGET) {
+            tsk.addParsingFinalize();
             tsk.setAfterActions(getAfterActions());
-
             tsk.setBeforeActions(getBeforeActions());
 
         }
@@ -1863,12 +1892,19 @@ public final class CommandExecutor {
             rp = new RequestProgress(parent1, true, tsk);
         }
 
+        initParser();
         tsk.setRp(rp);
+        tsk.addParsingFinalize();
         tsk.setBeforeActions(getBeforeActions());
         tsk.setAfterActions(getAfterActions());
 
         tsk.execute();
 
+    }
+
+    interface IFileTransferAction {
+
+        void TransferActionOK(OSFile file, File src, File dst) throws InterruptedException;
     }
 
     private class ExtProcessManager {
@@ -2046,16 +2082,11 @@ public final class CommandExecutor {
         private QueryTask(CommandExecutor aThis, CountDownLatch latch, ISubTask subTask, CountDownLatch finishLatch,
                           ISubTask finishingTask) {
             this(aThis, latch, subTask);
-            if (finishingTask != null) {
-                setFinishingTask(finishingTask);
-            }
-            if (finishLatch != null) {
-                setFinishLatch(finishLatch);
-            }
+            setFinishingAction(finishingTask, finishLatch);
         }
 
         @Override
-        void onBackground() throws InterruptedException, IOException {
+        void onBackground() throws Exception {
             subTask.task();
             if (latch != null) {
                 latch.await();
@@ -2130,14 +2161,13 @@ public final class CommandExecutor {
         private final CommandExecutor ce;
 
         boolean userCancelling = false;
+        String theTitle = "";
         private String outFile;
         private boolean displayForm;
         private RequestProgress rp = null;
-        String theTitle = "";
-        private ISubTask finishingTask = null;
-        private CountDownLatch finishLatch = null;
         private ISubTask startingTask = null;
         private CountDownLatch startingLatch = null;
+        private ArrayList<Pair<ISubTask, CountDownLatch>> finishingActions = new ArrayList<>();
 
         private QueryTaskBase(CommandExecutor aThis) {
             super();
@@ -2152,7 +2182,7 @@ public final class CommandExecutor {
             this.userCancelling = userCancelling;
         }
 
-        abstract void onBackground() throws InterruptedException, IOException;
+        abstract void onBackground() throws Exception;
 
         abstract void onDone();
 
@@ -2224,21 +2254,10 @@ public final class CommandExecutor {
             this.startingLatch = startingLatch;
         }
 
-        public ISubTask getFinishingTask() {
-            return finishingTask;
+        public void setFinishingAction(ISubTask finishingTask, CountDownLatch finishingLatch) {
+            this.finishingActions.add(new Pair<>(finishingTask, finishingLatch));
         }
 
-        public void setFinishingTask(ISubTask finishingTask) {
-            this.finishingTask = finishingTask;
-        }
-
-        public CountDownLatch getFinishLatch() {
-            return finishLatch;
-        }
-
-        public void setFinishLatch(CountDownLatch finishLatch) {
-            this.finishLatch = finishLatch;
-        }
 
         @Override
         protected Void doInBackground() throws Exception {
@@ -2265,14 +2284,12 @@ public final class CommandExecutor {
                 if (isUserCancelling()) {
                     return null;
                 }
-                if (finishingTask != null) {
-                    logger.info("Starting postdownload task(s)");
-                    finishingTask.task();
-                    if (finishLatch != null) {
-                        finishLatch.await();
-                    }
+                for (Pair<ISubTask, CountDownLatch> action : finishingActions) {
+                    if (action.getKey() != null)
+                        action.getKey().task();
+                    if (action.getValue() != null)
+                        action.getValue().await();
                 }
-
             } finally {
 
             }
@@ -2324,29 +2341,42 @@ public final class CommandExecutor {
             }
         }
 
+        private void addParsingFinalize(){
+            CountDownLatch finalLatch = new CountDownLatch(1);
+            setFinishingAction(
+                    new ISubTask() {
+                        @Override
+                        public void task() throws Exception {
+                            if(indexer!=null){
+                                Thread.sleep(300);
+                                indexer.finishParsing();
+                            }
+                            finalLatch.countDown();
+                        }
+                    }, finalLatch);
+        }
+
         private void setAfterActions(ArrayList<String> afterActions) {
             if (afterActions != null) {
                 CountDownLatch finalLatch = new CountDownLatch(1);
-                setFinishLatch(finalLatch);
-                setFinishingTask(new ISubTask() {
-                    @Override
-                    public void task() throws InterruptedException, IOException {
-                        executor.execute(new CallbackThreadLatched(finalLatch, new ISubTask() {
+                setFinishingAction(
+                        new ISubTask() {
                             @Override
                             public void task() throws InterruptedException, IOException {
-                                for (String afterAction : afterActions) {
-                                    executeCommand(afterAction);
-                                }
+                                executor.execute(new CallbackThreadLatched(finalLatch, new ISubTask() {
+                                    @Override
+                                    public void task() throws InterruptedException, IOException {
+                                        for (String afterAction : afterActions) {
+                                            executeCommand(afterAction);
+                                        }
 
-                                finalLatch.countDown();
+                                        finalLatch.countDown();
+                                    }
+                                }));
                             }
-
-                        }));
-                    }
-                });
+                        }, finalLatch);
             }
         }
-
     }
 
     class CallbackThreadLatched implements Runnable {
@@ -2376,13 +2406,11 @@ public final class CommandExecutor {
                 // logger.debug("Thread " + Thread.currentThread() + " starting task");
                 try {
                     task.task();
-                } catch (InterruptedException interruptedException) {
+                } catch (Exception interruptedException) {
                     logMessage(Level.INFO, "Action interrupted");
                 }
                 // logger.debug("Thread " + Thread.currentThread() + " done task");
 
-            } catch (IOException ex) {
-                Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             } finally {
                 latch.countDown();
             }

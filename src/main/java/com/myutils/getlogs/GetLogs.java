@@ -94,6 +94,49 @@ public class GetLogs {
     public static final HashMap<String, String> extUnpacker = getextUnpacker();
     final static public String filePrefix = "!file!";
     public static final Pattern regRegDigits = Pattern.compile("(\\d|\\[[\\-\\d]*\\])");
+    private static Option optXMLCfg;
+    private static Option optAlias;
+    private static Option optDBName;
+    private static Option optLogsBaseDir;
+    private static Option optTDiffParse;
+    private static Option optIgnoreZIP;
+    private static Option optSQLPragma;
+    private static Option optLogBrowserDir;
+    private static String sXMLCfg;
+    private static String sDBAlias;
+    private static String sDBName;
+    private static String sLogsBaseDir;
+    private static boolean bTDiffParse;
+    private static boolean bIgnoreZIP;
+    private static boolean bSQLPragma;
+
+    public static String getsXMLCfg() {
+        return sXMLCfg;
+    }
+
+    public static String getsDBAlias() {
+        return sDBAlias;
+    }
+
+    public static String getsDBName() {
+        return sDBName;
+    }
+
+    public static String getsLogsBaseDir() {
+        return sLogsBaseDir;
+    }
+
+    public static boolean isbTDiffParse() {
+        return bTDiffParse;
+    }
+
+    public static boolean isbIgnoreZIP() {
+        return bIgnoreZIP;
+    }
+
+    public static boolean isbSQLPragma() {
+        return bSQLPragma;
+    }
 
     public static Hosts getHosts() {
         return hosts;
@@ -291,6 +334,68 @@ public class GetLogs {
                 .build();
         options.addOption(optTime);
 
+        optXMLCfg = Option.builder("x")
+                .hasArg(true)
+                .required(false)
+                .desc("XML config file for parser")
+                .longOpt("cfgxml")
+                .build();
+        options.addOption(optXMLCfg);
+
+
+        optAlias = Option.builder("a")
+                .hasArg(true)
+                .required(false)
+                .desc("Alias to use")
+                .longOpt("alias")
+                .build();
+        options.addOption(optAlias);
+
+        optDBName = Option.builder("d")
+                .hasArg(true)
+                .required(false)
+                .desc("Name of the SQLite database file")
+                .longOpt("dbname")
+                .build();
+        options.addOption(optDBName);
+
+        optLogsBaseDir = Option.builder("b")
+                .hasArg(true)
+                .required(false)
+                .desc("Basic directory for logs. Default to current")
+                .longOpt("basedir")
+                .build();
+        options.addOption(optLogsBaseDir);
+
+        optTDiffParse = Option.builder()
+                .hasArg(false)
+                .required(false)
+                .desc("If set, means parse difference between timestamps")
+                .longOpt("timediff")
+                .build();
+        options.addOption(optTDiffParse);
+
+        optIgnoreZIP = Option.builder()
+                .hasArg(false)
+                .required(false)
+                .desc("If specified, ZIP files are ignored while parsing")
+                .longOpt("ignore-zip")
+                .build();
+        options.addOption(optIgnoreZIP);
+
+        optSQLPragma = Option.builder()
+                .hasArg(false)
+                .required(false)
+                .desc("If specified, use SQL pragmas to speedup sql database operations")
+                .longOpt("sqlite.pragma")
+                .build();
+        options.addOption(optSQLPragma);
+
+        optLogBrowserDir = Option.builder().hasArg(true).required(false)
+                .desc("Directory for storing logbrowser temp and log files. Default to current")
+                .longOpt("logbr.dir").valueSeparator('=').build();
+        options.addOption(optLogBrowserDir);
+
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
 
@@ -350,6 +455,14 @@ public class GetLogs {
         sshOptions = (String) cmd.getParsedOptionValue(optSSHOptions.getLongOpt());
         sUserName = (String) cmd.getParsedOptionValue(optUserName.getLongOpt());
         bIsSSHJava = cmd.hasOption(optIsSSHJava.getLongOpt());
+        sXMLCfg= (String) cmd.getParsedOptionValue(optXMLCfg.getLongOpt());
+        sDBAlias= (String) cmd.getParsedOptionValue(optAlias.getLongOpt());
+        sDBName= (String) cmd.getParsedOptionValue(optDBName.getLongOpt());
+        sLogsBaseDir= (String) cmd.getParsedOptionValue(optLogsBaseDir.getLongOpt());
+        bTDiffParse = cmd.hasOption(optTDiffParse.getLongOpt());
+        bIgnoreZIP = cmd.hasOption(optIgnoreZIP.getLongOpt());
+        bSQLPragma = cmd.hasOption(optSQLPragma.getLongOpt());
+    
 
         sRSyncUserName = (String) cmd.getParsedOptionValue(optRSyncUserName.getLongOpt());
 
@@ -614,7 +727,7 @@ public class GetLogs {
             StringBuilder sshCmd = new StringBuilder();
 
             sshCmd.append("cd ").append(logsDir).append("; ");
-            sshCmd.append("find -maxdepth 1 ")
+            sshCmd.append("find -maxdepth 5 ")
                     .append(ap)
                     .append(" ")
                     .append(fileClause);
@@ -666,7 +779,7 @@ public class GetLogs {
         StringBuilder sshCmd = new StringBuilder();
 
         sshCmd.append("cd ").append(logsDir).append("; ");
-        sshCmd.append("find -maxdepth 1 ")
+        sshCmd.append("find -maxdepth 5 ")
                 .append(ap)
                 .append(" ")
                 .append(fileClause);
