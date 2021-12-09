@@ -6,6 +6,7 @@
 package com.myutils.getlogs;
 
 import Utils.*;
+import Utils.UnixProcess.ExtProcess;
 import com.jidesoft.dialog.*;
 import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.*;
@@ -230,7 +231,9 @@ public final class SettingsForm extends JFrame {
 //        key.add("esv1_sip_agent_1_b,PRIMARY");
 //        key.add("esv1_sip_agent_1_p,BACKUP");
 //        settingsPanel.setUncheckNonPrimary(tst);
-        settingsPanel.setUncheckNonPrimary(ce.uncheckNonPrimary());
+        ExtProcess.ExecutionResult executionResult = ce.uncheckNonPrimary();
+        if(executionResult!=null && executionResult.hashCode()==0)
+        settingsPanel.setUncheckNonPrimary(new Pair<>(executionResult.getStdOut(), executionResult.getStdErr()));
     }
 
     private void pasteFiles() throws IOException, InterruptedException {

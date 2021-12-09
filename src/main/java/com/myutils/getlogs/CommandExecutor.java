@@ -15,6 +15,7 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.mina.util.Base64;
 
@@ -36,6 +37,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -175,10 +177,14 @@ public final class CommandExecutor {
         if (helperExecutor != null)
             helperExecutor.purge();
 
-        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxThreads);
+        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxThreads,
+                new BasicThreadFactory.Builder().namingPattern("app-%d").build());
+
         executor.setCorePoolSize(maxThreads);
         executor.setMaximumPoolSize(maxThreads);
-        helperExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        helperExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool(
+                new BasicThreadFactory.Builder().namingPattern("extprocess-%d").build()
+        );
     }
 
     synchronized private void cancelExecutor() {
@@ -426,29 +432,24 @@ public final class CommandExecutor {
         try {
             StringBuilder cmd = new StringBuilder("net use ");
             cmd.append(logPath).append(" /user:").append(ds.getUser(appProfile)).append(" ").append(ds.getPassword(appProfile));
-            Pair<ArrayList<String>, ArrayList<String>> ret1 = null;
-            ret1 = executeCommand(cmd.toString(), true, true, appProfile, ap);
-            if (ret1 != null) { // success
-                ArrayList<String> stdOut = ret1.getKey();
+            ExtProcess.ExecutionResult ret1 = executeCommand(cmd.toString(), true, true, appProfile, ap);
+            if (ret1 != null && ret1.getExitCode()==0) { // success
+                ArrayList<String> stdOut = ret1.getStdOut();
                 if (!stdOut.isEmpty() && stdOut.size() > 1
                         && stdOut.get(0).equals("The command completed successfully.")) {
                     return ret;
                 }
-                for (String s : ret1.getValue()
-                ) {
-                    if (mWindowsErrorCode.reset(s).find()) {
-                        int code = Integer.parseInt(mWindowsErrorCode.group(1));
-                        if (code == 86 ||
-                                code == 1909 //! The referenced account is currently locked out and may not be logged on to.
-                        ) { //
-                            throw new IncorrectPasswordException("");
-                        }
-                    }
+                int code = ret1.getExitCode();
+                if (code == 86 ||
+                        code == 1909 //! The referenced account is currently locked out and may not be logged on to.
+                        || code == 1326
+                ) { //
+                    throw new IncorrectPasswordException("");
                 }
                 logMessage(Level.ERROR,
                         (new StringBuilder(getLogPrefix(appProfile, ap))).append("\n\tstdout [")
                                 .append(StringUtils.join(stdOut, "\n")).append("]\n\t").append("\n\tstderr [")
-                                .append(StringUtils.join(ret1.getValue(), "\n")).append("]\n\t").toString());
+                                .append(StringUtils.join(ret1.getStdErr(), "\n")).append("]\n\t").toString());
             }
 
         } catch (IOException e) {
@@ -468,12 +469,15 @@ public final class CommandExecutor {
      * @return
      */
     private boolean shareConnected(String logPath, AppProfile appProfile, App ap) {
-        Pair<ArrayList<String>, ArrayList<String>> ret1 = null;
         String logPathLower = logPath.toLowerCase();
         try {
-            ret1 = executeCommand("net use " + logPathLower, true, true, appProfile, ap);
+            String cmd = "net use " + logPathLower;
+            ExtProcess.ExecutionResult ret1 = executeCommand(cmd, true, true, appProfile, ap);
             if (ret1 != null) { // success
-                for (String s : ret1.getKey()) {
+                if(ret1.getExitCode()!=0){
+                    logMessage(Level.ERROR,"failed to run ["+cmd+"]; code: "+ret1.getExitCode());
+                }
+                for (String s : ret1.getStdOut()) {
                     String[] s1 = StringUtils.split(s, " ", 2);
                     if (s1.length >= 2 && s1[0].toLowerCase().equals("status")) {
                         if (s1[1].equals("OK")) {
@@ -495,12 +499,11 @@ public final class CommandExecutor {
     }
 
     private boolean disconnectShare(String logPath, AppProfile appProfile, App ap) {
-        Pair<ArrayList<String>, ArrayList<String>> ret1 = null;
         try {
-            ret1 = executeCommand("net use " + logPath + " /delete",
+            ExtProcess.ExecutionResult ret1 = executeCommand("net use " + logPath + " /delete",
                     true, true, appProfile, ap);
             if (ret1 != null) { // success
-                ArrayList<String> stdOut = ret1.getKey();
+                ArrayList<String> stdOut = ret1.getStdOut();
                 if (!stdOut.isEmpty() && stdOut.size() > 1
                         && stdOut.get(0).equals("The command completed successfully.")) {
                     return true;
@@ -509,9 +512,11 @@ public final class CommandExecutor {
                         (new StringBuilder("Failed to disconnect share ["))
                                 .append(logPath)
                                 .append("]")
+                                .append(" exit code: ")
+                                .append(ret1.getExitCode())
                                 .append("\n\tstdout [")
                                 .append(StringUtils.join(stdOut, "\n")).append("]\n\t").append("\n\tstderr [")
-                                .append(StringUtils.join(ret1.getValue(), "\n")).append("]\n\t").toString(),
+                                .append(StringUtils.join(ret1.getStdErr(), "\n")).append("]\n\t").toString(),
                         appProfile, ap);
 
             }
@@ -799,7 +804,7 @@ public final class CommandExecutor {
         // }
     }
 
-    Pair<ArrayList<String>, ArrayList<String>> uncheckNonPrimary() {
+    ExtProcess.ExecutionResult uncheckNonPrimary() {
         Collection<App> checkedApps = ds.getCheckedApps();
         if (checkedApps != null) {
             ArrayList<String> appNames = new ArrayList<>(checkedApps.size());
@@ -807,12 +812,12 @@ public final class CommandExecutor {
                 appNames.add("\"" + checkedApp.getName() + "\"");
             }
             try {
-                Pair<ArrayList<String>, ArrayList<String>> cmdOuts = executeCommand(
+                ExtProcess.ExecutionResult cmdOuts = executeCommand(
                         StringUtils.join(new String[]{ds.getStatusScript(), StringUtils.join(appNames, " ")}, " "),
                         true, true);
                 logger.log(Level.INFO, StringUtils.join(cmdOuts));
                 if (cmdOuts != null) {
-                    for (String string : cmdOuts.getKey()) {
+                    for (String string : cmdOuts.getStdOut()) {
                         String[] split = StringUtils.split(string, ",", 3);
                         logger.log(Level.INFO, StringUtils.join(split, " - "));
 
@@ -936,18 +941,18 @@ public final class CommandExecutor {
                 .append(ap.isIsWindows() ? "win" : "lin").append(":").toString();
     }
 
-    private Pair<ArrayList<String>, ArrayList<String>> executeCommand(String key, boolean saveStdOut,
+    private ExtProcess.ExecutionResult executeCommand(String key, boolean saveStdOut,
                                                                       boolean saveStdErr, AppProfile appProfile, App ap) throws IOException, InterruptedException {
         return executeCommand(key, saveStdOut, saveStdErr, getLogPrefix(appProfile, ap));
     }
 
-    private Pair<ArrayList<String>, ArrayList<String>> executeCommand(String key, boolean saveStdOut,
-                                                                      boolean saveStdErr) throws IOException, InterruptedException {
+    private ExtProcess.ExecutionResult executeCommand(String key, boolean saveStdOut,
+                                                      boolean saveStdErr) throws IOException, InterruptedException {
         return executeCommand(key, saveStdOut, saveStdErr, "");
     }
 
-    private Pair<ArrayList<String>, ArrayList<String>> executeCommand(String key, boolean saveStdOut,
-                                                                      boolean saveStdErr, String logPrefix) throws IOException, InterruptedException {
+    private ExtProcess.ExecutionResult executeCommand(String key, boolean saveStdOut,
+                                                      boolean saveStdErr, String logPrefix) throws IOException, InterruptedException {
         ArrayList<String> cmdParams = new ArrayList<>();
         String[] split = StringUtils.split(key);
         for (String string : split) {
@@ -958,16 +963,15 @@ public final class CommandExecutor {
         // logger.trace("executing: " + rsyncParams);
         ExtProcess proc = extProcessManager.addProcess(new ExtProcessFinishing(cmdParams, false, true, logPrefix));
         proc.startProcess(saveStdOut, saveStdErr);
-        int waitFor = proc.waitFor();
-        logger.debug(logPrefix + " process terminated, result: " + waitFor);
+        ExtProcess.ExecutionResult executionResult = proc.waitForExecutionResult();
+        logger.debug(logPrefix + " process terminated, result: " + executionResult.getExitCode());
 
         extProcessManager.doneProcess(proc);
-        return (proc.getExitCode() != 255 && (saveStdOut || saveStdErr)) ? new Pair(proc.getSTDOut(), proc.getErrBuf())
-                : null;
+        return executionResult;
 
     }
 
-    private Pair<ArrayList<String>, ArrayList<String>> executeCommand(String key)
+    private ExtProcess.ExecutionResult executeCommand(String key)
             throws IOException, InterruptedException {
         return executeCommand(key, false, false);
 
@@ -981,6 +985,7 @@ public final class CommandExecutor {
                 : filesList) {
             fileTransfer(file, outDir, appProfile, ap, (f, src, dst) -> {
                 filesToGet.add(f);
+                return true;
             });
         }
         if (filesToGet.isEmpty()) {
@@ -1073,7 +1078,19 @@ public final class CommandExecutor {
         action.TransferActionOK(file, srcFile, destFile);
     }
 
-    private void executeWinDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
+    /**
+     *
+     * @param appProfile
+     * @param ap
+     * @param theAppHost
+     * @param logsDir
+     * @param fileNameClause
+     * @param isLFMT
+     * @param lcaLog
+     * @return false if should stop (fatal condition). true means continue
+     * @throws InterruptedException
+     */
+    private boolean executeWinDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
                                     ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) throws InterruptedException {
 
         // preparing list of zip files and list of files to archive
@@ -1087,7 +1104,7 @@ public final class CommandExecutor {
                 String newPath = FilenameUtils.getFullPath(fn);
                 if (filesPath != null && newPath != null && !filesPath.equalsIgnoreCase(newPath)) {
                     logMessage(Level.ERROR, "Different paths??? filesPath [" + filesPath + "] filename[" + fn + "]", appProfile, ap);
-                    return;
+                    return true;
                 } else {
                     filesPath = newPath;
                 }
@@ -1096,7 +1113,7 @@ public final class CommandExecutor {
             }
         }
         if (filesToArchive.isEmpty())
-            return;
+            return true;
 
 
         String outDir = FilenameUtils.concat(getDs().getOutputDir(), ap.getName());
@@ -1107,11 +1124,18 @@ public final class CommandExecutor {
         }
 
         String finalFilesPath = filesPath;
+        AtomicBoolean shouldTerminate = new AtomicBoolean(false);
         helperExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
-                    prepareZips(appProfile, ap, theAppHost, finalFilesPath, filesToArchive);
+                    ExtProcess.ExecutionResult executionResult = prepareZips(appProfile, ap, theAppHost, finalFilesPath, filesToArchive);
+                    if(executionResult!=null){
+                        if(executionResult.getExitCode()!=0){
+                            logMessage(Level.ERROR,"Error termination, error: "+executionResult.getExitCode());
+                            shouldTerminate.set(true);
+                        }
+                    }
                 } catch (IOException e) {
                     logMessage("Exception preparing zip", e, appProfile, ap);
                 } catch (ConfigException e) {
@@ -1128,6 +1152,9 @@ public final class CommandExecutor {
 
             fileTransfer(file, outDir, appProfile, ap, (f, src, dst) -> {
                 for (int i = 0; i < 30; i++) {
+                    if(shouldTerminate.get()){
+                        return false;
+                    }
                     if (Files.exists(src.toPath())) {
                         long srcSize = -1;
                         long destSize = -1;
@@ -1164,11 +1191,13 @@ public final class CommandExecutor {
                         Thread.sleep(1000);
                     }
                 }
+                return true;
             });
         }
+        return true;
     }
 
-    private void prepareZips(AppProfile appProfile, App ap, HostAppdir theAppHost, String destLogsDir, ArrayList<String> fileNames) throws IOException, InterruptedException, ConfigException {
+    private ExtProcess.ExecutionResult prepareZips(AppProfile appProfile, App ap, HostAppdir theAppHost, String destLogsDir, ArrayList<String> fileNames) throws IOException, InterruptedException, ConfigException {
         ArrayList<String> filesToGet = new ArrayList<>();
         for (int i = 0; i < fileNames.size(); i++) {
             filesToGet.add(fileNames.get(i));
@@ -1200,14 +1229,17 @@ public final class CommandExecutor {
                         .append(ds.getPassword(appProfile))
                         .append(" Powershell -NoLogo -NonInteractive -encodedCommand ")
                         .append(base64Encode(zipCommand.toString()));
-                Pair<ArrayList<String>, ArrayList<String>> arrayListArrayListPair = executeCommand(cmd.toString(), true, true, appProfile, ap);
+                ExtProcess.ExecutionResult executionResult = executeCommand(cmd.toString(), true, true, appProfile, ap);
                 logMessage("Output of zip prepare: stdout:\n" +
-                        StringUtils.join(arrayListArrayListPair.getKey(), '\n')
+                        "ret code: "+executionResult.getExitCode()+"\n"+
+                        StringUtils.join(executionResult.getStdOut(), '\n')
                         + "\nstderr:\n"
-                        + StringUtils.join(arrayListArrayListPair.getValue()), appProfile, ap);
+                        + StringUtils.join(executionResult.getStdErr()), appProfile, ap);
                 filesToGet.clear();
+                return executionResult;
             }
         }
+        return null;
     }
 
     private String getLocalFileName(String fileName, AppProfile appProfile, App ap) {
@@ -1685,6 +1717,7 @@ public final class CommandExecutor {
             ee.setIgnoreZIP(GetLogs.isbIgnoreZIP());
             ee.setParseTDiff(GetLogs.isbTDiffParse());
             ee.setSqlPragma(GetLogs.isbSQLPragma());
+            ee.setMaxThreads(GetLogs.getiMaxThreads());
             System.setProperty("logPath", ee.getLogbrowserDir());
             System.setProperty("log4j2.saveDirectory", ee.getLogbrowserDir());
 
@@ -1904,7 +1937,7 @@ public final class CommandExecutor {
 
     interface IFileTransferAction {
 
-        void TransferActionOK(OSFile file, File src, File dst) throws InterruptedException;
+        boolean TransferActionOK(OSFile file, File src, File dst) throws InterruptedException;
     }
 
     private class ExtProcessManager {

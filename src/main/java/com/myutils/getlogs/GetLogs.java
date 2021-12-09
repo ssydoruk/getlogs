@@ -109,6 +109,8 @@ public class GetLogs {
     private static boolean bTDiffParse;
     private static boolean bIgnoreZIP;
     private static boolean bSQLPragma;
+    private static Option optParserThreads;
+    private static int iMaxThreads=1;
 
     public static String getsXMLCfg() {
         return sXMLCfg;
@@ -148,6 +150,10 @@ public class GetLogs {
 
     public static boolean isbIsSSHJava() {
         return bIsSSHJava;
+    }
+
+    public static int getiMaxThreads() {
+        return iMaxThreads;
     }
 
     public static void main(String[] args) throws Exception {
@@ -342,6 +348,14 @@ public class GetLogs {
                 .build();
         options.addOption(optXMLCfg);
 
+        optParserThreads = Option.builder("t")
+                .hasArg(true)
+                .required(false)
+                .desc("Number of parser threads")
+                .longOpt("threads")
+                .build();
+        options.addOption(optParserThreads);
+
 
         optAlias = Option.builder("a")
                 .hasArg(true)
@@ -456,6 +470,10 @@ public class GetLogs {
         sUserName = (String) cmd.getParsedOptionValue(optUserName.getLongOpt());
         bIsSSHJava = cmd.hasOption(optIsSSHJava.getLongOpt());
         sXMLCfg= (String) cmd.getParsedOptionValue(optXMLCfg.getLongOpt());
+        String s = (String) cmd.getParsedOptionValue(optParserThreads.getLongOpt());
+        if(StringUtils.isNotEmpty(s)){
+            iMaxThreads = Integer.parseInt(s);
+        }
         sDBAlias= (String) cmd.getParsedOptionValue(optAlias.getLongOpt());
         sDBName= (String) cmd.getParsedOptionValue(optDBName.getLongOpt());
         sLogsBaseDir= (String) cmd.getParsedOptionValue(optLogsBaseDir.getLongOpt());

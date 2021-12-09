@@ -29,7 +29,7 @@
     <orderEntry type="library" name="Maven: org.jasypt:jasypt:1.9.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.10" level="project" />
     <orderEntry type="library" name="Maven: commons-cli:commons-cli:1.4" level="project" />
-    <orderEntry type="library" name="Maven: dnsjava:dnsjava:2.1.9" level="project" />
+    <orderEntry type="library" name="Maven: dnsjava:dnsjava:3.1.0" level="project" />
     <orderEntry type="library" name="Maven: com.jidesoft:jide-oss:3.6.18" level="project" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.7" level="project" />
     <orderEntry type="library" name="Maven: com.github.lgooddatepicker:LGoodDatePicker:11.0.0" level="project" />
@@ -47,7 +47,7 @@
     <orderEntry type="library" name="Maven: com.eclipsesource.minimal-json:minimal-json:0.9.5" level="project" />
     <orderEntry type="library" name="Maven: org.xerial:sqlite-jdbc:3.32.3.2" level="project" />
     <orderEntry type="library" name="Maven: xyz.cofe:jacob:1.20" level="project" />
-    <orderEntry type="library" name="Maven: com.mycompany:Utils:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="Utils" />
     <orderEntry type="library" name="Maven: org.graalvm.sdk:graal-sdk:21.0.0.2" level="project" />
     <orderEntry type="library" name="Maven: org.graalvm.truffle:truffle-api:21.0.0.2" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains:annotations:23.0.0" level="project" />
