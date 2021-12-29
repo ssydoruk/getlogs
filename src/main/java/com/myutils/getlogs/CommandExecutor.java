@@ -64,7 +64,7 @@ public final class CommandExecutor {
     final private ArrayList<JTableFileEntry> lsFilesAll = new ArrayList<>();
     private final ExtProcessManager extProcessManager;
     private final int ret = StandardDialog.RESULT_CANCELLED;
-    Main indexer;
+    com.myutils.logbrowser.indexer.Main indexer;
     InfoPanel lsOutput;
     InfoPanel lsPasteOutput;
     JTableFileList lsTab = new JTableFileList();
@@ -2381,7 +2381,7 @@ public final class CommandExecutor {
                         @Override
                         public void task() throws Exception {
                             if(indexer!=null){
-                                Thread.sleep(300);
+                                Thread.sleep(10000);
                                 indexer.finishParsing();
                             }
                             finalLatch.countDown();

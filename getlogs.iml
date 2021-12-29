@@ -47,7 +47,7 @@
     <orderEntry type="library" name="Maven: com.eclipsesource.minimal-json:minimal-json:0.9.5" level="project" />
     <orderEntry type="library" name="Maven: org.xerial:sqlite-jdbc:3.32.3.2" level="project" />
     <orderEntry type="library" name="Maven: xyz.cofe:jacob:1.20" level="project" />
-    <orderEntry type="module" module-name="Utils" />
+    <orderEntry type="library" name="Maven: com.mycompany:Utils:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.graalvm.sdk:graal-sdk:21.0.0.2" level="project" />
     <orderEntry type="library" name="Maven: org.graalvm.truffle:truffle-api:21.0.0.2" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains:annotations:23.0.0" level="project" />
