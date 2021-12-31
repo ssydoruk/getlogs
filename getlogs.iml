@@ -34,13 +34,13 @@
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.11.0" level="project" />
     <orderEntry type="library" name="Maven: com.github.lgooddatepicker:LGoodDatePicker:11.2.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-compress:1.21" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-core:2.7.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-common:2.7.0" level="project" />
-    <orderEntry type="library" name="Maven: org.slf4j:jcl-over-slf4j:1.7.30" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-mina:2.7.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-core:2.8.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-common:2.8.0" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:jcl-over-slf4j:1.7.32" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.sshd:sshd-mina:2.8.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.mina:mina-core:2.0.21" level="project" />
-    <orderEntry type="library" name="Maven: net.java.dev.jna:jna:5.5.0" level="project" />
-    <orderEntry type="library" name="Maven: net.java.dev.jna:jna-platform:5.5.0" level="project" />
+    <orderEntry type="library" name="Maven: net.java.dev.jna:jna:5.10.0" level="project" />
+    <orderEntry type="library" name="Maven: net.java.dev.jna:jna-platform:5.10.0" level="project" />
     <orderEntry type="module" module-name="logbrowser" />
     <orderEntry type="library" name="Maven: org.json:json:20211205" level="project" />
     <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:4.9.3" level="project" />
