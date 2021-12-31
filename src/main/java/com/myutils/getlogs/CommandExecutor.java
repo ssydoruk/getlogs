@@ -2381,7 +2381,7 @@ public final class CommandExecutor {
                         @Override
                         public void task() throws Exception {
                             if(indexer!=null){
-                                Thread.sleep(10000);
+//                                Thread.sleep(10000);
                                 indexer.finishParsing();
                             }
                             finalLatch.countDown();
