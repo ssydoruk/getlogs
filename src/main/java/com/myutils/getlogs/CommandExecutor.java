@@ -57,7 +57,7 @@ public final class CommandExecutor {
     private static final Matcher mWindowsErrorCode = Pattern.compile("error (\\d+) has occurred").matcher("");
     private static final int MAX_FILE_LIST_LEN = 80;
     private static final String zipExt = ".zip";
-    private static final Matcher mFileName = Pattern.compile("(\\w)(?:\\$|:)(.+)$").matcher("");
+    private static final String mFileNameRX = "(\\w)(?:\\$|:)(.+)$";
     private static int MAX_FILES_IN_BANCH = 5;
     final ArrayList<SavedSearchStorage> savedSearch = new ArrayList<>();
     private final boolean isText;
@@ -433,7 +433,7 @@ public final class CommandExecutor {
             StringBuilder cmd = new StringBuilder("net use ");
             cmd.append(logPath).append(" /user:").append(ds.getUser(appProfile)).append(" ").append(ds.getPassword(appProfile));
             ExtProcess.ExecutionResult ret1 = executeCommand(cmd.toString(), true, true, appProfile, ap);
-            if (ret1 != null && ret1.getExitCode()==0) { // success
+            if (ret1 != null && ret1.getExitCode() == 0) { // success
                 ArrayList<String> stdOut = ret1.getStdOut();
                 if (!stdOut.isEmpty() && stdOut.size() > 1
                         && stdOut.get(0).equals("The command completed successfully.")) {
@@ -474,8 +474,8 @@ public final class CommandExecutor {
             String cmd = "net use " + logPathLower;
             ExtProcess.ExecutionResult ret1 = executeCommand(cmd, true, true, appProfile, ap);
             if (ret1 != null) { // success
-                if(ret1.getExitCode()!=0){
-                    logMessage(Level.ERROR,"failed to run ["+cmd+"]; code: "+ret1.getExitCode());
+                if (ret1.getExitCode() != 0) {
+                    logMessage(Level.ERROR, "failed to run [" + cmd + "]; code: " + ret1.getExitCode());
                 }
                 for (String s : ret1.getStdOut()) {
                     String[] s1 = StringUtils.split(s, " ", 2);
@@ -942,7 +942,7 @@ public final class CommandExecutor {
     }
 
     private ExtProcess.ExecutionResult executeCommand(String key, boolean saveStdOut,
-                                                                      boolean saveStdErr, AppProfile appProfile, App ap) throws IOException, InterruptedException {
+                                                      boolean saveStdErr, AppProfile appProfile, App ap) throws IOException, InterruptedException {
         return executeCommand(key, saveStdOut, saveStdErr, getLogPrefix(appProfile, ap));
     }
 
@@ -1079,7 +1079,6 @@ public final class CommandExecutor {
     }
 
     /**
-     *
      * @param appProfile
      * @param ap
      * @param theAppHost
@@ -1091,7 +1090,7 @@ public final class CommandExecutor {
      * @throws InterruptedException
      */
     private boolean executeWinDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-                                    ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) throws InterruptedException {
+                                       ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) throws InterruptedException {
 
         // preparing list of zip files and list of files to archive
         ArrayList<String> filesToArchive = new ArrayList<>(fileNameClause.size());
@@ -1130,9 +1129,9 @@ public final class CommandExecutor {
             public void run() {
                 try {
                     ExtProcess.ExecutionResult executionResult = prepareZips(appProfile, ap, theAppHost, finalFilesPath, filesToArchive);
-                    if(executionResult!=null){
-                        if(executionResult.getExitCode()!=0){
-                            logMessage(Level.ERROR,"Error termination, error: "+executionResult.getExitCode());
+                    if (executionResult != null) {
+                        if (executionResult.getExitCode() != 0) {
+                            logMessage(Level.ERROR, "Error termination, error: " + executionResult.getExitCode());
                             shouldTerminate.set(true);
                         }
                     }
@@ -1152,7 +1151,7 @@ public final class CommandExecutor {
 
             fileTransfer(file, outDir, appProfile, ap, (f, src, dst) -> {
                 for (int i = 0; i < 30; i++) {
-                    if(shouldTerminate.get()){
+                    if (shouldTerminate.get()) {
                         return false;
                     }
                     if (Files.exists(src.toPath())) {
@@ -1201,7 +1200,7 @@ public final class CommandExecutor {
         ArrayList<String> filesToGet = new ArrayList<>();
         for (int i = 0; i < fileNames.size(); i++) {
             filesToGet.add(fileNames.get(i));
-            if (i % MAX_FILES_IN_BANCH == 0 || (i + 1 >= fileNames.size())) {
+            if ((i > 0 && i % MAX_FILES_IN_BANCH == 0) || (i + 1 >= fileNames.size())) {
                 StringBuilder zipCommand = new StringBuilder()
                         .append("Add-Type -assembly 'System.IO.Compression'\n" +
                                 "Add-Type -assembly 'System.IO.Compression.FileSystem'\n" +
@@ -1212,7 +1211,12 @@ public final class CommandExecutor {
                                 "$zn = $d+$f+'" + zipExt + "';$t=$d+'.'+$f+'" + zipExt + "'\n" +
                                 "if(Test-Path $zn){Remove-Item $zn};if(Test-Path $t){Remove-Item $t}\n" +
                                 "[System.IO.Compression.ZipArchive]$z=[System.IO.Compression.ZipFile]::Open($t,([System.IO.Compression.ZipArchiveMode]::Create))\n" +
+                                "try{\n" +
                                 "[System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z,$d+$f,$f)|out-null\n" +
+                                "}catch  [System.IO.IOException]\n{" +
+                                "$d1=$d+$f;$d2=$d+\".\"+$f;Copy-Item -Force $d1 -Destination $d2\n" +
+                                "try{[System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z,$d2,$f)|out-null}finally{Remove-Item $d2}\n" +
+                                "}\n" +
                                 "$z.Dispose()\n" +
                                 "Rename-Item -Path $t -NewName $zn\n" +
                                 "}");
@@ -1231,7 +1235,7 @@ public final class CommandExecutor {
                         .append(base64Encode(zipCommand.toString()));
                 ExtProcess.ExecutionResult executionResult = executeCommand(cmd.toString(), true, true, appProfile, ap);
                 logMessage("Output of zip prepare: stdout:\n" +
-                        "ret code: "+executionResult.getExitCode()+"\n"+
+                        "ret code: " + executionResult.getExitCode() + "\n" +
                         StringUtils.join(executionResult.getStdOut(), '\n')
                         + "\nstderr:\n"
                         + StringUtils.join(executionResult.getStdErr()), appProfile, ap);
@@ -1243,8 +1247,9 @@ public final class CommandExecutor {
     }
 
     private String getLocalFileName(String fileName, AppProfile appProfile, App ap) {
-        if ((mFileName.reset(fileName)).find()) {
-            return mFileName.group(1) + ":" + mFileName.group(2);
+        Matcher matcher = Pattern.compile(mFileNameRX).matcher(fileName);
+        if (matcher.find()) {
+            return matcher.group(1) + ":" + matcher.group(2);
         } else {
             logMessage("Unrecognized file name [" + fileName.replace("\\", "\\\\") + "]", appProfile, ap);
             return null;
@@ -1855,7 +1860,7 @@ public final class CommandExecutor {
         if (ds.getActionCommand() == GetCommand.GET || ds.getActionCommand() == GetCommand.GREPGET) {
             initParser();
         }
-            tsk = new QueryThreadingTask(aThis, new IThreadingSubTask() {
+        tsk = new QueryThreadingTask(aThis, new IThreadingSubTask() {
             @Override
             public ArrayList<ISubTask> task() throws InterruptedException, IOException {
                 lsFilesAll.clear();
@@ -2374,13 +2379,13 @@ public final class CommandExecutor {
             }
         }
 
-        private void addParsingFinalize(){
+        private void addParsingFinalize() {
             CountDownLatch finalLatch = new CountDownLatch(1);
             setFinishingAction(
                     new ISubTask() {
                         @Override
                         public void task() throws Exception {
-                            if(indexer!=null){
+                            if (indexer != null) {
 //                                Thread.sleep(10000);
                                 indexer.finishParsing();
                             }
