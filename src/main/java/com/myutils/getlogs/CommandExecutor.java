@@ -1240,7 +1240,8 @@ public final class CommandExecutor {
                         + "\nstderr:\n"
                         + StringUtils.join(executionResult.getStdErr()), appProfile, ap);
                 filesToGet.clear();
-                return executionResult;
+                if(executionResult!=null && (executionResult.getExitCode() != 0) )
+                    return executionResult;
             }
         }
         return null;

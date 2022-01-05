@@ -41,7 +41,7 @@
     <orderEntry type="library" name="Maven: org.apache.mina:mina-core:2.0.21" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jna:jna:5.10.0" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jna:jna-platform:5.10.0" level="project" />
-    <orderEntry type="module" module-name="logbrowser" />
+    <orderEntry type="library" name="Maven: com.myutils:logbrowser:1.0" level="project" />
     <orderEntry type="library" name="Maven: org.json:json:20211205" level="project" />
     <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:4.9.3" level="project" />
     <orderEntry type="library" name="Maven: com.eclipsesource.minimal-json:minimal-json:0.9.5" level="project" />
