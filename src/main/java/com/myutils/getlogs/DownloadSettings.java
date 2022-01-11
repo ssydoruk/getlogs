@@ -26,6 +26,16 @@ public class DownloadSettings {
     private boolean useRSync;
     private boolean appLogs;
     private boolean zipDest;
+    private boolean parserWhileDownload;
+
+    public boolean isParserWhileDownload() {
+        return parserWhileDownload;
+    }
+
+    public void setParserWhileDownload(boolean parserWhileDownload) {
+        this.parserWhileDownload = parserWhileDownload;
+    }
+    
 
     public boolean isZipDest() {
         return zipDest;

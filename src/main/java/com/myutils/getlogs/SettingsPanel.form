@@ -507,8 +507,9 @@
             </Property>
           </Properties>
 
-          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout">
-            <Property name="axis" type="int" value="3"/>
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
+            <Property name="columns" type="int" value="2"/>
+            <Property name="rows" type="int" value="0"/>
           </Layout>
           <SubComponents>
             <Component class="javax.swing.JCheckBox" name="cbLfmtLog">
@@ -538,6 +539,7 @@
               </Properties>
               <Events>
                 <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="cbAppLogsItemStateChanged"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbAppLogsActionPerformed"/>
               </Events>
             </Component>
             <Component class="javax.swing.JCheckBox" name="cbZipDest">
@@ -547,6 +549,11 @@
               <Events>
                 <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="cbZipDestItemStateChanged"/>
               </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbParseWhileDownload">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Parse while download"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

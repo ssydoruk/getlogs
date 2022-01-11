@@ -730,6 +730,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbLCALogs = new javax.swing.JCheckBox();
         cbAppLogs = new javax.swing.JCheckBox();
         cbZipDest = new javax.swing.JCheckBox();
+        cbParseWhileDownload = new javax.swing.JCheckBox();
         jpRangeSelect = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
         cbTimeProfile = new javax.swing.JComboBox<>();
@@ -1078,7 +1079,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
 
         jPanel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        jPanel7.setLayout(new javax.swing.BoxLayout(jPanel7, javax.swing.BoxLayout.PAGE_AXIS));
+        jPanel7.setLayout(new java.awt.GridLayout(0, 2));
 
         cbLfmtLog.setText("Logs from LFMT");
         cbLfmtLog.addActionListener(new java.awt.event.ActionListener() {
@@ -1105,6 +1106,11 @@ public class SettingsPanel extends javax.swing.JPanel {
                 cbAppLogsItemStateChanged(evt);
             }
         });
+        cbAppLogs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbAppLogsActionPerformed(evt);
+            }
+        });
         jPanel7.add(cbAppLogs);
 
         cbZipDest.setText("Zip destination");
@@ -1114,6 +1120,9 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
         jPanel7.add(cbZipDest);
+
+        cbParseWhileDownload.setText("Parse while download");
+        jPanel7.add(cbParseWhileDownload);
 
         jPanel2.add(jPanel7);
 
@@ -1547,6 +1556,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_cbZipDestItemStateChanged
 
+    private void cbAppLogsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAppLogsActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbAppLogsActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;
     private javax.swing.ButtonGroup bgOS;
@@ -1558,6 +1571,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox cbLFMTs;
     private javax.swing.JCheckBox cbLfmtLog;
     private javax.swing.JComboBox<String> cbLoginProfile;
+    private javax.swing.JCheckBox cbParseWhileDownload;
     private javax.swing.JCheckBox cbProdLog;
     private javax.swing.JComboBox<String> cbTimeProfile;
     private javax.swing.JCheckBox cbUseRSync;
@@ -1705,6 +1719,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbProdLog.setSelected(ds.isProd());
         cbAppLogs.setSelected(ds.isAppLogs());
         cbZipDest.setSelected(ds.isZipDest());
+        cbParseWhileDownload.setSelected(ds.isParserWhileDownload());
         cbLCALogs.setSelected(ds.isLcaLogs());
         jtfOutputDir.setText(ds.getOutputDir());
         cbUseRSync.setSelected(ds.isUseRSync());
@@ -1758,6 +1773,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         ds.setLcaLogs(cbLCALogs.isSelected());
         ds.setAppLogs(cbAppLogs.isSelected());
         ds.setZipDest(cbZipDest.isSelected());
+        ds.setParserWhileDownload(cbParseWhileDownload.isSelected());
         ds.setTimeProfile((TimeProfile) cbTimeProfile.getSelectedItem());
         ds.setHours(ftHours.getText());
         ds.setActionCommand((GetCommand) cbCommand.getSelectedItem());

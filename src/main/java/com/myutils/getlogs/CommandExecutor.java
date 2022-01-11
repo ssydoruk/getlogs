@@ -1031,7 +1031,8 @@ public final class CommandExecutor {
                 @Override
                 public void fileDone(Path path) {
                     try {
-                        indexer.processAddedFile(path);
+                        if (indexer!=null)
+                            indexer.processAddedFile(path);
                     } catch (Exception e) {
                         logMessage("exception adding file " + path, e);
                     }
@@ -1167,7 +1168,8 @@ public final class CommandExecutor {
                         if (srcSize < 0 || destSize < 0 || destSize < srcSize) {
                             try {
                                 FileUtils.copyFile(src, dst, true);
-                                indexer.processAddedFile(dst);
+                                if (indexer!=null)
+                                    indexer.processAddedFile(dst);
                                 logMessage("Copied [" + file.getFileName() + "] to dir [" + outDir + "]: ",
                                         appProfile, ap);
                             } catch (IOException e) {
@@ -1240,7 +1242,7 @@ public final class CommandExecutor {
                         + "\nstderr:\n"
                         + StringUtils.join(executionResult.getStdErr()), appProfile, ap);
                 filesToGet.clear();
-                if(executionResult!=null && (executionResult.getExitCode() != 0) )
+                if (executionResult != null && (executionResult.getExitCode() != 0))
                     return executionResult;
             }
         }
@@ -1712,26 +1714,33 @@ public final class CommandExecutor {
     }
 
     private void initParser() {
-        try {
-            ExecutionEnvironment ee = new ExecutionEnvironment();
-            ee.setXmlCFG(GetLogs.getsXMLCfg());
-            String s = GetLogs.getsDBName();
-            ee.setDbname((StringUtils.isEmpty(s)) ? Paths.get(getDs().getOutputDir(), "logbr").toString() : s);
-            ee.setBaseDir(getDs().getOutputDir());
-            s = GetLogs.getsDBAlias();
-            ee.setAlias((StringUtils.isEmpty(s)) ? "logbr" : s);
-            ee.setIgnoreZIP(GetLogs.isbIgnoreZIP());
-            ee.setParseTDiff(GetLogs.isbTDiffParse());
-            ee.setSqlPragma(GetLogs.isbSQLPragma());
-            ee.setMaxThreads(GetLogs.getiMaxThreads());
-            System.setProperty("logPath", ee.getLogbrowserDir());
-            System.setProperty("log4j2.saveDirectory", ee.getLogbrowserDir());
+        if (ds.isParserWhileDownload()) {
+            logMessage(Level.INFO, "Initializing parser");
+            try {
+                ExecutionEnvironment ee = new ExecutionEnvironment();
+                ee.setXmlCFG(GetLogs.getsXMLCfg());
+                String s = GetLogs.getsDBName();
+                ee.setDbname((StringUtils.isEmpty(s)) ? Paths.get(getDs().getOutputDir(), "logbr").toString() : s);
+                ee.setBaseDir(getDs().getOutputDir());
+                s = GetLogs.getsDBAlias();
+                ee.setAlias((StringUtils.isEmpty(s)) ? "logbr" : s);
+                ee.setIgnoreZIP(GetLogs.isbIgnoreZIP());
+                ee.setParseTDiff(GetLogs.isbTDiffParse());
+                ee.setSqlPragma(GetLogs.isbSQLPragma());
+                ee.setMaxThreads(GetLogs.getiMaxThreads());
+                System.setProperty("logPath", ee.getLogbrowserDir());
+                System.setProperty("log4j2.saveDirectory", ee.getLogbrowserDir());
 
-            indexer = Main.getInstance().init(ee);
-            logger.info("Init parser: " + ((indexer == null) ? "FAIL" : "ok"));
+                indexer = Main.getInstance().init(ee);
+                logger.info("Init parser: " + ((indexer == null) ? "FAIL" : "ok"));
 
-        } catch (Exception e) {
-            logMessage("Failed to init logbrowser", e);
+            } catch (Exception e) {
+                logMessage("Failed to init logbrowser", e);
+            }
+        }
+        else {
+            logMessage(Level.INFO, "Parser disable while downloading");
+            indexer=null;
         }
     }
 
