@@ -1031,7 +1031,7 @@ public final class CommandExecutor {
                 @Override
                 public void fileDone(Path path) {
                     try {
-                        if (indexer!=null)
+                        if (indexer != null)
                             indexer.processAddedFile(path);
                     } catch (Exception e) {
                         logMessage("exception adding file " + path, e);
@@ -1168,7 +1168,7 @@ public final class CommandExecutor {
                         if (srcSize < 0 || destSize < 0 || destSize < srcSize) {
                             try {
                                 FileUtils.copyFile(src, dst, true);
-                                if (indexer!=null)
+                                if (indexer != null)
                                     indexer.processAddedFile(dst);
                                 logMessage("Copied [" + file.getFileName() + "] to dir [" + outDir + "]: ",
                                         appProfile, ap);
@@ -1732,15 +1732,17 @@ public final class CommandExecutor {
                 System.setProperty("log4j2.saveDirectory", ee.getLogbrowserDir());
 
                 indexer = Main.getInstance().init(ee);
-                logger.info("Init parser: " + ((indexer == null) ? "FAIL" : "ok"));
-
+                if( !indexer.kickQueueManager() ){
+                    logMessage(Level.ERROR, "Failed to init logbrowser");
+                    indexer = null;
+                }
             } catch (Exception e) {
                 logMessage("Failed to init logbrowser", e);
+                indexer = null;
             }
-        }
-        else {
+        } else {
             logMessage(Level.INFO, "Parser disable while downloading");
-            indexer=null;
+            indexer = null;
         }
     }
 
