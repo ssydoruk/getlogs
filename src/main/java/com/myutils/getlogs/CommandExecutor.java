@@ -1732,7 +1732,7 @@ public final class CommandExecutor {
                 System.setProperty("logPath", ee.getLogbrowserDir());
                 System.setProperty("log4j2.saveDirectory", ee.getLogbrowserDir());
 
-                indexer = Main.getInstance().init(ee);
+                indexer = Main.getNewInstance().init(ee);
                 if (!indexer.kickQueueManager()) {
                     logMessage(Level.ERROR, "Failed to init logbrowser");
                     indexer = null;
