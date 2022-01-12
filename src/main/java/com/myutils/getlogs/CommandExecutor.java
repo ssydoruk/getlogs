@@ -2400,6 +2400,7 @@ public final class CommandExecutor {
                         public void task() throws Exception {
                             if (indexer != null) {
 //                                Thread.sleep(10000);
+                                logMessage(Level.INFO, "Finalize parsing");
                                 indexer.finishParsing();
                             }
                             finalLatch.countDown();
