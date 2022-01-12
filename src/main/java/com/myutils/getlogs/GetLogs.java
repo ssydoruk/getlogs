@@ -110,7 +110,7 @@ public class GetLogs {
     private static boolean bIgnoreZIP;
     private static boolean bSQLPragma;
     private static Option optParserThreads;
-    private static int iMaxThreads=1;
+    private static int iMaxThreads=0;
 
     public static String getsXMLCfg() {
         return sXMLCfg;

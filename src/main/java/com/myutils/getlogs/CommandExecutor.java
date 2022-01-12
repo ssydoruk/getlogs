@@ -1727,12 +1727,13 @@ public final class CommandExecutor {
                 ee.setIgnoreZIP(GetLogs.isbIgnoreZIP());
                 ee.setParseTDiff(GetLogs.isbTDiffParse());
                 ee.setSqlPragma(GetLogs.isbSQLPragma());
-                ee.setMaxThreads(GetLogs.getiMaxThreads());
+                if (GetLogs.getiMaxThreads() > 0)
+                    ee.setMaxThreads(GetLogs.getiMaxThreads());
                 System.setProperty("logPath", ee.getLogbrowserDir());
                 System.setProperty("log4j2.saveDirectory", ee.getLogbrowserDir());
 
                 indexer = Main.getInstance().init(ee);
-                if( !indexer.kickQueueManager() ){
+                if (!indexer.kickQueueManager()) {
                     logMessage(Level.ERROR, "Failed to init logbrowser");
                     indexer = null;
                 }
