@@ -44,8 +44,6 @@ public final class SettingsForm extends JFrame {
 
         super();
 
-        initLogging();
-        logger.fatal("testing logger");
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.PAGE_AXIS));
 
@@ -53,6 +51,8 @@ public final class SettingsForm extends JFrame {
         settingsPanel = new SettingsPanel(ds, this);
         ce = new CommandExecutor(this);
         lw = new LogWindow(this);
+        initLogging();
+        logger.fatal("testing logger");
 
         getContentPane().add(settingsPanel);
         getContentPane().add(createButtonPanel());
