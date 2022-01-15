@@ -14,6 +14,7 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.util.datetime.FixedDateFormat;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,11 +33,13 @@ import static com.myutils.getlogs.GetLogs.logger;
  */
 public final class SettingsForm extends JFrame {
 
+    static final FixedDateFormat fixedDateFormat = FixedDateFormat.create(FixedDateFormat.FixedFormat.ABSOLUTE_PERIOD);
     private static LogWindow lw;
     private final SettingsPanel settingsPanel;
     private final CommandExecutor ce;
     private JButton jbRun;
     private JToggleButton showLog;
+
     public SettingsForm(DownloadSettings ds, String guiProfile) {
 
         super();
@@ -292,8 +295,17 @@ public final class SettingsForm extends JFrame {
     }
 
     public void postLogEvent(LogEvent event) {
-        if(lw!=null){
-            lw.addMsg(event.getMessage().getFormattedMessage());
+        if (lw != null) {
+            StringBuilder msg = new StringBuilder().append(
+                    fixedDateFormat.formatInstant(event.getInstant())).append(" ");
+            if (event.getLevel() == org.apache.logging.log4j.Level.ERROR)
+                msg.append("!ERROR! ");
+            else if (event.getLevel() == org.apache.logging.log4j.Level.WARN)
+                msg.append("!WARN! ");
+            else if (event.getLevel() == org.apache.logging.log4j.Level.FATAL)
+                msg.append("!FATAL! ");
+            msg.append(event.getMessage().getFormattedMessage());
+            lw.addMsg(msg.toString());
         }
     }
 }
