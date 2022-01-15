@@ -5,44 +5,44 @@
  */
 package com.myutils.getlogs;
 
-import Utils.*;
+import Utils.Pair;
+import Utils.ScreenInfo;
 import Utils.UnixProcess.ExtProcess;
-import com.jidesoft.dialog.*;
-import static com.myutils.getlogs.GetLogs.logger;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.logging.*;
+import com.jidesoft.dialog.ButtonPanel;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.myutils.getlogs.GetLogs.logger;
 
 /**
- *
  * @author Stepan
  */
 public final class SettingsForm extends JFrame {
 
     private static LogWindow lw;
-
-    static void info(String str) {
-        logger.info(str);
-        lw.addMsg(str);
-
-    }
-
-    static void error(String str) {
-        logger.error(str);
-        lw.addMsg(str);
-    }
-
     private final SettingsPanel settingsPanel;
     private final CommandExecutor ce;
     private JButton jbRun;
     private JToggleButton showLog;
-
     public SettingsForm(DownloadSettings ds, String guiProfile) {
 
         super();
 
+        initLogging();
+        logger.fatal("testing logger");
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.PAGE_AXIS));
 
@@ -82,6 +82,33 @@ public final class SettingsForm extends JFrame {
             }
         });
         setTitle("GetLogs" + "(" + guiProfile + ")");
+    }
+
+    static void info(String str) {
+        logger.info(str);
+    }
+
+    static void error(String str) {
+        logger.error(str);
+    }
+
+    private void initLogging() {
+        /*
+         * from https://logging.apache.org/log4j/2.x/manual/customconfig.html#AddingToCurrent
+         * */
+        final LoggerContext ctx = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
+        final Configuration config = ctx.getConfiguration();
+
+        Appender appender = new LogWindowAppender(CommandExecutor.class.getName(), null,
+                this);
+        appender.start();
+        LoggerConfig rootLogger = config.getRootLogger();
+
+        rootLogger.addAppender(appender, org.apache.logging.log4j.Level.INFO, null);
+        ctx.updateLoggers(config);
+        logger.fatal("fatal error");
+        org.apache.logging.log4j.Logger logger1 = org.apache.logging.log4j.LogManager.getLogger(GetLogs.class);
+        logger1.info("hello");
     }
 
     public void setJBRunEnabled(boolean b) {
@@ -232,8 +259,8 @@ public final class SettingsForm extends JFrame {
 //        key.add("esv1_sip_agent_1_p,BACKUP");
 //        settingsPanel.setUncheckNonPrimary(tst);
         ExtProcess.ExecutionResult executionResult = ce.uncheckNonPrimary();
-        if(executionResult!=null && executionResult.hashCode()==0)
-        settingsPanel.setUncheckNonPrimary(new Pair<>(executionResult.getStdOut(), executionResult.getStdErr()));
+        if (executionResult != null && executionResult.hashCode() == 0)
+            settingsPanel.setUncheckNonPrimary(new Pair<>(executionResult.getStdOut(), executionResult.getStdErr()));
     }
 
     private void pasteFiles() throws IOException, InterruptedException {
@@ -264,4 +291,9 @@ public final class SettingsForm extends JFrame {
 
     }
 
+    public void postLogEvent(LogEvent event) {
+        if(lw!=null){
+            lw.addMsg(event.getMessage().getFormattedMessage());
+        }
+    }
 }

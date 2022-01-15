@@ -89,7 +89,7 @@ public class GetLogs {
 
     private static Options options;
     static ArrayList<String> apps = null;
-    static Logger logger = LogManager.getLogger("");
+    static Logger logger = LogManager.getLogger(GetLogs.class);
     private static final Pattern regCountDigitsCovered = Pattern.compile("(\\d|\\[[\\d\\-]+\\])");
     public static final HashMap<String, String> extUnpacker = getextUnpacker();
     final static public String filePrefix = "!file!";
@@ -602,6 +602,7 @@ public class GetLogs {
             logger = LogManager.getLogger("logdownloader");
         } else {
 
+        if(0==1) {
             ConfigurationBuilder<BuiltConfiguration> builder
                     = ConfigurationBuilderFactory.newConfigurationBuilder();
 
@@ -617,8 +618,8 @@ public class GetLogs {
 
             AppenderComponentBuilder rollingFile
                     = builder.newAppender("rolling", "RollingFile");
-            rollingFile.addAttribute("fileName", "${LogFileName}.log");
-            rollingFile.addAttribute("filePattern", "${LogFileName}-%d{yyyyMMdd-HHmmss_SSS}.log");
+            rollingFile.addAttribute("fileName", "${LogFileName}.log1");
+            rollingFile.addAttribute("filePattern", "${LogFileName}-%d{yyyyMMdd-HHmmss_SSS}.log1");
             rollingFile.addComponent(triggeringPolicies);
 
 //        FilterComponentBuilder flow = builder.newFilter(
@@ -648,6 +649,7 @@ public class GetLogs {
 
             Configurator.initialize(builder.build());
 //        System.out.println(builder.toXmlConfiguration());
+        }
             logger.info("log initialized");
         }
 //        LogWindow.initCustomLogger();
@@ -705,10 +707,6 @@ public class GetLogs {
         }
 
         return datePos;
-    }
-
-    static void doLog(String s) {
-        logger.info(s);
     }
 
     static String getWD() {
