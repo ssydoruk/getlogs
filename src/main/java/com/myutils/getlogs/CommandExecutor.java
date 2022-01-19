@@ -1232,7 +1232,7 @@ public final class CommandExecutor {
                                 "$z.Dispose()\n" +
                                 "Rename-Item -Path $t -NewName $zn\n" +
                                 "}");
-                logger.info("executing [" + zipCommand.toString() + "]");
+                logger.debug("executing [" + zipCommand.toString() + "]");
 
 
                 StringBuilder cmd = new StringBuilder()

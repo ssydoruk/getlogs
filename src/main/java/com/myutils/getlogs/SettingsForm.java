@@ -52,7 +52,6 @@ public final class SettingsForm extends JFrame {
         ce = new CommandExecutor(this);
         lw = new LogWindow(this);
         initLogging();
-        logger.fatal("testing logger");
 
         getContentPane().add(settingsPanel);
         getContentPane().add(createButtonPanel());
@@ -109,9 +108,6 @@ public final class SettingsForm extends JFrame {
 
         rootLogger.addAppender(appender, org.apache.logging.log4j.Level.INFO, null);
         ctx.updateLoggers(config);
-        logger.fatal("fatal error");
-        org.apache.logging.log4j.Logger logger1 = org.apache.logging.log4j.LogManager.getLogger(GetLogs.class);
-        logger1.info("hello");
     }
 
     public void setJBRunEnabled(boolean b) {
