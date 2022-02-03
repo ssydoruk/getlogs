@@ -1,0 +1,259 @@
+
+M
+java:S3740„"/Provide the parametrized type for this generic.(ƒ»¬¶8œåñ«ª/
+R
+java:S3740¯"/Provide the parametrized type for this generic.(Àïúÿÿÿÿ8¦åñ«ª/
+k
+java:S1192Ò"MDefine a constant instead of duplicating this literal "Config error" 4 times.(¬Íú™8®åñ«ª/
+h
+java:S1192¬"EDefine a constant instead of duplicating this literal "]
+\t" 4 times.(Öçè¦şÿÿÿÿ8¶åñ«ª/
+e
+java:S1192•"IDefine a constant instead of duplicating this literal "net use " 3 times.(Ü÷ºûÿÿÿÿ
+]
+java:S1192ƒ"FDefine a constant instead of duplicating this literal "[0-9]" 4 times.(ù¡÷Ò
+R
+java:S1066ö
+"/Merge this if statement with the enclosing one.(œâ“´şÿÿÿÿ8¼åñ«ª/
+R
+java:S1066§"/Merge this if statement with the enclosing one.(é ÓĞøÿÿÿÿ8Âåñ«ª/
+R
+java:S2629>"7Use the built-in formatting to construct this argument.(¿Í‡ªùÿÿÿÿ
+Z
+java:S2629ª"7Use the built-in formatting to construct this argument.(å¨Ïÿÿÿÿÿ8Éåñ«ª/
+x
+java:S2629Ø"\Invoke method(s) only conditionally. Use the built-in formatting to construct this argument.(ºİÉıÿÿÿÿ
+G
+java:S2629—"$Invoke method(s) only conditionally.(Ø“×òıÿÿÿÿ8Óåñ«ª/
+G
+java:S2629›"$Invoke method(s) only conditionally.(„Ê‰‘üÿÿÿÿ8Ôåñ«ª/
+U
+java:S2629¬"7Use the built-in formatting to construct this argument.(ÏÿÜ8Ôåñ«ª/
+U
+java:S2629Š	"7Use the built-in formatting to construct this argument.(¨Ò¨î8Úåñ«ª/
+Z
+java:S2629«
+"7Use the built-in formatting to construct this argument.(ÎõÜÇúÿÿÿÿ8Úåñ«ª/
+Z
+java:S2629û"7Use the built-in formatting to construct this argument.(íšË”úÿÿÿÿ8Úåñ«ª/
+U
+java:S2629ı"7Use the built-in formatting to construct this argument.(íËæö8Úåñ«ª/
+l
+java:S3824­"NReplace this "Map.get()" and condition with a call to "Map.computeIfAbsent()".(ÈÃàŞ8êåñ«ª/
+{	java:S135‘"YReduce the total number of break and continue statements in this loop to use at most one.(˜Á£àıÿÿÿÿ8úåñ«ª/
+a
+java:S1155ú">Use isEmpty() to check whether the collection is empty or not.(·³‹ãúÿÿÿÿ8ûåñ«ª/
+a
+java:S1155ö
+">Use isEmpty() to check whether the collection is empty or not.(œâ“´şÿÿÿÿ8†æñ«ª/
+a
+java:S1155§">Use isEmpty() to check whether the collection is empty or not.(é ÓĞøÿÿÿÿ8†æñ«ª/
+X
+java:S1141±"5Extract this nested try block into a separate method.(¡»¢üùÿÿÿÿ8æñ«ª/
+f	java:S117­"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(úğÇ
+s	java:S117ú"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ä¶±Ëşÿÿÿÿ8™æñ«ª/
+s	java:S117¡"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ŠÃ´Ãıÿÿÿÿ8æñ«ª/
+M
+java:S5411¤"*Use the primitive boolean expression here.( „–ùÿÿÿÿ8­æñ«ª/
+M
+java:S5411‰
+"*Use the primitive boolean expression here.(õ„Šíşÿÿÿÿ8¯æñ«ª/
+M
+java:S5411 
+"*Use the primitive boolean expression here.(õ„Šíşÿÿÿÿ8¯æñ«ª/
+M
+java:S5411Ì"*Use the primitive boolean expression here.( „–ùÿÿÿÿ8¸æñ«ª/
+F
+java:S1604Ê"(Make this anonymous inner class a lambda(Â”Ë©8Èæñ«ª/
+F
+java:S1604æ"(Make this anonymous inner class a lambda(—¶¢ù8Íæñ«ª/
+F
+java:S1604†"(Make this anonymous inner class a lambda(”ú˜8Ğæñ«ª/
+K
+java:S1604"(Make this anonymous inner class a lambda(İ­¿Òÿÿÿÿÿ8Øæñ«ª/
+F
+java:S1604²"(Make this anonymous inner class a lambda(”ú˜8Ûæñ«ª/
+K
+java:S1604»"(Make this anonymous inner class a lambda(İ­¿Òÿÿÿÿÿ8ßæñ«ª/
+F
+java:S1604©"(Make this anonymous inner class a lambda(ÛÈÀ”8ãæñ«ª/
+j
+java:S1128"TRemove this unnecessary import: same package classes are always implicitly imported.(›»éŸ
+D
+java:S1121r".Extract the assignment out of this expression.(•Üéë
+D
+java:S1121{".Extract the assignment out of this expression.(•Üéë
+L
+java:S1121×
+".Extract the assignment out of this expression.(ı±Áø8Íçñ«ª/
+=
+java:S1170§"!Make this final field static too.(‘éÕ¯üÿÿÿÿ
+\
+java:S3457>"AFormat specifiers should be used instead of string concatenation.(¿Í‡ªùÿÿÿÿ
+m
+java:S3776j"RRefactor this method to reduce its Cognitive Complexity from 17 to the 15 allowed.(·È„Äøÿÿÿÿ
+\
+java:S1124ˆ"EReorder the modifiers to comply with the Java Language Specification.(¯Ù˜à
+z
+java:S2142’"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(è®ã¶øÿÿÿÿ
+\
+java:S1124£"EReorder the modifiers to comply with the Java Language Specification.(ÔÓƒ±
+N
+java:S1135³"2Complete the task associated to this TODO comment.(™Ó“£üÿÿÿÿ
+
+java:S1130Ë"wRemove the declaration of thrown exception 'java.lang.InterruptedException', as it cannot be thrown from method's body.(¾İ™¾
+n
+java:S3776ş"RRefactor this method to reduce its Cognitive Complexity from 19 to the 15 allowed.(ÁõÄÓúÿÿÿÿ
+U
+java:S3400½"9Remove this method and declare a constant for this value.(Ğ¸ïÂıÿÿÿÿ
+i
+java:S3776"RRefactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.(ô„‚²
+=
+java:S1075"&Remove this hard-coded path-delimiter.(­úû
+=
+java:S1075"&Remove this hard-coded path-delimiter.(­úû
+O
+java:S1117"8Rename "ret" which hides the field declared at line 167.(–±‘ñ
+|
+java:S2142²"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(ä ¹€8‰éñ«ª/
+c
+java:S2147²"ECombine this catch with the one at line 432, which has the same body.(ä ¹€8Œéñ«ª/
+h
+java:S2147´"ECombine this catch with the one at line 432, which has the same body.(¶—ã‚ÿÿÿÿÿ8éñ«ª/
+|
+java:S2142Õ"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(ä ¹€8 éñ«ª/
+c
+java:S2147Õ"ECombine this catch with the one at line 467, which has the same body.(ä ¹€8 éñ«ª/
+
+java:S1157È"cReplace these toUpperCase()/toLowerCase() and equals() calls with a single equalsIgnoreCase() call.(×ã€Ó8­éñ«ª/
+|
+java:S2142ó"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(ä ¹€8°éñ«ª/
+c
+java:S2147ó"ECombine this catch with the one at line 497, which has the same body.(ä ¹€8Äéñ«ª/
+X
+java:S1172"5Remove this unused method parameter "fileNameClause".(áŠÎúÿÿÿÿ8Ïéñ«ª/
+p
+java:S3776Œ"RRefactor this method to reduce its Cognitive Complexity from 70 to the 15 allowed.(ø°ÿõ8Øéñ«ª/
+I
+java:S1168¬"+Return an empty collection instead of null.(¥¹ï8ßéñ«ª/
+w
+java:S2293Ò"YReplace the type specification in this constructor call with the diamond operator ("<>").(¨ÿ—Â8âéñ«ª/
+I
+java:S1168î"+Return an empty collection instead of null.(¥¹ï8ëéñ«ª/
+^
+java:S1854“"@Remove this useless assignment to local variable "nameSuffixes".(Ÿ–Îñ8îéñ«ª/
+u
+java:S3776ƒ"RRefactor this method to reduce its Cognitive Complexity from 82 to the 15 allowed.(¥©ÿÿÿÿÿ8îéñ«ª/
+d
+java:S3457ª"AFormat specifiers should be used instead of string concatenation.(å¨Ïÿÿÿÿÿ8öéñ«ª/
+E
+java:S1125Ë"'Remove the unnecessary boolean literal.(Õü•»8şéñ«ª/
+d
+java:S3457Ø"AFormat specifiers should be used instead of string concatenation.(ºİÉıÿÿÿÿ8€êñ«ª/
+I
+java:S1168ş"+Return an empty collection instead of null.(¥¹ï8‚êñ«ª/
+
+java:S2142 "^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(îíüòşÿÿÿÿ8‚êñ«ª/
+o
+java:S3776§"RRefactor this method to reduce its Cognitive Complexity from 37 to the 15 allowed.(Ñˆ£U8Šêñ«ª/
+_
+java:S3457¬"AFormat specifiers should be used instead of string concatenation.(ÏÿÜ8¥êñ«ª/
+I
+java:S1172¼"&Remove these unused method parameters.(ïŸ–øøÿÿÿÿ8¨êñ«ª/
+O
+java:S1854ì"8Remove this useless assignment to local variable "ret1".(ŠÏĞ
+J
+java:S1602Â",Remove useless curly braces around statement(¹·€º8¬êñ«ª/
+p	java:S100ú"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(úú×‰ÿÿÿÿÿ8¶êñ«ª/
+D
+java:S1172š"&Remove these unused method parameters.(òğ½8¼êñ«ª/
+g
+java:S3358½"DExtract this nested ternary operation into an independent statement.(„µØıÿÿÿÿ8Äêñ«ª/
+_
+java:S3457Š	"AFormat specifiers should be used instead of string concatenation.(¨Ò¨î8Æêñ«ª/
+D
+java:S1172Ù	"&Remove these unused method parameters.(â¡Á°8Ğêñ«ª/
+y
+java:S3923Ü	"[Remove this conditional structure or edit its code blocks so that they're not all the same.(ÕÖ×8Òêñ«ª/
+e
+java:S1854‚
+"BRemove this useless assignment to local variable "fileNameClause".(°Ö™Ìûÿÿÿÿ8Õêñ«ª/
+p
+java:S3776ş	"RRefactor this method to reduce its Cognitive Complexity from 42 to the 15 allowed.(øÿ—¯8Úêñ«ª/
+d
+java:S3457«
+"AFormat specifiers should be used instead of string concatenation.(ÎõÜÇúÿÿÿÿ8Ûêñ«ª/
+U
+java:S1172¯
+"2Remove this unused method parameter "sGUIProfile".(ƒ¬Æµıÿÿÿÿ8Ûêñ«ª/
+u
+java:S3776´
+"RRefactor this method to reduce its Cognitive Complexity from 39 to the 15 allowed.(Œ«İüûÿÿÿÿ8äêñ«ª/
+p
+java:S3776›"RRefactor this method to reduce its Cognitive Complexity from 21 to the 15 allowed.(Åà¾ˆ8ğêñ«ª/
+Š
+java:S1130›"lRemove the declaration of thrown exception 'java.io.IOException', as it cannot be thrown from method's body.(Åà¾ˆ8óêñ«ª/
+•
+java:S1130›"wRemove the declaration of thrown exception 'java.lang.InterruptedException', as it cannot be thrown from method's body.(Åà¾ˆ8ôêñ«ª/
+I
+java:S1168Ò"+Return an empty collection instead of null.(¥¹ï8ôêñ«ª/
+p
+java:S3776ó"RRefactor this method to reduce its Cognitive Complexity from 17 to the 15 allowed.(©øÈÂ8ëñ«ª/
+
+java:S2142Š"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(îíüòşÿÿÿÿ8„ëñ«ª/
+I
+java:S1168"+Return an empty collection instead of null.(¥¹ï8„ëñ«ª/
+u
+java:S3776é"RRefactor this method to reduce its Cognitive Complexity from 50 to the 15 allowed.(îç¯ûÿÿÿÿ8ëñ«ª/
+d
+java:S3457û"AFormat specifiers should be used instead of string concatenation.(íšË”úÿÿÿÿ8–ëñ«ª/
+_
+java:S3457ı"AFormat specifiers should be used instead of string concatenation.(íËæö8—ëñ«ª/
+V
+java:S1117û"8Rename "ret" which hides the field declared at line 167.(×ã“‘8¥ëñ«ª/
+Ÿ
+java:S1186û"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(Ê¢âã8µëñ«ª/
+
+java:S2142–"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(îíüòşÿÿÿÿ8¸ëñ«ª/
+x
+java:S1450¾"ZRemove the "displayForm" field and declare it as a local variable in the relevant methods.(ªªÇÊ8Áëñ«ª/
+r
+java:S1450½"VRemove the "outFile" field and declare it as a local variable in the relevant methods.(‘ë¢úÿÿÿÿ
+N
+java:S2388Ş"+Prefix this call to "cancel" with "super.".(ïÓÙşÿÿÿÿ8Éëñ«ª/
+
+java:S2142ó"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(è®ã¶øÿÿÿÿ8Ëëñ«ª/
+F	java:S108Ì")Either remove or fill this block of code.(Úîø›8Øëñ«ª/
+f
+java:S1117è"CRename "startingLatch" which hides the field declared at line 1988.(ûŒİŠşÿÿÿÿ8Şëñ«ª/
+_
+java:S3457¬"AFormat specifiers should be used instead of string concatenation.(–¤‘á8ôëñ«ª/
+
+java:S2142³"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(àÏƒùüÿÿÿÿ8üëñ«ª/
+O
+java:S1481“"1Remove this unused "nameSuffixes" local variable.(Ÿ–Îñ8…ìñ«ª/
+G
+java:S1481ì")Remove this unused "ret1" local variable.(ŠÏĞ8Œìñ«ª/
+P
+java:S1481é"-Remove this unused "lfmtHost" local variable.(¬Ô£êıÿÿÿÿ8”ìñ«ª/
+V
+java:S1481‚
+"3Remove this unused "fileNameClause" local variable.(°Ö™Ìûÿÿÿÿ8•ìñ«ª/
+C
+java:S1068§"'Remove this unused "ret" private field.(‘éÕ¯üÿÿÿÿ
+G
+java:S1068½"+Remove this unused "outFile" private field.(‘ë¢úÿÿÿÿ
+M
+java:S1068¾"/Remove this unused "displayForm" private field.(ªªÇÊ8£ìñ«ª/
+I
+java:S3398•"+Move this method into "QueryThreadingTask".(®û8¬ìñ«ª/
+D
+java:S3398´"&Move this method into "QueryTaskBase".(£¯«Ú8¸ìñ«ª/
+I
+java:S3398ä"&Move this method into "QueryTaskBase".(“”âıÿÿÿÿ8ºìñ«ª/
+P
+java:S1144¡"2Remove this unused private "sshNameClause" method.(¥â“É8½ìñ«ª/
+V
+java:S1144æ"3Remove this unused private "QueryTask" constructor.(¥Ê›âûÿÿÿÿ8½ìñ«ª/
+R
+java:S1144â"/Remove this unused private "setOutFile" method.(Û¼ÿÕÿÿÿÿÿ8½ìñ«ª/
