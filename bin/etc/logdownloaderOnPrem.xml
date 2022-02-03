@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="error" strict="true" name="XMLConfigTest">
+  <Properties>
+    <Property name="Filename">c:\gcti\tmp\logdownloader</Property>
+  </Properties>
+  <Filter type="ThresholdFilter" level="trace"/>
+
+  <Appenders>
+    <Appender type="Console" name="CONSOLE">
+      <!--Layout type="PatternLayout" pattern="%m%n"/-->
+      <Layout type="PatternLayout" pattern="%d [%t] %5.5p %m%n"/>
+      <ThresholdFilter level="info" />
+    </Appender>
+	
+    <RollingFile name="File" fileName="${Filename}.log"
+        filePattern="${Filename}-%d{yyyyMMdd-HHmmss_SSS}.log"
+        immediateFlush="false" >
+      <Layout type="PatternLayout">
+        <Pattern>%d [%t] %30.30C %5.5p %m%n</Pattern>
+        <!-- <Pattern>%d %p %C [%t] %m%n</Pattern> -->
+      </Layout>
+      <Policies>
+        <OnStartupTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="20 MB" />
+      </Policies>
+    </RollingFile>
+<!--    <MapAppender name="MapAppender"/>-->
+  </Appenders>
+
+  <Loggers>
+
+    <!-- <Logger name="logdownloader" level="debug" additivity="false">
+      <AppenderRef ref="File"/>
+      <AppenderRef ref="CONSOLE"/>
+    </Logger> -->
+    <!-- <Logger name="io.netty" level="info" /> -->
+    <Logger name="org.apache.sshd" level="info" />
+    <Logger name="com.myutils.logbrowser.indexer" level="info" />
+
+    <Root level="debug">
+      <AppenderRef ref="File"/>
+      <AppenderRef ref="CONSOLE"/>
+<!--      <AppenderRef ref="MapAppender" />-->
+    </Root>
+  </Loggers>
+
+</Configuration>

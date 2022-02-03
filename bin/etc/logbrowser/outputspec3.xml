@@ -1,0 +1,2109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<OutputSpec>
+	<MsgTypes>
+		<!-- SIP messages -->
+		<!--spec MsgType="Sip" format="filelink timestamp %8s f:%4s|t:%4s|%-8s|callidalias/*%s via:%18s br:*%s peer:%s|%s|%s|%s %s"-->
+		<spec MsgType="Sip" format="filelink timestamp">
+			<initScript src="./SIPInit.js" />
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param type="database" id="name" format=" %7s" name="name">
+				<pattern match="^(\w{1,7})" ignorecase="true" groups="1" />
+			</param>
+			<param7 type="embedded" id="callidalias" format="|%s" name="connid" />
+
+			<param8 type="database" id="callid" format="%s" name="callid" />
+			<param4 type="database" id="fromuri" format="|from: %4s" hidden="true" name="fromuri" />
+			<param5 type="database" id="touri" format="|to: %4s" hidden="true" />
+			<param6 type="database" id="cseq" format="|%-8s" name="seqn" />
+			<param7 type="database" id="uuid" format=" uuid=%s" hidden="true" name="uuid" />
+			<param3 type="database" id="requestURIDN" format="|reqDN:%s" name="thisdn" hidden="true" />
+			<param3 type="database" id="FromUserpart" format="|from:%s" name="otherdn" hidden="true" />
+			<param8 type="database" id="via" format="|via:%18s" hidden="true">
+				<pattern match="(\S{1,19})$" group="1" ignorecase="true" />
+			</param8>
+			<param8 type="database" id="viabranch" format="|br:*%s" name="refid" hidden="true">
+				<pattern match="(\S{3})$" group="1" ignorecase="true" />
+			</param8>
+			<!--param9 type="database" id="peeraddr" format="|peer:%s" name="peer" hidden="true" /-->
+
+		</spec>
+
+
+		<spec MsgType="SipMS" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param type="database" id="name" format=" %7s" name="name">
+				<pattern match="^(\w{1,7})" ignorecase="true" groups="1" />
+			</param>
+			<param7 type="embedded" id="callidalias" format="|%s" name="connid" />
+			<param8 type="database" id="callid" format="%s" />
+			<param4 type="database" id="fromuri" format="|F:%4s">
+				<pattern match="(\w{1,4}?)@" group="1" />
+			</param4>
+			<param5 type="database" id="touri" format="|T:%4s">
+				<pattern match="(\w{1,4}?)@" group="1" />
+			</param5>
+			<param5 type="database" id="sipuri" format="|%s" />
+			<param6 type="database" id="cseq" format="|%-8s" name="seqn" />
+			<param3 type="database" id="requestURIDN" format="|to:%s" name="thisdn" />
+			<param3 type="database" id="FromUserpart" format="|from:%s" name="otherdn" />
+			<param8 type="database" id="via" format="|via:%18s">
+				<pattern match="(\S{1,19})$" group="1" ignorecase="true" />
+			</param8>
+			<param8 type="database" id="viabranch" format="|br:*%s" name="refid">
+				<pattern match="(\S{3})$" group="1" ignorecase="true" />
+			</param8>
+			<param9 type="database" id="peeraddr" format="|peer:%s" />
+			<param10 type="file" format="|%s">
+				<pattern match="^(c=.+)" group="1" ignorecase="true" />
+			</param10>
+			<param11 type="file" format="|%s">
+				<pattern match="(m=audio.+)" group="1" ignorecase="true" />
+			</param11>
+			<param12 type="file" format="|%s">
+				<pattern match="a=(inactive|recvonly|sendrecv|sendonly)" group="1" ignorecase="true" />
+			</param12>
+
+			<param12 type="file" format="|%s">
+				<pattern match="User-Agent:(.+)" group="1" ignorecase="true" />
+			</param12>
+
+			<!--param13 type="file" format="|%s">
+		<pattern match="^\w+ sip:(\S+) SIP/2\.0$" group="1" ignorecase="true" />
+	  </param13-->
+		</spec>
+
+
+		<!-- SIP messages -->
+		<spec MsgType="SIPREGISTER" format="filelink timestamp ">
+			<param1 type="embedded" id="filelink">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" />
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param3 type="database" id="name" format=" %8s" />
+
+
+			<param6 type="database" id="cseq" format="|cseq: %s"></param6>
+
+			<param8 type="database" id="callid" format="|callid: *%s">
+				<pattern match="(.{4})(?:@|$)" group="1" ignorecase="true" />
+			</param8>
+
+			<param8 type="database" id="ViaUri" format="|via: %s">
+				<pattern match="(\S{1,19})$" group="1" ignorecase="true" />
+			</param8>
+			<param9 type="database" id="PeerIp" format="|peer: %s" />
+
+			<param8 type="file" format="|exp: %s">
+				<pattern match="^Expires: (\d+)$" group="1" ignorecase="true" />
+			</param8>
+
+			<param8 type="file" format="|expc: %s">
+				<pattern match="^(Contact|m):.+;expires=(\d+)$" group="2" ignorecase="true" />
+			</param8>
+
+			<param8 type="file" format="|evt: %s">
+				<pattern match="^(Event|o):\s*(.+)$" group="2" ignorecase="true" />
+			</param8>
+		</spec>
+		<!-- Genesys messages for OPTIONS -->
+		<spec MsgType="SIPOPTIONS" format="filelink timestamp %-9s|DN: %s|CSeq: %s|peer %s:%s|callid: %s">
+			<param1 type="embedded" id="filelink">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" />
+			<param3 type="embedded" id="sipname" />
+			<param type="database" id="FromURI">
+				<pattern match="sip:([^:@]+)@" ignorecase="true" groups="1" />
+			</param>
+
+			<param type="database" id="CSeq">
+				<pattern match="(.+) OPTIONS" ignorecase="true" groups="1" />
+			</param>
+			<param type="database" id="PeerIp" />
+			<param type="database" id="PeerPort" />
+			<param type="database" id="CallID">
+				<pattern match="(.{4})@" ignorecase="true" groups="1" />
+			</param>
+
+			<param6 type="file" format="|uri %s">
+				<pattern match="^OPTIONS sip:(.+) " ignorecase="true" groups="1" />
+			</param6>
+
+
+		</spec>
+		<!-- OPTIONS -->
+
+
+		<!-- TLibrary events -->
+		<spec MsgType="tlib" format="filelink timestamp">
+			<initScript src="./TLib.js" />
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param3 type="database" id="name" name="name" />
+
+			<param4 type="database" id="source" format=" server{%s}" name="source" />
+
+			<param6 type="database" id="seqnoHex" format="|seqn=%s" name="seqn" hidden='true' />
+
+			<param4 type="database" id="place" format=" place=%s" name="place" hidden='true' />
+
+			<param4 type="database" id="ani" format=" ani=%s" name="ani" />
+
+			<param4 type="database" id="dnis" format=" dnis=%s" name="dnis" />
+
+			<param4 type="database" id="thisdn" format=" dn=%s" name="thisdn" />
+
+			<param5 type="database" id="otherdn" format=" odn=%s" name="otherdn" />
+			<param8 type="database" id="agentid" format="|ag:%s" name="agent" />
+			<param7 type="database" id="connid" format=" connid=%s" name="connid">
+				<pattern match="^(\d\w+)$" group="1" ignorecase="true" />
+			</param7>
+
+			<param7 type="database" id="ixnid" format=" ixn=%s" name="ixnid">
+				<pattern match="(\w+)" group="1" ignorecase="true" />
+			</param7>
+
+			<param8 type="database" id="TransferID" format=" prConnID=%s" />
+
+			<param8 type="script" name="callParams">
+		var i=parseInt(RECORD.getField('calltype'));
+		if(i>0 || !RECORD.getField('name').toLowerCase().startsWith('request') ) {
+			'type: '+RECORD.constToStr('CallType', RECORD.getField('calltype'));
+		}
+		else {
+			'';
+		}
+			</param8>
+
+			<param8 type="database" id="referenceid" format="|refID:%s" name="refid" hidden='true'>
+				<pattern match="([1-9]\d*)$" group="1" ignorecase="true" />
+			</param8>
+
+			<param8 type="database" id="err" format="err: %s" name="errorCode" hidden='true'>
+				<pattern match="([1-9]\d*)" group="1" ignorecase="true" />
+			</param8>
+			<param8 type="database" id="ErrMessage" format="err: %s" name="errorCode" hidden='true' />
+
+			<param8 type="database" id="attr1" format="%s" name="attr1" hidden='true' />
+
+			<param7 type="database" id="uuid" format=" uuid=%s" name="uuid" />
+
+		</spec>
+		<!-- TLibrary events -->
+
+
+		<!-- tlib_ISCC events -->
+		<spec MsgType="tlib_ISCC" format="filelink timestamp">
+			<initScript src="./tlib_ISCC.js" />
+
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param3 type="database" id="name" format=" %s" name="name" />
+
+
+			<param4 type="database" id="thisdn" format=" dn=%s" name="thisdn" />
+
+			<param5 type="database" id="otherdn" format=" odn=%s" hidden="true" />
+			<param7 type="database" id="ConnectionID" format=" connid=%s" name="connid" />
+
+			<param7 type="database" id="OtherConnectionID" format=" oconnid=%s" name="otherconnid" />
+
+			<param4 type="database" id="source" format=" |ts:%s" name="source" />
+
+			<param8 type="database" id="sourceSwitch" format=" |sw: %s" name="source" />
+
+			<param8 type="database" id="referenceid" format="|refID:%s" name="refid" hidden="true" />
+
+
+		</spec>
+		<!-- tlib_ISCC events -->
+
+
+		<!-- Genesys messages for TSCPCALL -->
+		<spec MsgType="TSCPCALL" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param type="database" id="newConnID" format="newConnID: %s" name="connid" />
+			<param type="database" id="connectionID" format="connID: %s" name="connid" />
+			<param type="file" format="|%s" name="name">
+				<pattern match="tscp.call\s+\{([^\}]+)\}" ignorecase="true" groups="1" />
+			</param>
+
+		</spec>
+		<!-- TSCPCALL -->
+
+
+		<!-- Outbound CampaignGroup -->
+		<spec MsgType="OCSCG" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<param3 type="database" id="cgname" format=" cg: %s" name="campaigngroup"></param3>
+
+			<param6 type="file" format="|%s" status="true1" shortFormat="-%s">
+				<pattern match="Status: (.+)" groups="1" ignorecase="true" />
+			</param6>
+
+			<!--param6 type="file" format="|ch c:%s d:%s|re c:%s d:%s" -->
+			<param6 type="file" format="|Chains Created:%s Deleted:%s|Records Created:%s Deleted:%s">
+				<pattern match="Chains - Created: (\d+); Deleted: (\d+);\s+Records - Created: (\d+); Deleted: (\d+);" groups="1,2,3,4" ignorecase="true" />
+			</param6>
+
+			<param6 type="file" format="|%s">
+				<pattern match="(: Created|: Deleted)" groups="1" ignorecase="true" />
+			</param6>
+
+		</spec>
+
+
+		<!-- Outbound CampaignGroup -->
+		<spec MsgType="OCSPedictiveInfo" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<param3 type="database" id="campaigngroup" format=" cg: %s" name="campaigngroup"></param3>
+
+			<param type="database" id="density" format="density: %s" />
+			<param type="database" id="a" format="a: %s" />
+			<param type="database" id="predTime" format="predTime: %s" />
+			<param type="database" id="reminder" format="reminder %s" />
+			<param type="database" id="sentCalls" format="sentCalls: %s" />
+
+		</spec>
+
+
+		<!-- TLibrary events for outbound -->
+		<spec MsgType="OCS" format="filelink timestamp ">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<!--param3 type="database" id="name" format="%s ">
+	   <pattern match="(Event.+|Request.+)" group="1" ignorecase="true" />
+	  </param3-->
+
+			<param6 type="file" format="|req: %s" name="name">
+				<pattern match="^\s{2}'GSW_AGENT_REQ_TYPE'\s'(.+)'" ignorecase="true" groups="1" />
+			</param6>
+
+			<param6 type="file" format="|evt: %s" name="name1">
+				<pattern match="^\s{2}'GSW_USER_EVENT'\s'(.+)'" ignorecase="true" groups="1" />
+			</param6>
+
+			<param6 type="file" format="|err: %s" name="message">
+				<pattern match="^\s{2}'GSW_ERROR'\s'(.+)'" ignorecase="true" groups="1" />
+			</param6>
+
+			<param6 type="database" id="seqnoHex" format=" seqn=%s"></param6>
+
+			<param4 type="database" id="thisdn" format=" dn=%s" name="thisdn"></param4>
+
+			<param8 type="file" format=" refid=%s" name="refid">
+				<pattern match="AttributeReferenceID\s(\d*)$" group="1" ignorecase="true" />
+			</param8>
+
+			<param11 type="file" format=" from: %s">
+				<pattern match=" received (from .+)" group="1" ignorecase="true" />
+			</param11>
+
+
+			<!--***********************  Outbound related data **********************}}}}}}}}}} -->
+			<param6 type="file" format="|camp: %s" name="campaign">
+				<pattern match="^\s{2}'GSW_CAMPAIGN_NAME'\s'(.+)'" ignorecase="true" groups="1" />
+			</param6>
+
+			<param6 type="file" format="|regHandle: %s" name="handle">
+				<pattern match="^\s{2}'GSW_RECORD_HANDLE'\s(.+)" ignorecase="true" groups="1" />
+			</param6>
+
+			<param6 type="file" format="|chID: %s" name="chain">
+				<pattern match="^\s{2}'GSW_CHAIN_ID'\s(.+)" ignorecase="true" groups="1" />
+			</param6>
+
+
+			<!--{{{{{{{{{{{***********************   Outbound related data ********************** -->
+		</spec>
+		<!-- Outbound PASessionInfo -->
+		<spec MsgType="OCSPASI" format="filelink timestamp PA SI">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<!--param type="database" id="app" name="direction">
+	  	<pattern match="." ignorecase="true" return="-" />
+	  </param-->
+			<param3 type="database" id="cgname" format=" cg: %s" name="campaigngroup"></param3>
+
+
+			<param6 type="file" format="|%s|%s" status="true1" name="name">
+				<pattern match="Mode: ([^;]+); Status: ([^;]+);" ignorecase="true" groups="1,2" />
+			</param6>
+
+			<param6 type="file" format=" ag ready: %s/%s">
+				<pattern match="Agents/Places - Total: (\d+); Ready: (\d+);" ignorecase="true" groups="2,1" />
+			</param6>
+
+			<param6 type="file" format=" rt: dia %s que %s est %s">
+				<pattern match="^\s+Calls Outbound - Dialed: (\d+); Queued: (\d+); Established: (\d+);" ignorecase="true" groups="1,2,3" />
+			</param6>
+
+
+			<param6 type="file" format=" stat: dialed %s est %s compl %s">
+				<pattern match="^\s*Outbound Calls - TotalDialed: (\d+); Established: (\d+); Completed: (\d+);" ignorecase="true" groups="1,2,3" />
+			</param6>
+
+			<param6 type="file" format=" noc %s aband %s clean %s rem %s">
+				<pattern match="NoContact: (\d+); NoContactAM: (\d+); Abandoned: (\d+); Cleaned: (\d+); Removed: (\d+);" ignorecase="true" groups="1,3,4,5" />
+			</param6>
+
+			<param6 type="file" format="|%s %s" hidden="yes">
+				<pattern match="^\s*(Blend)ing (.+)$" ignorecase="true" groups="1,2" />
+			</param6>
+
+		</spec>
+		<!-- Outbound PA Agent Info: -->
+		<spec MsgType="OCSPAAgI" format="filelink timestamp %s">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param4 type="database" id="cgdbid" format="|cgdbid: %s"></param4>
+
+			<!--param6 type="file" format="|rech %s|ag %s| connid %s">
+	   <pattern match="^\s*OwnerDBID: .+RecHandle: (\d+); ConnID: ([^;]*);.+Agent/Place: (\S.+)$" ignorecase="true" groups="1,3,2" />
+	  </param6-->
+
+			<param6 type="database" id="rechandle" format="|rech %s" name="handle">
+				<pattern match="^([1-9]\d*)" ignorecase="true" groups="1" />
+				<!--pattern match="^\s*OwnerDBID: .+RecHandle: (\d+); ConnID: ([^;]*);.+Agent/Place: (\S.+)$" ignorecase="true" groups="1" /-->
+			</param6>
+
+			<param6 type="database" id="agent" format="|ag %s" name="agent">
+				<!--pattern match="^\s*OwnerDBID: .+RecHandle: (\d+); ConnID: ([^;]*);.+Agent/Place: (\S.+)$" ignorecase="true" groups="3" /-->
+			</param6>
+
+			<param6 type="file" format="connid %s" name="connid">
+				<pattern match="^\s*OwnerDBID: .+RecHandle: (\d+); ConnID: ([^;]*);.+Agent/Place: (\S.+)$" ignorecase="true" groups="2" />
+			</param6>
+
+
+			<!--param6 type="file" format="|stat %s| calltype %s">
+	   <pattern match="^\s*CurrentStatType: ([^;]+); CallType: ([^;]+);" ignorecase="true" groups="1,2" />
+	  </param6-->
+
+			<param6 type="database" id="StatType" format="|stat %s">
+				<!--pattern match="^\s*CurrentStatType: ([^;]+); CallType: ([^;]+);" ignorecase="true" groups="1,2" /-->
+			</param6>
+
+			<param6 type="database" id="CallType" format="|call %s">
+				<!--pattern match="^\s*CurrentStatType: ([^;]+); CallType: ([^;]+);" ignorecase="true" groups="1,2" /-->
+			</param6>
+
+
+			<param6 type="file" format="|%s %s" name="stat">
+				<pattern match="Agent(Busy)\s+([1-9]\d*\.\d{2})$" ignorecase="true" groups="1,2" />
+			</param6>
+
+			<param6 type="file" format="|%s %s" name="stat">
+				<pattern match="Agent(BusyACW)\s+([1-9]\d*\.\d{2})$" ignorecase="true" groups="1,2" />
+			</param6>
+
+			<param6 type="file" format="|%s %s" name="stat">
+				<pattern match="Agent(Ready)\s+([1-9]\d*\.\d{2})$" ignorecase="true" groups="1,2" />
+			</param6>
+
+			<param6 type="file" format="|%s %s" name="stat">
+				<pattern match="Agent(RingOrDial)\s+([1-9]\d*\.\d{2})$" ignorecase="true" groups="1,2" />
+			</param6>
+		</spec>
+
+		<!-- Outbound 18:04:15.100 PAEventInfo (ContactInfo): -->
+		<spec MsgType="OCSPAEVI" format="filelink timestamp %s">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<!--param4 type="database" id="cgdbid">
+	  </param4-->
+
+			<param4 type="database" id="campaignGroup" format="|cg: %s" name="campaignGroup" />
+
+
+			<param6 type="file" format="|call %s|stat %s">
+				<pattern match="\tCallType:  PA_Call([^;]+); StatType: PA_Stat([^;]+);" ignorecase="true" groups="1,2" />
+				<!--filter match="StatType: PA_Stat(CallNoContact|CallDialed|AgentCheckOut)" ignorecase="true" /-->
+			</param6>
+
+			<param6 type="database" id="RecHandle" format="|rech %s" name="handle">
+				<!--pattern match="^\tRecHandle: ([\d]+);" ignorecase="true" groups="1" /-->
+			</param6>
+
+			<param6 type="database" id="callresultstr" format="|callres %s">
+				<!--pattern match="^(.*)$" group="1" expression="select constToStr('CallResult', $1)" ignorecase="true" /-->
+				<!--pattern match=" CallResult: ([1-9][^;]*);$" ignorecase="true" groups="1" /-->
+			</param6>
+
+
+			<param6 type="file" format="| %s">
+				<pattern match="SessionState: ([^;]+);" ignorecase="true" groups="1" />
+			</param6>
+		</spec>
+		<!-- Outbound 18:04:15.100 PAEventInfo (ContactInfo): -->
+
+
+		<!-- OCS STAT_EVENT -->
+		<spec MsgType="OCSSTATEV" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="stat" format="|status: %s">
+				<!--pattern match="^SEvent(.+)" ignorecase="true" groups="1" /-->
+			</param6>
+
+			<param6 type="database" id="agent" format="|ag: %s" name="agent"></param6>
+
+			<param6 type="database" id="agentDBID" format="|agdbid: %s"></param6>
+
+			<param6 type="database" id="placeDBID" format="|pldbid: %s"></param6>
+
+
+			<param6 type="database" id="place" format="|pl: %s" name="place"></param6>
+
+			<param6 type="database" id="stattype" format="|st: %s"></param6>
+
+
+			<!--param6 type="file" format="|statusFile: %s">
+	   <pattern match="AGENT_VOICE_MEDIA_STATUS[\s\-]+(.+)" ignorecase= "true" groups="1" />
+	  </param6-->
+		</spec>
+		<!-- OCS STAT_EVENT -->
+		<!-- There are 29 Agents/Places assigned to Session 'Inbound'[0] OCS_Session_Loaded | OCS_Stat_Opened: -->
+		<spec MsgType="OCSASSIGNMENT" format="filelink timestamp ASSIGNMENT ">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="cgname" format="|cg: %s" name="campaigngroup"></param6>
+
+			<param6 type="database" id="agents" format="|ags: %s"></param6>
+
+			<param6 type="file" format="|use: %s">
+				<pattern match="^\s*Assignment: (\w+);" ignorecase="true" groups="1" />
+			</param6>
+
+
+		</spec>
+		<!-- OCSASSIGNMENT -->
+		<!-- OCS OCSDB -->
+		<spec MsgType="OCSDB" format="filelink timestamp OCSDB ">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<param type="database" id="chdbid" name="direction">
+				<pattern match="(^-\d+)" ignorecase="true" return="&lt;=" />
+				<pattern match="(^\d+)" ignorecase="true" return="=&gt;" />
+			</param>
+			<!--param6 type="database" id="chdbid" format="&lt;=">
+	   	<pattern match="(^-\d+)" groups="1" />
+	  </param6>
+	  <param6 type="database" id="chdbid" format="=&gt;">
+	   	<pattern match="(^\d+)" groups="1" />
+	  </param6-->
+
+
+			<param2 type="database" id="campaignname" format="|camp: %s" name="campaign" />
+			<param2 type="database" id="groupname" format="|gr: %s" name="group" />
+			<param2 type="database" id="listName" format="|list: %s" name="list" hidden="true" />
+
+			<param6 type="database" id="chdbid" format="|ch: %s" name="chain">
+				<pattern match="(^\d+)" groups="1" />
+			</param6>
+
+			<param6 type="database" id="dbserver" format="|dbserver: %s" name="source"></param6>
+
+			<param6 type="database" id="reqid" format="|req: %s" name="refid"></param6>
+
+			<param6 type="database" id="dbreq" format="| %s"></param6>
+
+
+			<param6 type="file" format="|%s">
+				<pattern match="-\d+\):(.+)" ignorecase="true" groups="1" />
+			</param6>
+
+
+		</spec>
+		<!-- OCSDB -->
+		<!-- OCSRECCREATE -->
+		<spec MsgType="OCSRECCREATE" format="filelink timestamp CREATEREC">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param type="database" id="action" name="direction" />
+
+			<param6 type="file" format="|ph: %s">
+				<pattern match="^\s*Phone = (.+)" ignorecase="true" groups="1" />
+			</param6>
+			<param6 type="database" id="chid" format="|ch: %s" name="chain"></param6>
+			<param6 type="database" id="chnum" format="|chnum: %s"></param6>
+			<param6 type="database" id="rechandle" format="|rech: %s" name="handle"></param6>
+			<param6 type="database" id="typestr" format="|type: %s"></param6>
+			<param6 type="database" id="campaign" format="|camp: %s" name="campaign" />
+			<param6 type="database" id="ocsList" format="|list: %s" name="list" hidden="true" />
+			<param6 type="database" id="ocsTable" format="|tab: %s" hidden="true" />
+
+			<param6 type="file" format="|att: %s">
+				<pattern match="^\s*Attempt = (.+)'" ignorecase="true" groups="1" />
+			</param6>
+
+		</spec>
+		<!-- OCSRECCREATE -->
+		<!-- OCSHTTP-->
+		<spec MsgType="OCSHTTP" format="filelink timestamp HTTP">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param8 type="script" name="direction"> RECORD.getField('isinbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param6 type="database" id="reqname" format="|req: %s"></param6>
+			<param6 type="database" id="rechandle" format="|rech: %s" name="handle"></param6>
+		</spec>
+		<!-- OCSHTTP -->
+		<!-- OCSSCXMLSCRIPT -->
+		<spec MsgType="OCSSCXMLSCRIPT" format="filelink timestamp SCRIPT %s">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param3 type="database" id="sessid" name="connid"></param3>
+
+			<param4 type="database" id="metric" format="|%16s">
+				<!--filter match="(eval_expr|state_exit|log|eval_condition|event_queued|event_processed)" ignorecase="true" /-->
+				<pattern match="^(?!state_enter|extension$)(.*)" group="1" />
+			</param4>
+
+			<param4 type="database" id="metric" format="|%13s+++">
+				<pattern match="(state_enter)" group="1" />
+			</param4>
+
+			<param4 type="database" id="metric" format="|***%-13s">
+				<pattern match="(extension)" group="1" />
+			</param4>
+
+
+			<param5 type="file" format="|%-15s">
+				<pattern match="METRIC &lt;(.+)" group="1" ignorecase="true" />
+				<!--filter match="METRIC &lt;(.+function='(getConfigOption|getListItemValue|isSpecialDay|sData|listLookupValue|setuData|dateInZone|timeInZone)|state_.+ name='_composer|onentry.+_composer|transition.+_composer|persist_)" ignorecase="true" /-->
+			</param5>
+		</spec>
+		<!-- OCSSCXMLSCRIPT -->
+		<!-- OCSSCXMLTREATMENT -->
+		<spec MsgType="OCSSCXMLTREATMENT" format="filelink timestamp TR">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param4 type="database" id="rechandle" format="|rech %s" name="handle"></param4>
+
+			<param4 type="database" id="sessid" format="|SID %s" name="sid">
+				<pattern match="(.+)" group="1" />
+			</param4>
+
+
+			<param5 type="file" format="| %s">
+				<pattern match="\]::(.+)" group="1" ignorecase="true" />
+			</param5>
+		</spec>
+		<!-- OCSSCXMLTREATMENT -->
+
+		<!-- OCSClient -->
+		<spec MsgType="OCSClient" format="filelink timestamp CLIENT">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="name" format=" %s" name="name"></param6>
+			<param6 type="database" id="campaign" format="|camp: %s">
+				<!--pattern match="(^[1-9]\d*)" groups="1" /-->
+			</param6>
+			<param6 type="database" id="agentGroup" format="|gr: %s" name="group">
+				<!--pattern match="(^[1-9]\d*)" groups="1" /-->
+			</param6>
+			<param6 type="file" format="|msg: %s">
+				<pattern match="^\s*GSW_CM_MessageType.+\[(.+)\]" ignorecase="true" groups="1" />
+			</param6>
+			<param6 type="file" format="|stat: %s" name="stat">
+				<pattern match="^\s*GSW_CM_AttrGroupCampStatus.+\[(.+)\]" ignorecase="true" groups="1" />
+			</param6>
+		</spec>
+		<!-- OCSClient -->
+
+		<!-- OCSTREATMENT -->
+		<spec MsgType="OCSTREATMENT" format="filelink timestamp TREATMENT">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param6 type="database" id="chid" format="|ch: %s" name="chain">
+				<pattern match="(^[1-9]\d*)" groups="1" />
+			</param6>
+			<param6 type="database" id="rechandle" format="|h: %s" name="handle">
+				<pattern match="(^[1-9]\d*)" groups="1" />
+			</param6>
+			<param6 type="file" format="|name: %s">
+				<pattern match="^\s*Name\s+=\s(.+)" ignorecase="true" groups="1" />
+			</param6>
+			<param6 type="file" format="|RecActionCode: %s">
+				<pattern match="^\s*RecActionCode\s+=\s(.+)" ignorecase="true" groups="1" />
+			</param6>
+			<param6 type="file" format="|CallActionCode: %s">
+				<pattern match="^\s*CallActionCode\s+=\s(.+)" ignorecase="true" groups="1" />
+			</param6>
+			<param6 type="file" format="|TreatmentInterval: %s">
+				<pattern match="^\s*TreatmentInterval\s+=\s(.+)" ignorecase="true" groups="1" />
+			</param6>
+		</spec>
+		<!-- OCSTREATMENT -->
+
+
+		<!-- Genesys messages for  -->
+		<spec MsgType="GENESYS_MSG" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param type="database" id="level" name="level" />
+			<param type="database" id="msg" name="msg" />
+
+			<param6 type="file" format="|log msg:%s %s" name="arg">
+				<pattern match="((?:None|Debug|Trace|Interaction|Standard|Alarm|Unknown|Non|Dbg|Trc|Int|Std|Alr|Unk) \d{5}) (.+)" ignorecase="true" groups="1,2" />
+				<!--pattern match=" (\S{3}) (\d{5})+ (.+)" ignorecase="true" groups="1,2,3" /-->
+				<!--filter match="Trc 80003" ignorecase="true" /-->
+			</param6>
+
+			<param6 type="file" format="|log msg:%s %s" name="arg">
+				<pattern match="((?:None|Debug|Trace|Interaction|Standard|Alarm|Unknown|Non|Dbg|Trc|Int|Std|Alr|Unk).+-(?:\d{2})-(\d{5})) (.+)" ignorecase="true" groups="1,2" />
+				<!--pattern match=" (\S{3}) (\d{5})+ (.+)" ignorecase="true" groups="1,2,3" /-->
+				<!--filter match="Trc 80003" ignorecase="true" /-->
+			</param6>
+
+
+			<param6 type="file" format="|log msg:%s %s %s" name="arg">
+				<pattern match="((?:None|Debug|Trace|Interaction|Standard|Alarm|Unknown|Non|Dbg|Trc|Int|Std|Alr|Unk)).+-(?:\d{2})-(\d{5}) (.+)" ignorecase="true" groups="1,2,3" />
+				<!--pattern match=" (\S{3}) (\d{5})+ (.+)" ignorecase="true" groups="1,2,3" /-->
+				<!--filter match="Trc 80003" ignorecase="true" /-->
+			</param6>
+		</spec>
+
+		<spec MsgType="GENESYS_URS_MSG" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param type="database" id="level" name="level" />
+			<param type="database" id="msg" name="msg" />
+
+			<param6 type="file" format="|log msg:%s %s" name="arg">
+				<pattern match="((?:None|Debug|Trace|Interaction|Standard|Alarm|Unknown|Non|Dbg|Trc|Int|Std|Alr|Unk) \d{5}) (.+)" ignorecase="true" groups="1,2" />
+				<!--pattern match=" (\S{3}) (\d{5})+ (.+)" ignorecase="true" groups="1,2,3" /-->
+				<!--filter match="Trc 80003" ignorecase="true" /-->
+			</param6>
+
+			<param6 type="file" format="|log msg:%s %s" name="arg">
+				<pattern match="((?:None|Debug|Trace|Interaction|Standard|Alarm|Unknown|Non|Dbg|Trc|Int|Std|Alr|Unk).+-(?:\d{2})-(\d{5})) (.+)" ignorecase="true" groups="1,2" />
+				<!--pattern match=" (\S{3}) (\d{5})+ (.+)" ignorecase="true" groups="1,2,3" /-->
+				<!--filter match="Trc 80003" ignorecase="true" /-->
+			</param6>
+
+
+			<param6 type="file" format="|log msg:%s %s %s" name="arg">
+				<pattern match="((?:None|Debug|Trace|Interaction|Standard|Alarm|Unknown|Non|Dbg|Trc|Int|Std|Alr|Unk)).+-(?:\d{2})-(\d{5}) (.+)" ignorecase="true" groups="1,2,3" />
+				<!--pattern match=" (\S{3}) (\d{5})+ (.+)" ignorecase="true" groups="1,2,3" /-->
+				<!--filter match="Trc 80003" ignorecase="true" /-->
+			</param6>
+		</spec>
+
+		<!-- URS Strategy -->
+		<spec MsgType="URSSTRATEGY" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param6 type="database" id="connid" format="|%s" name="connid">
+				<!--pattern match="(.{2})$" ignorecase="true" groups="1" /-->
+			</param6>
+
+
+			<param6 type="database" id="ref1" format="|%s" />
+			<param6 type="database" id="ref2" format="|%s" />
+
+			<param6 type="file" format="|%s" name="name">
+				<pattern match="\[\S{2}:\S{2}\] (.+)" ignorecase="true" groups="1" />
+				<!--filter match="\] ASSIGN:" />
+	   <filter match=" HERE IS SDATA:" />
+	   <filter match=" sdata returns" />
+	   <filter match="no error mode for this call" />
+	   <filter match="\[07:3f\] get data from cfglist" /-->
+				<filter match="SCXML: look for transitions" />
+				<filter match="SCXML: (microstep|microstep transiting phase|microstep entering phase|microstep exitting phase)\s*$" />
+			</param6>
+
+			<param6 type="file" format="|%s">
+				<pattern match="^(TARGETS: .+)" ignorecase="true" groups="1" />
+			</param6>
+
+		</spec>
+		<!-- URS Strategy -->
+
+		<!-- URSWAITING -->
+		<spec MsgType="URSWAITING" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param6 type="database" id="connid" format="|%s" name="connid" />
+			<param6 type="database" id="object" format="|ag:%s" name="agent" />
+			<param6 type="database" id="ObjectType" format="|type: %s" />
+
+
+		</spec>
+		<!-- URSWAITING -->
+
+
+		<!-- URSSTRATEGYINIT -->
+		<spec MsgType="URSSTRATEGYINIT" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="connid" format="|%s" name="connid">
+				<!--pattern match="(.{2})$" ignorecase="true" groups="1" /-->
+			</param6>
+			<param6 type="database" id="strategyname" format="|%s" name="strategy">
+				<!--pattern match="(.{2})$" ignorecase="true" groups="1" /-->
+			</param6>
+			<param6 type="database" id="strategymsg" format="|%s" name="name">
+				<!--pattern match="(.{2})$" ignorecase="true" groups="1" /-->
+			</param6>
+
+		</spec>
+		<!-- URSSTRATEGYINIT -->
+
+
+		<!-- Genesys messages for  -->
+		<spec MsgType="URSRLIB" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param6 type="database" id="sid" format="|%s" name="sid"></param6>
+
+			<param6 type="database" id="uuid" format="|%s" name="uuid"></param6>
+
+			<param6 type="database" id="result" format="|%s" name="result"></param6>
+
+			<param6 type="database" id="method" format="|%s" name="name"></param6>
+
+			<param6 type="database" id="param" format="|%s" name="result"></param6>
+
+			<!--param6 type="file" format="|callid %s" name="uuid">
+		<pattern match="callid\(.+'([^']+)'$" ignorecase="true" groups="1" />
+	  </param6-->
+
+			<param6 type="database" id="refid" format="|ref %s" name="refid"></param6>
+
+			<!--param6 type="file" format="|fm %s">
+		<pattern match="fm\(.+'([^']+)'$" ignorecase="true" groups="1" />
+	  </param6>
+
+	  <param6 type="file" format="|fun %s" name="name">
+		<pattern match="function\(.+'([^']+)'$" ignorecase="true" groups="1" />
+	  </param6>
+
+	  <param6 type="file" format="|arg %-50.50s" name="arg">
+		<pattern match="args\(.+'([^']+)'$" ignorecase="true" groups="1" />
+	  </param6-->
+		</spec>
+		<!-- URSRLIB -->
+
+		<!-- Genesys messages for URSWEB -->
+		<spec MsgType="URSWEB" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param6 type="database" id="connid" format="|%s" name="connid"></param6>
+
+			<param6 type="database" id="func" format="|f %s"></param6>
+			<param6 type="database" id="subfunc" format="|- %s"></param6>
+			<param6 type="database" id="ref" format="|ref %s" name="refid"></param6>
+			<param6 type="database" id="client" format="|cl %s"></param6>
+			<param6 type="database" id="clientno" format="(%s)"></param6>
+
+			<param6 type="database" id="attr1" format="%s" name="f1" />
+			<param6 type="database" id="value1" format="%s" name="f1" />
+			<param6 type="database" id="attr2" format="%s" name="f2" />
+			<param6 type="database" id="value2" format="%s" name="f2" />
+			<param6 type="database" id="attr3" format="%s" name="f3" />
+			<param6 type="database" id="value3" format="%s" name="f3" />
+			<param6 type="database" id="attr4" format="%s" name="f4" />
+			<param6 type="database" id="value4" format="%s" name="f4" />
+			<param6 type="database" id="attr5" format="%s" name="f5" />
+			<param6 type="database" id="value5" format="%s" name="f5" />
+
+			<!--param6 type="file" format="|req: %s">
+		<pattern match="(urs\/call.+)" ignorecase="true" groups="1" />
+	  </param6-->
+
+		</spec>
+		<!-- URSWEB -->
+
+
+		<!-- Genesys messages for ORSHTTP -->
+		<spec MsgType="ORSHTTP" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<param3 type="database" id="sid" format=" sid %s" name="sid">
+				<!--pattern match="(.{3})$" group="1" ignorecase="true" /-->
+			</param3>
+
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param type="database" id="socket" format=" soc %s"></param>
+
+			<param type="database" id="ip" format=" peer %s">
+				<pattern match="(.+)" ignorecase="true" groups="1" />
+			</param>
+
+			<param type="file" format="| %s">
+				<pattern match="POST (.+) HTTP" ignorecase="true" groups="1" />
+			</param>
+
+			<param type="file" format="| %s">
+				<pattern match="^HTTP (.+)" ignorecase="true" groups="1" />
+			</param>
+
+
+		</spec>
+		<!-- ORSHTTP -->
+		<!-- Genesys messages for ORSINTERACTION -->
+		<spec MsgType="ORSINTERACTION" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param6 type="database" id="IXNID" format="|ixn: %s" name="ixnid">
+				<!--pattern match="(.{3})(?:@|$)" group="1" ignorecase="true" /-->
+			</param6>
+
+			<param type="file" format="|%s">
+				<pattern match="^\tattr_itx_media_type \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+			</param>
+
+			<param6 type="database" id="name" format="|Event: %s"></param6>
+
+			<param type="file" format="|q: %s">
+				<pattern match="^\tattr_itx_queue \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+			</param>
+
+			<param type="file" format="|q: %s">
+				<pattern match="^\tattr_queue \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+			</param>
+
+
+			<param type="file" format="|t: %s">
+				<pattern match="^\tattr_itx_type \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+			</param>
+			<param type="file" format="|serv: %s">
+				<pattern match="^\t\s+'Service' \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+			</param>
+
+			<param type="file" format="|meth: %s">
+				<pattern match="^\t\s+'Method' \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+			</param>
+
+		</spec>
+		<!-- ORSINTERACTION -->
+		<!-- Orchestration METRIC -->
+		<spec MsgType="orsm" format="filelink timestamp sid %s">
+			<initScript src="./ORSM.js" />
+
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<!--param type="database" id="app" name="direction">
+	  	<pattern match="." ignorecase="true" return="-" />
+	  </param-->
+
+			<param3 type="database" id="sid" name="sid">
+				<!--pattern match="(.{3})$" group="1" ignorecase="true" /-->
+			</param3>
+			<param4 type="database" id="metric" format="|%16s" name="name">
+				<!--filter match="(eval_expr|state_exit|log|eval_condition|event_queued|event_processed)" ignorecase="true" /-->
+				<!--pattern match="^(?!state_enter|extension$)(.*)" group="1" /-->
+			</param4>
+			<!--param4 type="database" id="metric">
+      		<pattern match="(log)" filematch="log .+ expr='(.+)' label" retgroup="1" />
+      		<pattern match="(eval_condition)" filematch="((?:condition|result)='.+') " retgroup="1" />
+	  </param4-->
+			<param4 type="database" id="param1" />
+
+			<!--
+	  <param5 type="file" format="|%s" name="params">
+	   <pattern match="name=([&quot;&apos;][^&quot;&apos;]+[&quot;&apos;])" group="1" ignorecase="true" />
+	  </param5>
+	  <param5 type="file" format="|%s" name="params">
+	   <pattern match="event=([&quot;&apos;][^&quot;&apos;]+[&quot;&apos;])" group="1" ignorecase="true" />
+	  </param5>
+	  <param5 type="file" format="|%s" hidden="true">
+	   <pattern match="(target=[&quot;&apos;][^&quot;&apos;]+[&quot;&apos;])" group="1" ignorecase="true" />
+	  </param5>
+	  <param5 type="file" format="|%s" hidden="true">
+	   <pattern match="(function=[&quot;&apos;][^&quot;&apos;]+[&quot;&apos;])" group="1" ignorecase="true" />
+	  </param5>
+	  <param5 type="file" format="|%s" name ="thread" hidden="true">
+	   <pattern match="\[(T:\d+)\]" group="1" ignorecase="true" />
+	  </param5>
+	-->
+		</spec>
+		<!-- Orchestration METRIC -->
+
+		<!-- Orchestration METRIC -->
+		<spec MsgType="orsmextension" format="filelink timestamp sid %s">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param3 type="database" id="sid" name="sid">
+				<!--pattern match="(.{3})$" group="1" ignorecase="true" /-->
+			</param3>
+			<param5 type="database" id="ns" />
+			<param5 type="database" id="func" name="name" />
+			<param5 type="database" id="param1" />
+			<param5 type="database" id="param2" />
+		</spec>
+		<!-- Orchestration METRIC -->
+
+
+		<!-- Orchestration ORSSESSION -->
+		<spec MsgType="ORSSESSION" format="filelink timestamp ADDING SESSION ">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param3 type="database" id="script" format="|%s" name="name"></param3>
+			<param3 type="database" id="url" format="|%s"></param3>
+
+			<param3 type="database" id="sid" format="|%s" name="sid"></param3>
+
+			<param3 type="database" id="uuid" format="|uuid=%s" name="uuid"></param3>
+
+		</spec>
+		<!-- Orchestration ORSSESSION -->
+
+		<!-- Orchestration ORSURS -->
+		<spec MsgType="ORSURS" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param3 type="database" id="sid" format="|%s" name="sid"></param3>
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param3 type="database" id="module" format="mod %s" hidden="true"></param3>
+
+			<param3 type="database" id="method" format="|%s" name="name"></param3>
+
+
+			<param3 type="database" id="refid" format="|ref %s" name="refid" hidden="true">
+				<pattern match="^([0-9]+)" group="1" />
+			</param3>
+
+			<param3 type="database" id="reqid" format="|req %s">
+				<pattern match="^([0-9]+)" group="1" />
+			</param3>
+
+			<param3 type="file" format="|arg %s" name="arg">
+				<pattern match="^\s+args\s+(.+)$" group="1" />
+			</param3>
+
+			<param3 type="file" format="|msg %s">
+				<pattern match="^\s+message\s+(.+)$" group="1" />
+			</param3>
+
+
+		</spec>
+		<!-- Orchestration ORSURS -->
+
+		<!-- Genesys messages for INTERACTION_VQ -->
+		<spec MsgType="INTERACTION_VQ" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param6 type="database" id="name" format="|%s"></param6>
+
+			<param type="database" id="queue" format="|q: %s" name="queue"></param>
+
+
+			<param6 type="database" id="InteractionID" name="ixnid" format="|%s"></param6>
+			<param type="database" id="connectionid" format="|connid: %s" name="connid"></param>
+
+			<!--param type="database" id="refid" format="|ref: %s" name="refid">
+	  	<pattern match="(^[1-9].+)" ignorecase="true" groups="1" />    
+	  </param-->
+
+			<param type="database" id="MediaType" name="media" />
+
+
+			<param type="file" format="|err: %s" name="message">
+				<pattern match="^\t(?:attr_error_desc|AttributeErrorMessage) \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+			</param>
+
+			<param type="file" format="|err: %s" name="message">
+				<pattern match="^\s+'FaultSring' \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+			</param>
+
+			<param type="file" format="|str: %s">
+				<pattern match="^\s+'strategy-name' \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+				<filter match="^\s+'pull-for-strategy' \[int\] = 0" ignorecase="true" />
+			</param>
+
+			<param type="file" format="|q: %s" name="queue">
+				<pattern match="^\s+'ixn_queue_view' \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+				<filter match="^\s+'pull-for-strategy' \[int\] = 1" ignorecase="true" />
+			</param>
+
+			<param8 type="database" id="attr1" format="%s" name="attr1" />
+			<param8 type="database" id="attr2" format="%s" name="attr2" />
+
+			<param type="database" id="event" name="event" />
+			<param type="database" id="thisDN" name="DN" />
+
+
+		</spec>
+		<!-- INTERACTION_VQ -->
+
+
+		<!-- Genesys messages for INTERACTION -->
+		<spec MsgType="INTERACTION" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param6 type="database" id="name" format="|%s"></param6>
+
+			<param type="database" id="queue" format="|q: %s" name="queue"></param>
+
+			<param6 type="database" id="InteractionID" name="ixnid" format="|%s"></param6>
+
+			<param type="database" id="client" format="|app: %s"></param>
+
+
+			<param type="database" id="connectionid" format="|connid: %s" name="connid"></param>
+
+			<!--param type="database" id="refid" format="|ref: %s" name="refid">
+	  	<pattern match="(^[1-9].+)" ignorecase="true" groups="1" />    
+	  </param-->
+
+			<param type="database" id="MediaType" name="media" />
+
+
+			<param type="database" id="agent" format="|agt: %s" />
+			<param type="database" id="place" format="|pc: %s" />
+			<!--param type="database" id="Service" format="|service: %s" name="service"/-->
+			<!--param type="database" id="Method" format="|method: %s" name="service"/-->
+			<!--param type="database" id="clientRef" format="|cli ref: %s" /-->
+			<!--param type="database" id="serverRef" format="|ser ref: %s" /-->
+
+
+			<param type="file" format="|err: %s" name="message">
+				<pattern match="^\t(?:attr_error_desc|AttributeErrorMessage) \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+			</param>
+
+			<param type="file" format="|err: %s" name="message">
+				<pattern match="^\s+'FaultSring' \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+			</param>
+
+			<param type="file" format="|str: %s">
+				<pattern match="^\s+'strategy-name' \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+				<filter match="^\s+'pull-for-strategy' \[int\] = 0" ignorecase="true" />
+			</param>
+
+			<param type="file" format="|q: %s" name="queue">
+				<pattern match="^\s+'ixn_queue_view' \[str\] = &quot;([^&quot;]+)" ignorecase="true" groups="1" />
+				<filter match="^\s+'pull-for-strategy' \[int\] = 1" ignorecase="true" />
+			</param>
+
+			<param8 type="database" id="attr1" format="%s" name="attr1" />
+			<param8 type="database" id="attr2" format="%s" name="attr2" />
+
+
+		</spec>
+		<!-- INTERACTION -->
+
+
+		<!-- Genesys messages for StatServerAgent -->
+		<spec MsgType="StatServerAgent" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+
+			<param6 type="database" id="agent" format="|agt: %s"></param6>
+
+			<param6 type="database" id="place" format="|plc: %s"></param6>
+
+			<param6 type="database" id="oldstatus" format="|old: %s"></param6>
+
+			<param6 type="database" id="newstatus" format="|new: %s"></param6>
+
+		</spec>
+		<!-- StatServerAgent -->
+
+		<!-- Genesys messages for StatServerCapacity-->
+		<spec MsgType="StatServerCapacity" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+
+			<param6 type="database" id="agent" format="|agt: %s"></param6>
+
+			<param6 type="database" id="place" format="|plc: %s"></param6>
+
+			<param6 type="database" id="capacity" format="|cap: %s" />
+
+			<param6 type="database" id="media0name" format="|m0: %s" />
+			<param6 type="database" id="media0state" format="|m0sta: %s" />
+			<param6 type="database" id="media0curnumber" format="|m0cur: %s" />
+			<param6 type="database" id="media0maxnumber" format="|m0max: %s" />
+
+			<param6 type="database" id="media1name" format="|m1: %s" />
+			<param6 type="database" id="media1state" format="|m1sta: %s" />
+			<param6 type="database" id="media1curnumber" format="|m1cur: %s" />
+			<param6 type="database" id="media1maxnumber" format="|m1max: %s" />
+
+			<param6 type="database" id="media2name" format="|m2: %s" />
+			<param6 type="database" id="media2state" format="|m2sta: %s" />
+			<param6 type="database" id="media2curnumber" format="|m2cur: %s" />
+			<param6 type="database" id="media2maxnumber" format="|m2max: %s" />
+
+			<param6 type="database" id="media3name" format="|m3: %s" />
+			<param6 type="database" id="media3state" format="|m3sta: %s" />
+			<param6 type="database" id="media3curnumber" format="|m3cur: %s" />
+			<param6 type="database" id="media3maxnumber" format="|m3max: %s" />
+
+			<param6 type="database" id="media4name" format="|m4: %s" />
+			<param6 type="database" id="media4state" format="|m4sta: %s" />
+			<param6 type="database" id="media4curnumber" format="|m4cur: %s" />
+			<param6 type="database" id="media4maxnumber" format="|m4max: %s" />
+
+			<!--param6 type="database" id="media5name" format="|m5: %s" />
+	  <param6 type="database" id="media5state" format="|m5sta: %s" />
+	  <param6 type="database" id="media5curnumber" format="|m5cur: %s" />
+	  <param6 type="database" id="media5maxnumber" format="|m5max: %s" />
+
+    <param6 type="database" id="media6name" format="|m6: %s" />
+	  <param6 type="database" id="media6state" format="|m6sta: %s" />
+	  <param6 type="database" id="media6curnumber" format="|m6cur: %s" />
+	  <param6 type="database" id="media6maxnumber" format="|m6max: %s" />
+
+    <param6 type="database" id="media7name" format="|m7: %s" />
+	  <param6 type="database" id="media7state" format="|m7sta: %s" />
+	  <param6 type="database" id="media7curnumber" format="|m7cur: %s" />
+	  <param6 type="database" id="media7maxnumber" format="|m7max: %s" /-->
+
+
+		</spec>
+		<!-- StatServerCapacity -->
+
+		<!--CONFIGURATION -->
+		<spec MsgType="CONFIGURATION" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<param type="database" id="operation" format="op: %s" />
+			<param3 type="database" id="objtype" format="|type:%s" />
+			<param3 type="database" id="objDBID" format="|dbid:%s">
+				<pattern match="(^\d+)" group="1" />
+			</param3>
+			<param3 type="database" id="objName" format="|name:%s" />
+			<param3 type="database" id="msg" format="|%s" name="arg" />
+		</spec>
+		<!--CONFIGURATION -->
+
+		<!--URSSTAT -->
+		<spec MsgType="URSSTAT" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param type="database" id="agentName" format="|ag:%s" name="agent" />
+			<param type="database" id="placeName" format="|pl:%s" />
+			<param type="database" id="StatServer" format="|StS:%s" />
+			<param type="database" id="statPrev" format="|pref:%s" name="refid" />
+			<param type="database" id="statNew" format="|new:%s" />
+			<param type="database" id="VoiceSwitch" format="|sw:%s" />
+			<param type="database" id="VoiceDN" format="|dn:%s" name="thisdn" />
+			<param type="database" id="VoiceStat" format="|voiceStat:%s" />
+			<param type="database" id="ChatStat" format="|ChatStat:%s" />
+			<param type="database" id="EmailStat" format="|EmailStat:%s" />
+		</spec>
+		<!--URSSTAT -->
+
+		<!--TIMESTAMP_DIFF -->
+		<spec MsgType="TIMESTAMP_DIFF" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<param type="database" id="duration" name="duration" />
+			<param type="database" id="prevTimestamp" name="prevTimestamp" />
+		</spec>
+		<!--TIMESTAMP_DIFF -->
+
+		<!--ORS_DELAYS -->
+		<spec MsgType="ORS_DELAYS" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+			<param type="database" id="sid" />
+			<param type="database" id="name" />
+			<param type="database" id="duration" name="duration" />
+			<param type="database" id="rollduration" name="duration from start" />
+
+		</spec>
+		<!--ORS_DELAYS -->
+
+		<!--JSON -->
+		<spec MsgType="JSON" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+			<param type="database" id="origUri" format="from: %s" />
+			<param type="database" id="destUri" format="dest: %s" />
+			<param type="database" id="SipsReqId" format="req: %s" />
+			<param type="file" format="|op: %s">
+				<pattern match="&quot;operation&quot;:(.*)" ignorecase="true" groups="1" />
+			</param>
+			<param type="file" format="|route: %s">
+				<pattern match="&quot;routing&quot;:(.*)" ignorecase="true" groups="1" />
+			</param>
+
+		</spec>
+		<!--JSON -->
+
+
+		<!-- Genesys messages for OCSINTERACTION -->
+		<spec MsgType="OCSINTERACTION" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param6 type="database" id="InteractionID" format="|%s" name="ixnid"></param6>
+
+			<param6 type="database" id="name" format="|%s"></param6>
+
+			<param type="database" id="queue" format="|q: %s"></param>
+
+			<param type="database" id="refid" format="|ref: %s" name="refid">
+				<pattern match="(^[1-9].+)" ignorecase="true" groups="1" />
+			</param>
+
+			<param type="database" id="rechandle" format="|h: %s" name="handle">
+				<pattern match="^(\d+)" group="1" />
+			</param>
+			<param type="database" id="chainid" format="|ch: %s" name="chain">
+				<pattern match="^(\d+)" group="1" />
+			</param>
+
+
+		</spec>
+		<!-- OCSINTERACTION -->
+
+
+		<!-- Genesys messages for URSGUID -->
+		<spec MsgType="URSGUID" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+
+			<param type="database" id="app" name="app" />
+
+			<param6 type="database" id="connid" format="|%s" name="connid"></param6>
+
+			<param6 type="database" id="vqid" format="|vq: %s"></param6>
+
+			<param type="database" id="vqname" format="|vqdn: %s"></param>
+
+			<param type="database" id="target" format="|trg: %s"></param>
+
+
+		</spec>
+		<!-- URSGUID -->
+
+
+		<!-- Genesys messages for  -->
+		<spec MsgType="LCAAppStatus" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="event" format="|event: %s" />
+			<param type="database" id="reqSCS" format="|SCS: %s" />
+			<param type="database" id="app" name="app" />
+
+			<param6 type="database" id="newMode" format="|new: %s" />
+			<param6 type="database" id="oldMode" format="|old: %s" />
+			<param type="database" id="appName" format="|app: %s" name="managedApp" />
+
+			<param type="database" id="status" format="|stat: %s" />
+			<param type="database" id="pid" format="|pid: %s" name="PID" />
+			<param type="database" id="appDBID" format="|dbid: %s" />
+
+		</spec>
+
+		<!-- Genesys messages for  -->
+		<spec MsgType="LCAClient" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param type="database" id="isConnectedName" />
+
+			<param type="database" id="connectedApp" name="managedApp" />
+
+			<param6 type="database" id="appType" format="|type: %s" />
+			<param6 type="database" id="IP" format="|IP: %s" />
+			<param type="database" id="pid" format="|pid: %s" name="PID" />
+			<param type="database" id="FD" format="|FD: %s" />
+
+		</spec>
+
+
+		<!-- Genesys messages for  -->
+		<spec MsgType="SCSAppStatus" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param type="database" id="host" format="|host: %s" />
+
+			<param6 type="database" id="newMode" format="|new: %s" />
+
+			<param6 type="database" id="oldMode" format="|old: %s" />
+
+			<param type="database" id="appName" format="|app: %s" />
+
+			<param type="database" id="status" format="|stat: %s" />
+			<param type="database" id="pid" format="|pid: %s" name="PID" />
+			<param type="database" id="appDBID" format="|dbid: %s" />
+			<param type="database" id="event" format="|event: %s" />
+
+		</spec>
+
+
+		<!-- Genesys messages for  -->
+		<spec MsgType="SCSmode" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="newMode" format="|new: %s" />
+			<param6 type="database" id="oldMode" format="|old: %s" />
+
+		</spec>
+
+
+		<!-- Genesys messages for Custom >>>> -->
+		<spec MsgType="Custom" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="keycomponent" format="%s" />
+			<param6 type="database" id="field1" format="%s" name="f1" />
+			<param6 type="database" id="value1" format="%s" name="f1" />
+			<param6 type="database" id="field2" format="%s" name="f2" />
+			<param6 type="database" id="value2" format="%s" name="f2" />
+			<param6 type="database" id="field3" format="%s" name="f3" />
+			<param6 type="database" id="value3" format="%s" name="f3" />
+
+		</spec>
+		<!-- <<<< Genesys messages for Custom -->
+
+
+		<!-- OCSICON -->
+		<spec MsgType="OCSICON" format="filelink timestamp CREATEREC">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param6 type="database" id="chid" format="|ch: %s" name="chain"></param6>
+			<param6 type="database" id="campaignName" format="|camp: %s" name="campaign" />
+			<param6 type="database" id="groupName" format="|grp: %s" />
+			<param6 type="database" id="listName" format="|list: %s" name="list" />
+			<param6 type="database" id="event" format="|evt: %s" />
+			<param6 type="database" id="cause" format="|cause: %s" />
+
+		</spec>
+
+		<!-- Genesys messages for vxmlstrategy >>>> -->
+		<spec MsgType="vxmlstrategy" format="filelink timestamp">
+			<initScript src="./vxmlstrategy.js" />
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<!-- <param6 type="database" id="command" format="%s" name="name" /> -->
+			<!-- <param6 type="database" id="param1" format="%s" name="name" />
+			<param6 type="database" id="param2" format="%s" hidden="true" /> -->
+			<param10 type="file" cond="RECORD.getField('command')=='log'" format="%s" name="name">
+				<pattern match="log (.+)" group="1" ignorecase="true" />
+			</param10>
+
+			<param8 type="database" id="ivrprofile" format="%s" />
+			<param8 type="database" id="sipcall" format="call-id:%s" name="callid" />
+			<param8 type="database" id="gvpsession" format="gvpsess%s" />
+			<param8 type="database" id="tenant" format="%s" />
+			<param8 type="database" id="mcpCall" format="mcpsess:%s" />
+		</spec>
+
+		<!-- Genesys messages for EXCEPTIONS >>>> -->
+		<spec MsgType="EXCEPTIONS" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="exception" format="%s" />
+			<param6 type="database" id="exceptionMsg" format="%s" />
+
+		</spec>
+		<!-- <<<< Genesys messages for EXCEPTIONS -->
+
+		<!-- Genesys messages for GMStoORS >>>> -->
+		<spec MsgType="GMStoORS" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param8 type="script" name="direction"> RECORD.getField('isinbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param6 type="database" id="GMSService" format="%s" name="gmsservice" />
+			<param6 type="database" id="ORSSession" format="%s" name="sid" />
+			<param6 type="database" id="connID" format="%s" />
+			<param6 type="database" id="request" format="req:%s" />
+
+			<param10 type="file" format="|ewt:%s">
+				<pattern match="'ewt'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+			<param10 type="file" format="|agents:%s">
+				<pattern match="'agents_logged_in'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+			<param10 type="file" format="|attempts:%s">
+				<pattern match="'dial_attempt'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+
+			<param10 type="file" format="|type:%s">
+				<pattern match="'callback_type'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+			<param10 type="file" format="%s" name="message">
+				<pattern match="'message'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+			<param10 type="file" format="%s" name="message">
+				<pattern match="'Status'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+
+			<param10 type="file" format="%s" name="message">
+				<pattern match="'_ok_title'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+			<param10 type="file" format="%s" name="message">
+				<pattern match="'_text'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+
+		</spec>
+		<!-- <<<< Genesys messages for GMStoORS -->
+
+		<!-- Genesys messages for GMSPOST >>>> -->
+		<spec MsgType="GMSPOST" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param6 type="database" id="EventName" format="%s" />
+			<param6 type="database" id="CallBackType" format="%s" />
+			<param6 type="database" id="GMSService" format="%s" name="gmsservice" />
+			<param6 type="database" id="ORSSession" format="%s" name="sid" />
+			<param6 type="database" id="phone" format="phone:%s" name="dn" />
+			<param6 type="database" id="URI" format="uri:%s" name="message" />
+
+			<param10 type="file" format="|%s">
+				<pattern match="'target'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+
+			<param10 type="file" format="|%s">
+				<pattern match="'ActivityName'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+
+			<param10 type="file" format="|%s">
+				<pattern match="'EventName'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+
+			<param10 type="file" format="|%s">
+				<pattern match="'orsservername'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+
+			<param10 type="file" format="|%s">
+				<pattern match="'status'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+
+			<param10 type="file" format="|ag:%s" name="target">
+				<pattern match="'agent'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+			<param10 type="file" format="|dn:%s" name="target">
+				<pattern match="'dn'.+ = (.+)" group="1" ignorecase="true" />
+			</param10>
+
+
+		</spec>
+		<!-- <<<< Genesys messages for GMSPOST -->
+
+		<!-- Genesys messages for cs_updates >>>> -->
+		<spec MsgType="cs_updates" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="op" format="%s" />
+			<param6 type="database" id="objtype" format="%s" name="obj" />
+			<param6 type="database" id="objName" format="'%s'" name="obj" />
+			<param6 type="database" id="refID" format="refid:%s" />
+			<param6 type="database" id="dbid" format="dbid:%s" />
+			<param6 type="database" id="username" format="user:%s" />
+			<param6 type="database" id="clienttype" format="%s" name="client" />
+			<param6 type="database" id="appname" format="%s" name="client" />
+			<param6 type="database" id="descr" format="socket:%s" name="socket" />
+			<param6 type="database" id="message" format="%s" name="" />
+			<param6 type="database" id="objNumber" format="objects:%s" name="objects" />
+
+		</spec>
+		<!-- <<<< Genesys messages for cs_updates -->
+
+		<!-- Genesys messages for CS_CONFIG_CHANGE >>>> -->
+		<spec MsgType="CS_CONFIG_CHANGE" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="op" format="%s" />
+			<param6 type="database" id="objtype" format="%s" name="obj" />
+			<param6 type="database" id="objName" format="'%s'" name="obj" />
+			<param6 type="database" id="dbid" format="dbid:%s" />
+			<param6 type="database" id="username" format="user:%s" />
+			<param6 type="database" id="clienttype" format="%s" name="client" />
+			<param6 type="database" id="appname" format="%s" name="client" />
+		</spec>
+		<!-- <<<< Genesys messages for CS_CONFIG_CHANGE -->
+
+
+		<!-- Genesys messages for cs_connect >>>> -->
+		<spec MsgType="cs_connect" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="appname" format="%s" name="client" />
+			<param6 type="database" id="clienttype" format="%s" name="client" />
+
+			<param6 type="database" id="username" format="user:%s" />
+			<param6 type="database" id="hostport" format="from:%s" />
+			<param6 type="database" id="socketNo" format="socket:%s" name="socket"/>
+			<param8 type="script" name="direction"> RECORD.getField('isConnect')=='1'?'connected':'disconnected'
+			</param8>
+
+
+		</spec>
+		<!-- <<<< Genesys messages for cs_connect -->
+
+		<!-- Genesys messages for apache >>>> -->
+		<spec MsgType="apache" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param type="database" id="code" />
+			<param6 type="database" id="IP" format="%s" name="IP_ADDRESS" hidden="true" />
+			<param6 type="database" id="method" />
+			<param6 type="database" id="JSessionID" name="JSessionID" />
+			<param6 type="database" id="url" name="url" />
+			<param6 type="database" id="UUID" name="uuid" />
+			<param6 type="database" id="IxnID" name="ixnid" />
+			<param6 type="database" id="DeviceID" />
+			<param6 type="database" id="username" name="username" />
+			<param6 type="database" id="browserClient" name="browserClient" />
+			<param6 type="database" id="executionTime" />
+		</spec>
+		<!-- <<<< Genesys messages for apache -->
+
+		<!-- Genesys messages for cs_notifications >>>> -->
+		<spec MsgType="cs_notifications" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="appname" format="%s" name="client" />
+			<param6 type="database" id="clienttype" format="%s" name="client" />
+			<param6 type="database" id="objtype" format="%s" name="obj" />
+			<param6 type="database" id="objectsNo" format="objNum:%s" />
+
+			<param6 type="database" id="socketno" format="socket:%s" />
+
+		</spec>
+		<!-- <<<< Genesys messages for cs_notifications -->
+
+
+		<!-- Genesys messages for ORSALARM >>>> -->
+		<spec MsgType="ORSALARM" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="alarm1" format="%s" name="alarm1" />
+			<param6 type="database" id="values1" format="%s" name="alarm1" />
+			<param6 type="database" id="alarm2" format="%s" name="alarm2" />
+			<param6 type="database" id="values2" format="%s" name="alarm2" />
+			<param6 type="database" id="alarm3" format="%s" name="alarm3" />
+			<param6 type="database" id="values3" format="%s" name="alarm3" />
+			<param6 type="database" id="alarm4" format="%s" name="alarm4" />
+			<param6 type="database" id="values4" format="%s" name="alarm4" />
+			<param6 type="database" id="alarm5" format="%s" name="alarm5" />
+			<param6 type="database" id="values5" format="%s" name="alarm5" />
+			<param6 type="database" id="alarm6" format="%s" name="alarm6" />
+			<param6 type="database" id="values6" format="%s" name="alarm6" />
+			<param6 type="database" id="alarm7" format="%s" name="alarm7" />
+			<param6 type="database" id="values7" format="%s" name="alarm7" />
+			<param6 type="database" id="alarm8" format="%s" name="alarm8" />
+			<param6 type="database" id="values8" format="%s" name="alarm8" />
+			<param6 type="database" id="alarm9" format="%s" name="alarm9" />
+			<param6 type="database" id="values9" format="%s" name="alarm9" />
+			<param6 type="database" id="alarm10" format="%s" name="alarm10" />
+			<param6 type="database" id="values10" format="%s" name="alarm10" />
+
+		</spec>
+		<!-- <<<< Genesys messages for ORSALARM -->
+
+		<!-- Genesys messages for wwelogmessage >>>> -->
+		<spec MsgType="wwelogmessage" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="Level" format="%s" name="level" />
+			<param6 type="database" id="class" format="%s" name="JAVA_CLASS" hidden="true" />
+			<param6 type="database" id="msgText" format="%s" />
+			<param6 type="database" id="IP" format="%s" name="IP_ADDRESS" hidden="true" />
+			<param6 type="database" id="JSessionID" name="JSessionID" />
+			<param6 type="database" id="url" name="url" />
+			<param6 type="database" id="username" name="username" />
+			<param6 type="database" id="param1" name="param" />
+			<param6 type="database" id="param2" name="param" />
+			<param6 type="database" id="IxnID" name="ixnid" />
+			<param6 type="database" id="DeviceID" />
+			<param6 type="database" id="UUID" format="%s" name="uuid" />
+			<param6 type="database" id="browserClient" name="browserClient" />
+			<param6 type="database" id="UserID" name="UserID" />
+		</spec>
+		<!-- <<<< Genesys messages for wwelogmessage -->
+
+
+		<!-- Genesys messages for WWEBAYEUX >>>> -->
+		<spec MsgType="WWEBAYEUX" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="Level" format="%s" name="level" />
+			<param6 type="database" id="class" format="%s" name="JAVA_CLASS" hidden="true" />
+			<!--param6 type="database" id="msgText" format="%s" name="Message text"  /-->
+			<param6 type="database" id="IP" format="%s" name="IP_ADDRESS" hidden="true" />
+			<param6 type="database" id="JSessionID" name="JSessionID" />
+			<param6 type="database" id="url" name="url" />
+			<param6 type="database" id="username" name="username" />
+			<param6 type="database" id="param1" name="param" />
+			<param6 type="database" id="param2" name="param" />
+			<param6 type="database" id="IxnID" name="ixnid" />
+			<!-- <param6 type="database" id="bayeuxID" format="bayeuxID:%s" /> -->
+			<!-- <param6 type="database" id="lastConected" format="last %s ms" /> -->
+			<!-- <param6 type="database" id="action" format="action %s" /> -->
+			<param6 type="database" id="DeviceID" />
+			<param6 type="database" id="channel" format="ch:%s" />
+			<param6 type="database" id="msgType" format="type:%s" />
+			<param6 type="database" id="UUID" format="%s" name="uuid" />
+		</spec>
+		<!-- <<<< Genesys messages for WWEBAYEUX -->
+
+		<!-- Genesys messages for WWEUCS >>>> -->
+		<spec MsgType="WWEUCS" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="Level" format="%s" name="level" />
+			<param type="database" id="name" />
+			<param6 type="database" id="class" format="%s" name="JAVA_CLASS" hidden="true" />
+			<param6 type="database" id="msgText" format="%s" name="Message text" />
+			<param6 type="database" id="IP" format="%s" name="IP_ADDRESS" hidden="true" />
+			<param6 type="database" id="JSessionID" name="JSessionID" />
+			<param6 type="database" id="url" name="url" />
+			<param6 type="database" id="username" name="username" />
+			<param6 type="database" id="DeviceID" />
+			<param6 type="database" id="IxnID" format="%s" name="ixnid" />
+			<param6 type="database" id="UUID" format="%s" name="uuid" />
+
+		</spec>
+		<!-- <<<< Genesys messages for WWEUCS -->
+
+
+		<!-- Genesys messages for SCS_ALARMS >>>> -->
+		<spec MsgType="SCS_ALARMS" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param type="database" id="alarmName" format="alarm: %s" />
+			<param type="database" id="alarmDBID" format="alarmDBID: %s" />
+			<param type="database" id="logAppName" format="logApp: %s" />
+			<param type="database" id="appDBID" format="logAppDBID: %s" />
+			<param type="database" id="reason" format="reason: %s" />
+			<param type="database" id="category" format="category: %s" />
+			<param type="database" id="alarmID" name="alarmID" />
+			<param type="database" id="msgID" format="msgID: %s" />
+			<param type="database" id="msgText" format="msgTest: %s" />
+			<param type="database" id="alarmState" format="state: %s" />
+
+		</spec>
+		<!-- <<<< Genesys messages for SCS_ALARMS -->
+
+
+		<!-- Genesys messages for GMSWEB >>>> -->
+		<spec MsgType="GMSWEB" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="URL" />
+
+			<param6 type="database" id="param1" format="%s" name="param1" />
+			<param6 type="database" id="value1" format="%s" name="param1" />
+			<param6 type="database" id="param2" format="%s" name="param2" />
+			<param6 type="database" id="value2" format="%s" name="param2" />
+			<param6 type="database" id="param3" format="%s" name="param3" />
+			<param6 type="database" id="value3" format="%s" name="param3" />
+			<param6 type="database" id="param4" format="%s" name="param4" />
+			<param6 type="database" id="value4" format="%s" name="param4" />
+			<param6 type="database" id="param5" format="%s" name="param5" />
+			<param6 type="database" id="value5" format="%s" name="param5" />
+			<param6 type="database" id="param6" format="%s" name="param6" />
+			<param6 type="database" id="value6" format="%s" name="param6" />
+			<param6 type="database" id="param7" format="%s" name="param7" />
+			<param6 type="database" id="value7" format="%s" name="param7" />
+			<param6 type="database" id="param8" format="%s" name="param8" />
+			<param6 type="database" id="value8" format="%s" name="param8" />
+			<param6 type="database" id="param9" format="%s" name="param9" />
+			<param6 type="database" id="value9" format="%s" name="param9" />
+			<param6 type="database" id="param10" format="%s" name="param10" />
+			<param6 type="database" id="value10" format="%s" name="param10" />
+			<param6 type="database" id="param11" format="%s" name="param11" />
+			<param6 type="database" id="value11" format="%s" name="param11" />
+			<param6 type="database" id="param12" format="%s" name="param12" />
+			<param6 type="database" id="value12" format="%s" name="param12" />
+			<param6 type="database" id="param13" format="%s" name="param13" />
+			<param6 type="database" id="value13" format="%s" name="param13" />
+			<param6 type="database" id="param14" format="%s" name="param14" />
+			<param6 type="database" id="value14" format="%s" name="param14" />
+			<param6 type="database" id="param15" format="%s" name="param15" />
+			<param6 type="database" id="value15" format="%s" name="param15" />
+			<param6 type="database" id="param16" format="%s" name="param16" />
+			<param6 type="database" id="value16" format="%s" name="param16" />
+			<param6 type="database" id="param17" format="%s" name="param17" />
+			<param6 type="database" id="value17" format="%s" name="param17" />
+			<param6 type="database" id="param18" format="%s" name="param18" />
+			<param6 type="database" id="value18" format="%s" name="param18" />
+			<param6 type="database" id="param19" format="%s" name="param19" />
+			<param6 type="database" id="value19" format="%s" name="param19" />
+			<param6 type="database" id="param20" format="%s" name="param20" />
+			<param6 type="database" id="value20" format="%s" name="param20" />
+		</spec>
+		<!-- <<<< Genesys messages for GMSWEB -->
+
+
+		<!-- Genesys messages for WWEUCS >>>> -->
+		<spec MsgType="WWEUCS" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param6 type="database" id="Level" format="%s" name="level" />
+			<param type="database" id="name" />
+			<param6 type="database" id="class" format="%s" name="JAVA_CLASS" hidden="true" />
+			<param6 type="database" id="msgText" format="%s" name="Message text" />
+			<param6 type="database" id="IP" format="%s" name="IP_ADDRESS" hidden="true" />
+			<param6 type="database" id="JSessionID" name="JSessionID" />
+			<param6 type="database" id="url" name="url" />
+			<param6 type="database" id="username" name="username" />
+			<param6 type="database" id="DeviceID" />
+			<param6 type="database" id="IxnID" format="%s" name="ixnid" />
+			<param6 type="database" id="UUID" format="%s" name="uuid" />
+
+		</spec>
+		<!-- <<<< Genesys messages for WWEUCS -->
+
+
+		<!-- Genesys messages for SCS_ALARMS >>>> -->
+		<spec MsgType="SCS_ALARMS" format="filelink timestamp">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+			<param type="database" id="alarmName" format="alarm: %s" />
+			<param type="database" id="alarmDBID" format="alarmDBID: %s" />
+			<param type="database" id="logAppName" format="logApp: %s" />
+			<param type="database" id="appDBID" format="logAppDBID: %s" />
+			<param type="database" id="reason" format="reason: %s" />
+			<param type="database" id="category" format="category: %s" />
+			<param type="database" id="alarmID" name="alarmID" />
+			<param type="database" id="msgID" format="msgID: %s" />
+			<param type="database" id="msgText" format="msgTest: %s" />
+			<param type="database" id="alarmState" format="state: %s" />
+
+		</spec>
+		<!-- <<<< Genesys messages for SCS_ALARMS -->
+
+		<!-- httptours-->
+		<spec MsgType="httptours" format="filelink timestamp HTTP">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param8 type="script" name="direction"> RECORD.getField('inbound')==1?'&lt;-':'-&gt;'
+			</param8>
+
+			<param type="database" id="refID" name="refid" />
+
+			<!--param6 type="database" id="reqname" format="|req: %s">
+	  </param6>
+	  <param6 type="database" id="rechandle" format="|rech: %s" name="handle">
+	  </param6-->
+		</spec>
+		<!-- httptours -->
+
+		<!-- URSHTTP-->
+		<spec MsgType="URSHTTP" format="filelink timestamp HTTP">
+			<param1 type="embedded" id="filelink" name="filename">
+				<pattern match="(log)" group="1" />
+			</param1>
+			<param2 type="embedded" id="timestamp" name="timestamp" />
+			<param type="database" id="app" name="app" />
+
+			<param type="database" id="isinbound" name="direction">
+				<pattern match="1" ignorecase="true" return="&lt;-" />
+				<pattern match="0" ignorecase="true" return="-&gt;" />
+			</param>
+			<param type="database" id="method" name="method" />
+			<param type="database" id="uri" name="uri" />
+
+			<!--param6 type="database" id="reqname" format="|req: %s">
+	  </param6>
+	  <param6 type="database" id="rechandle" format="|rech: %s" name="handle">
+	  </param6-->
+		</spec>
+		<!-- URSHTTP -->
+	</MsgTypes>
+</OutputSpec>
