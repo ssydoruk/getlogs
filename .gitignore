@@ -1,5 +1,6 @@
 /target/
 buildNumber.properties
+.idea/
 getlogs.iml
 .classpath
 .project

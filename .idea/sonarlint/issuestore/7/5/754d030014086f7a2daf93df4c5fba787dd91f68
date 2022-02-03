@@ -1,10 +1,0 @@
-
-Œ
-java:S1319"vThe type of the "fileTableColls" object should be an interface such as "Map" rather than the implementation "HashMap".(½õ»á
-3
-java:S2386"Make this member "protected".(½õ»á
-G
-java:S1172*"1Remove this unused method parameter "appProfile".(ý÷­£
-<	java:S1314""Add a default case to this switch.(Ýï¾¬ùÿÿÿÿ
-=
-java:S2129H" Remove this "Double" constructor(ÅÀ©Â8»•ñå§/
