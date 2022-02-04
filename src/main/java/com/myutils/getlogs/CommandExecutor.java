@@ -815,7 +815,7 @@ public final class CommandExecutor {
             try {
                 ExtProcess.ExecutionResult cmdOuts = executeCommand(
                         StringUtils.join(new String[]{ds.getStatusScript(), StringUtils.join(appNames, " ")}, " "),
-                        true, true);
+                        true, true, true);
                 logger.log(Level.INFO, StringUtils.join(cmdOuts));
                 if (cmdOuts != null) {
                     for (String string : cmdOuts.getStdOut()) {
@@ -944,16 +944,17 @@ public final class CommandExecutor {
 
     private ExtProcess.ExecutionResult executeCommand(String key, boolean saveStdOut,
                                                       boolean saveStdErr, AppProfile appProfile, App ap) throws IOException, InterruptedException {
-        return executeCommand(key, saveStdOut, saveStdErr, getLogPrefix(appProfile, ap));
+        return executeCommand(key, saveStdOut, saveStdErr, getLogPrefix(appProfile, ap), true);
     }
 
     private ExtProcess.ExecutionResult executeCommand(String key, boolean saveStdOut,
-                                                      boolean saveStdErr) throws IOException, InterruptedException {
-        return executeCommand(key, saveStdOut, saveStdErr, "");
+                                                      boolean saveStdErr, boolean waitTermination) throws IOException, InterruptedException {
+        return executeCommand(key, saveStdOut, saveStdErr, "", waitTermination);
     }
 
     private ExtProcess.ExecutionResult executeCommand(String key, boolean saveStdOut,
-                                                      boolean saveStdErr, String logPrefix) throws IOException, InterruptedException {
+                                                      boolean saveStdErr, String logPrefix,
+                                                      boolean waitTermination) throws IOException, InterruptedException {
         ArrayList<String> cmdParams = new ArrayList<>();
         String[] split = StringUtils.split(key);
         for (String string : split) {
@@ -964,17 +965,28 @@ public final class CommandExecutor {
         // logger.trace("executing: " + rsyncParams);
         ExtProcess proc = extProcessManager.addProcess(new ExtProcessFinishing(cmdParams, false, true, logPrefix));
         proc.startProcess(saveStdOut, saveStdErr);
-        ExtProcess.ExecutionResult executionResult = proc.waitForExecutionResult();
-        logger.debug(logPrefix + " process terminated, result: " + executionResult.getExitCode());
-
-        extProcessManager.doneProcess(proc);
-        return executionResult;
+        if(waitTermination) {
+            ExtProcess.ExecutionResult executionResult = proc.waitForExecutionResult();
+            logger.debug(logPrefix + " process terminated, result: " + executionResult.getExitCode());
+            extProcessManager.doneProcess(proc);
+            return executionResult;
+        }
+        else {
+            return new ExtProcess.ExecutionResult(0, null, null);
+        }
 
     }
 
     private ExtProcess.ExecutionResult executeCommand(String key)
             throws IOException, InterruptedException {
-        return executeCommand(key, false, false);
+        return executeCommand(key, false, false, true);
+
+    }
+
+
+    private ExtProcess.ExecutionResult executeCommand(String key, boolean waitTermination)
+            throws IOException, InterruptedException {
+        return executeCommand(key, false, false, waitTermination);
 
     }
 
@@ -2438,10 +2450,9 @@ public final class CommandExecutor {
                                 executor.execute(new CallbackThreadLatched(finalLatch, new ISubTask() {
                                     @Override
                                     public void task() throws InterruptedException, IOException {
-                                        for (String afterAction : afterActions) {
-                                            executeCommand(afterAction);
+                                        for (int i = 0; i < afterActions.size(); i++) {
+                                            executeCommand(afterActions.get(i), i<afterActions.size()-1);
                                         }
-
                                         finalLatch.countDown();
                                     }
                                 }));
