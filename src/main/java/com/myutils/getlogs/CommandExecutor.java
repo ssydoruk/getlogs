@@ -17,15 +17,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.Layout;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.FileAppender;
-import org.apache.logging.log4j.core.config.AppenderRef;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.mina.util.Base64;
 
 import javax.swing.*;
@@ -1361,13 +1352,21 @@ public final class CommandExecutor {
 
         rsyncParams.add(dstSpec.toString());
         // logger.trace("executing: " + rsyncParams);
-        ExtProcessApp procRSync = (ExtProcessApp) extProcessManager
-                .addProcess(new ExtProcessApp(appProfile, ap, rsyncParams, true, true));
-        procRSync.startProcess();
-        int waitFor = procRSync.waitFor();
-        logger.debug("process terminated, result: " + waitFor);
-
-        extProcessManager.doneProcess(procRSync);
+        RSyncReadProcessor readProcessor = new RSyncReadProcessor(
+                Paths.get(getDs().getOutputDir(), ap.getName()), indexer,
+                fileNames,
+                ds.isZipDest());
+        try {
+            ExtProcessApp procRSync = (ExtProcessApp) extProcessManager
+                    .addProcess(new ExtProcessApp(appProfile, ap, rsyncParams, true, true));
+            procRSync.setOutputStringAction(readProcessor.getOutputStringAction());
+            procRSync.startProcess();
+            int waitFor = procRSync.waitFor();
+            logger.debug("process terminated, result: " + waitFor);
+            extProcessManager.doneProcess(procRSync);
+        } finally {
+            readProcessor.finish();
+        }
     }
 
     //    private void executeGet(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
@@ -2001,6 +2000,15 @@ public final class CommandExecutor {
         private AppProfile profile = null;
         private App app = null;
         private String msgPrefix = null;
+        private IProcessOutputRead outputStringAction;
+
+        public IProcessOutputRead getOutputStringAction() {
+            return outputStringAction;
+        }
+
+        public void setOutputStringAction(IProcessOutputRead outputStringAction) {
+            this.outputStringAction = outputStringAction;
+        }
 
         private ExtProcessApp(AppProfile appProfile, App ap, ArrayList<String> sshParams, boolean b, boolean b0)
                 throws IOException {
@@ -2048,6 +2056,9 @@ public final class CommandExecutor {
                     @Override
                     public void lineRead(String s) {
                         logMessage(Level.INFO, genLogMsg(s, false));
+                        if (outputStringAction != null) {
+                            outputStringAction.lineRead(s);
+                        }
                     }
                 });
             }
@@ -2410,7 +2421,6 @@ public final class CommandExecutor {
                         public void task() throws Exception {
                             if (indexer != null) {
 //                                Thread.sleep(10000);
-                                logMessage(Level.INFO, "Finalize parsing");
                                 indexer.finishParsing();
                             }
                             finalLatch.countDown();
