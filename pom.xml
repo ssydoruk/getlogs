@@ -62,7 +62,11 @@
             <artifactId>jide-oss</artifactId>
             <version>3.6.18</version>
         </dependency>
-
+        <dependency>
+            <groupId>net.i2p.crypto</groupId>
+            <artifactId>eddsa</artifactId>
+            <version>0.3.0</version>
+        </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
