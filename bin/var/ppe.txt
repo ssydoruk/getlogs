@@ -1,0 +1,812 @@
+{
+  "OutputDir": "C:\\GCTI\\work\\ppe.0829",
+  "TimeProfile": "VALUE_FILES",
+  "DateSpec": "202208",
+  "TimeSpec": "",
+  "ActionCommand": "GET",
+  "GrepText": "",
+  "UseRSync": true,
+  "AppLogs": true,
+  "ZipDest": true,
+  "ParserWhileDownload": true,
+  "LcaLogs": false,
+  "StatusScript": "/Users/stepan_sydoruk/bin/getAppStatus",
+  "AfterActions": [
+    {
+      "Key": "cmd /C \"copy C:\\gcti\\bin\\logbrBE.bat {OUTDIR}\"",
+      "Value": true
+    },
+    {
+      "Key": "cmd /C \"copy C:\\gcti\\bin\\logbrFE.bat {OUTDIR}\"",
+      "Value": true
+    },
+    {
+      "Key": "cmd /C \"C:\\cygwin64\\bin\\bash.exe -l /cygdrive/c/GCTI/bin/expand.sh {OUTDIR}\"",
+      "Value": false
+    },
+    {
+      "Key": "cmd /C \"cd /D {OUTDIR} \u0026 logbrBE.bat\"",
+      "Value": false
+    },
+    {
+      "Key": "cmd /K \"cd /D {OUTDIR} \u0026 logbrFE.bat\"",
+      "Value": true
+    }
+  ],
+  "BeforeActions": null,
+  "ListFiles": true,
+  "LfmtHostInstances": [
+    {
+      "Host": "ppe_lfmt",
+      "Instance": "lfmt",
+      "BaseDir": "/AppLogs"
+    },
+    {
+      "Host": "lfmt1_host",
+      "Instance": "lfmt1",
+      "BaseDir": "/baseDir"
+    }
+  ],
+  "AppProfiles": [
+    {
+      "Name": "SIP Server",
+      "Selected": true,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        "-1536": false,
+        "-768": false,
+        ".": true
+      },
+      "LogDirectory": "/opt/genesys/logs",
+      "LogFileNameBase": "sipserver",
+      "LoginProfile": "stisy7w3",
+      "Apps": [
+        {
+          "Name": "CHI_SipServer_Q2",
+          "AppDir": "sipserver",
+          "AppPrefix": "CHI_SipServer_Q2",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "GSO_SipServer_Q2",
+          "AppDir": "sipserver",
+          "AppPrefix": "",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "FTW_SipServer_Q1",
+          "AppDir": "sipserver",
+          "AppPrefix": "sipserver",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "GSO_SipServer_Q1",
+          "AppDir": "sipserver",
+          "AppPrefix": "",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "FTW_SipSever_Q2",
+          "AppDir": "sipserver",
+          "AppPrefix": "sipserver",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "CHI_SipServer_Q1",
+          "AppDir": "/opt/genesys/logs/sipserver",
+          "AppPrefix": "CHI_SipServer_Q1",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "ASH_SipServer_Q2",
+          "AppDir": "sipserver",
+          "AppPrefix": "ASH_SipServer_Q2",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "ASH_SipServer_Q1",
+          "AppDir": "/opt/genesys/logs/sipserver",
+          "AppPrefix": "ASH_SipServer_Q1",
+          "IsWindows": false,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "GVP",
+      "Selected": false,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        ".": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7w3",
+      "Apps": [
+        {
+          "Name": "CHI_PP_MCP_4",
+          "AppDir": "chi_mcp_4",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "CHI_PP_MCP_3",
+          "AppDir": "chi_mcp_3",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "ASH_PP_MCP_1",
+          "AppDir": "ash_mcp_1",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "CHI_ResourceManager_Q1",
+          "AppDir": "rm",
+          "AppPrefix": "rm",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "ASH_ResourceManager_Q2",
+          "AppDir": "rm",
+          "AppPrefix": "rm",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "CHI_ResourceManager_Q2",
+          "AppDir": "rm",
+          "AppPrefix": "rm",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "CHI_PP_MCP_1",
+          "AppDir": "chi_mcp_1",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "ASH_PP_MCP_3",
+          "AppDir": "ash_mcp_3",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "ASH_PP_MCP_4",
+          "AppDir": "ash_mcp_4",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "ASH_PP_MCP_2",
+          "AppDir": "ash_mcp_2",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "ASH_ResourceManager_Q1",
+          "AppDir": "rm",
+          "AppPrefix": "rm",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "CHI_PP_MCP_2",
+          "AppDir": "chi_mcp_2",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "urs",
+      "Selected": true,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        "http": true,
+        ".": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7w3",
+      "Apps": [
+        {
+          "Name": "GSO_URS_Q2",
+          "AppDir": "D$\\GCTI\\Logs\\GSO_URS_Q2",
+          "AppPrefix": "gso_urs_q2",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "Email_URS",
+          "AppDir": "D:\\Genesys\\Logs\\Email_URS",
+          "AppPrefix": "Email_URS",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "Email_URS_Backup",
+          "AppDir": null,
+          "AppPrefix": "Email_URS_Backup",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "FTW_URS_Q1",
+          "AppDir": "d$\\Logs\\FTW_URS_Q1",
+          "AppPrefix": "FTW_URS_Q1",
+          "IsWindows": true,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "DB Servers",
+      "Selected": false,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": false,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7w3",
+      "Apps": []
+    },
+    {
+      "Name": "GMS",
+      "Selected": false,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": false,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7w3",
+      "Apps": []
+    },
+    {
+      "Name": "IxnServer",
+      "Selected": false,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": false,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7w3",
+      "Apps": [
+        {
+          "Name": "Interaction_Server_Proxy",
+          "AppDir": null,
+          "AppPrefix": "Interaction_Server_Proxy",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "InteractionServer_Backup",
+          "AppDir": "d:\\GCTI\\logs\\IXNServer_BackUp",
+          "AppPrefix": "InteractionServer_Backup",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "InteractionServer",
+          "AppDir": "D:\\Genesys\\logs\\InteractionServer",
+          "AppPrefix": "IXNServer",
+          "IsWindows": true,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "MediaServers",
+      "Selected": false,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7w3",
+      "Apps": [
+        {
+          "Name": "CHI_ResourceManager_Q2",
+          "AppDir": null,
+          "AppPrefix": "CHI_ResourceManager_Q2",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "CHI_PP_MCP_3",
+          "AppDir": null,
+          "AppPrefix": "CHI_PP_MCP_3",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "CHI_PP_MCP_1",
+          "AppDir": null,
+          "AppPrefix": "CHI_PP_MCP_1",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ASH_ResourceManager_Q1",
+          "AppDir": null,
+          "AppPrefix": "ASH_ResourceManager_Q1",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "CHI_ResourceManager_Q1",
+          "AppDir": null,
+          "AppPrefix": "CHI_ResourceManager_Q1",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ASH_ResourceManager_Q2",
+          "AppDir": null,
+          "AppPrefix": "ASH_ResourceManager_Q2",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ASH_PP_MCP_2",
+          "AppDir": "/opt/genesys/logs/ash_mcp_2/",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "ASH_PP_MCP_3",
+          "AppDir": "/opt/genesys/logs/ash_mcp_3",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "CHI_PP_MCP_2",
+          "AppDir": null,
+          "AppPrefix": "CHI_PP_MCP_2",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ASH_PP_MCP_4",
+          "AppDir": "/opt/genesys/logs/ash_mcp_4",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "ASH_PP_MCP_1",
+          "AppDir": "/opt/genesys/logs/ash_mcp_1",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "CHI_PP_MCP_4",
+          "AppDir": null,
+          "AppPrefix": "CHI_PP_MCP_4",
+          "IsWindows": true,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "Reporting",
+      "Selected": false,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": false,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7w3",
+      "Apps": [
+        {
+          "Name": "Pulse_StatServer",
+          "AppDir": null,
+          "AppPrefix": "Pulse_StatServer",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "GP_WFM_Stat_Server",
+          "AppDir": null,
+          "AppPrefix": "GP_WFM_Stat_Server",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "WFM_StatServer_2",
+          "AppDir": null,
+          "AppPrefix": "WFM_StatServer_2",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "PS_WFM_StatServer",
+          "AppDir": null,
+          "AppPrefix": "PS_WFM_StatServer",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ActiveSync_Stat_B",
+          "AppDir": null,
+          "AppPrefix": "ActiveSync_Stat_B",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ActiveSync_Stat_P",
+          "AppDir": null,
+          "AppPrefix": "ActiveSync_Stat_P",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "FTW_PulseStatServer",
+          "AppDir": null,
+          "AppPrefix": "FTW_PulseStatServer",
+          "IsWindows": true,
+          "Checked": true
+        },
+        {
+          "Name": "OMA_PluseStatServer_Backup",
+          "AppDir": null,
+          "AppPrefix": "OMA_PluseStatServer_Backup",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "WFM_StatServer",
+          "AppDir": null,
+          "AppPrefix": "WFM_StatServer",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "GSO_PulseStatServer",
+          "AppDir": null,
+          "AppPrefix": "GSO_PulseStatServer",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "Email StatServer",
+          "AppDir": "D:\\Genesys\\Logs\\EmailStatServer",
+          "AppPrefix": "EmailStatServer",
+          "IsWindows": true,
+          "Checked": true
+        },
+        {
+          "Name": "GSO_Routing_StatServer",
+          "AppDir": null,
+          "AppPrefix": "GSO_Routing_StatServer",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "GSO_PulseStatServerBkup",
+          "AppDir": null,
+          "AppPrefix": "GSO_PulseStatServerBkup",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "Email StatServer_Backup",
+          "AppDir": null,
+          "AppPrefix": "Email StatServer_Backup",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "FTW_Routing_StatServer",
+          "AppDir": null,
+          "AppPrefix": "FTW_Routing_StatServer",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "OMA_PulseStatServer",
+          "AppDir": null,
+          "AppPrefix": "OMA_PulseStatServer",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "FTW_PulseStatServer_Backup",
+          "AppDir": null,
+          "AppPrefix": "FTW_PulseStatServer_Backup",
+          "IsWindows": true,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ORS",
+      "Selected": false,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": false,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7w3",
+      "Apps": [
+        {
+          "Name": "GSO_ORS_Q2",
+          "AppDir": "/opt/genesys/logs/ors",
+          "AppPrefix": "GSO_ORS_Q2",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "GSO_ORS_Q1",
+          "AppDir": "/opt/genesys/logs/ors",
+          "AppPrefix": "GSO_ORS_Q1",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "FTW_ORS_Q2",
+          "AppDir": "/opt/genesys/logs/ors",
+          "AppPrefix": "FTW_ORS_Q2",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "FTW_ORS_Q1",
+          "AppDir": "/opt/genesys/logs/ors",
+          "AppPrefix": "FTW_ORS_Q1",
+          "IsWindows": false,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "ConfigServers",
+      "Selected": false,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": false,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7w3",
+      "Apps": [
+        {
+          "Name": "ICON_Config_GSO",
+          "AppDir": null,
+          "AppPrefix": "ICON_Config_GSO",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ConfigProxy_GSO_Backup",
+          "AppDir": null,
+          "AppPrefix": "ConfigProxy_GSO_Backup",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ConfigProxy_FTW_Backup",
+          "AppDir": null,
+          "AppPrefix": "ConfigProxy_FTW_Backup",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ConfigProxy_GSO",
+          "AppDir": null,
+          "AppPrefix": "ConfigProxy_GSO",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ConfigProxy_FTW",
+          "AppDir": null,
+          "AppPrefix": "ConfigProxy_FTW",
+          "IsWindows": true,
+          "Checked": true
+        },
+        {
+          "Name": "Confserv_backup",
+          "AppDir": null,
+          "AppPrefix": "Confserv_backup",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "confserv",
+          "AppDir": "D:\\Logs\\ConfigServer",
+          "AppPrefix": "Confserv_85",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ICON_Config_FTW",
+          "AppDir": null,
+          "AppPrefix": "ICON_Config_FTW",
+          "IsWindows": true,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "TServers",
+      "Selected": false,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7w3",
+      "Apps": [
+        {
+          "Name": "GSO_TServer_Backup",
+          "AppDir": null,
+          "AppPrefix": "GSO_TServer_Backup",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "GSO_TServer",
+          "AppDir": "D:\\GCTI\\Logs\\GSO_TServer",
+          "AppPrefix": "GSO_TServer",
+          "IsWindows": true,
+          "Checked": true
+        },
+        {
+          "Name": "CHI_TServer",
+          "AppDir": "/opt/genesys/logs/tserver",
+          "AppPrefix": "tserver",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "FTW_TServer",
+          "AppDir": "D:\\Genesys\\Log\\FTW_TServer",
+          "AppPrefix": "FTW_TServer",
+          "IsWindows": true,
+          "Checked": true
+        },
+        {
+          "Name": "FTW_TServer_Backup",
+          "AppDir": null,
+          "AppPrefix": "FTW_TServer_Backup",
+          "IsWindows": true,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "test1",
+      "Selected": false,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": false,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7",
+      "Apps": [
+        {
+          "Name": "test11",
+          "AppDir": "C:\\GCTI\\logs\\FTW_TServer",
+          "AppPrefix": "FTW_TServer",
+          "IsWindows": true,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "Avaya",
+      "Selected": true,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": "stisy7w3",
+      "Apps": [
+        {
+          "Name": "FTW_TServer",
+          "AppDir": "D:\\Genesys\\Log\\FTW_TServer",
+          "AppPrefix": "FTW_TServer",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "Avaya_TServer",
+          "AppDir": "/opt/genesys/logs/Avaya_TServer",
+          "AppPrefix": "Avaya_TServer",
+          "IsWindows": false,
+          "Checked": true
+        }
+      ]
+    }
+  ],
+  "LoginProfiles": [
+    {
+      "Name": "stisy7w3",
+      "Username": "stisy7w3",
+      "Password": "TNvwUCx7WfD+DaW67UypYv4M1Sm2dlQ8nZ7Z8xYgDEg\u003d"
+    }
+  ],
+  "Lfmt": false,
+  "Prod": true,
+  "Hours": "3",
+  "RangeStart": 1556262000000,
+  "RangeEnd": 1556336674000,
+  "MaxThreads": 4
+}

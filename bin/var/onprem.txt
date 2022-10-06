@@ -1,0 +1,1967 @@
+{
+  "OutputDir": "/Users/stepan_sydoruk/GCTI/Work/prod.0810",
+  "TimeProfile": "REGEX",
+  "DateSpec": "20220805",
+  "TimeSpec": "",
+  "ActionCommand": "LS",
+  "GrepText": "",
+  "UseRSync": true,
+  "AppLogs": true,
+  "ZipDest": false,
+  "ParserWhileDownload": true,
+  "LcaLogs": false,
+  "StatusScript": "/Users/stepan_sydoruk/bin/getAppStatusOnPrem",
+  "AfterActions": [
+    {
+      "Key": "cp -L /Users/stepan_sydoruk/GCTI/bin/logbrowser/logbrBE.sh /Users/stepan_sydoruk/GCTI/bin/logbrowser/logbrFE.sh {OUTDIR}",
+      "Value": true
+    },
+    {
+      "Key": "find {OUTDIR} -name *.log ! -name .\\* -execdir zip --move {}.zip {} ;",
+      "Value": true
+    },
+    {
+      "Key": "find {OUTDIR} -name *.zip -execdir unzip {} ; -execdir rm {} ;",
+      "Value": false
+    },
+    {
+      "Key": "find {OUTDIR} -name *.db -execdir rm {} ;",
+      "Value": false
+    },
+    {
+      "Key": "find {OUTDIR} -name *.log -execdir rm {} ;",
+      "Value": false
+    },
+    {
+      "Key": "{OUTDIR}/logbrBE.sh {OUTDIR}",
+      "Value": false
+    },
+    {
+      "Key": "{OUTDIR}/logbrFE.sh {OUTDIR}",
+      "Value": true
+    }
+  ],
+  "BeforeActions": [
+    {
+      "Key": "find {OUTDIR} -name *.log -execdir zip {}.zip {} ; -execdir rm {} ;",
+      "Value": false
+    },
+    {
+      "Key": "find {OUTDIR} -name *.zip -execdir 7z x -y {} ; -execdir rm {} ;",
+      "Value": false
+    },
+    {
+      "Key": "find {OUTDIR} -name *.db -execdir rm {} ;",
+      "Value": false
+    },
+    {
+      "Key": "find {OUTDIR} -name *.log -execdir rm {} ;",
+      "Value": false
+    }
+  ],
+  "ListFiles": true,
+  "LfmtHostInstances": [
+    {
+      "Host": "esv1-c-lfmtc-01p.test.com",
+      "Instance": "",
+      "BaseDir": "/lfmt/lfmt_cls/archive"
+    },
+    {
+      "Host": "edn1-c-lfmtc-01p.test.com",
+      "Instance": "",
+      "BaseDir": "/lfmt/lfmt_cls/archive"
+    },
+    {
+      "Host": "esg3-c-lfmtc-01p.test.com",
+      "Instance": "",
+      "BaseDir": "/lfmt/lfmt_cls/archive"
+    }
+  ],
+  "AppProfiles": [
+    {
+      "Name": "ESV1 SIP agent",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        "_sip-1536": false,
+        "_sip-001": true,
+        "_sip-512": false,
+        ".": true,
+        "_sip-768": false
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_sip_agent_1_p",
+          "AppDir": "",
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_sip_agent_1_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ConfigServersEDN1",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_csproxy_wfm_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_csproxy_wfm_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_csproxy_app_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_csproxy_app_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_csproxy_sm_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ConfigServersESV1",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {},
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_csproxy_sm_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_csproxy_wfm_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_csproxy_app_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_csproxy_app_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_csproxy_wfm_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ConfigServer global",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "confserv_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "confserv",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "EU IxnServers",
+      "Selected": false,
+      "Lftm": {
+        "Host": "edn1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_ixn_shadow_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ixnp_rpt_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ixn_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ixnp_media_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ixn_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_ixnp_rpt_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ESV1 StatServers",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        "-1536": false,
+        ".": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_stats_audit_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_stats_audit_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_stats_wfm_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_stats_gws_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_stats_pulse_1_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_stats_pulse_2_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_stats_routing_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_stats_gws_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_stats_pulse_2_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_stats_pulse_1_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_stats_routing_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_stats_wfm_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ESV1 IxnServer",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_ixnp_rpt_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ucs_3",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ixnp_media_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ixnp_rpt_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ixn_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_ixnp_media_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ixn_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_ixn_shadow_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ucs_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ucs_4",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ucs_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ucs_cluster",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ixn_shadow_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ESV1 SIP routing",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        "-1536": false,
+        "_sip-001": true,
+        "-768": false,
+        "-512": false,
+        ".": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_sip_vq_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_sip_routing_1_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_sip_routing_2_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_sip_routing_2_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_sip_routing_1_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_sip_vq_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ESV1 routing",
+      "Selected": true,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        "_web": true,
+        "_http": false,
+        ".": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_ors_4_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ors_5_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ors_3_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ors_2_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ors_5_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ors_2_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_ors_6_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ors_1_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ors_4_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_urs_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_sip_vq_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ors_1_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ors_3_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_urs_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_ors_6_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ESV1 GWS",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": false,
+      "NameSuffixes": {
+        "*request.{YYYY}{MM}{DD}*.log": true,
+        "{NAME}.log": false,
+        "*{NAME}-cloud-{YYYY}-{MM}-{DD}-{HH}*.log": false,
+        ".": false
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_gws_stats_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gws_sync",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gws_api_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_gws_stats_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gws_api_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ESV1 Media Server IVR",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        "_debug": false,
+        ".": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_rm_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gvp_mcp_10",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gvp_mcp_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_rm_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gvp_mcp_8",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gvp_mcp_6",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_gvp_mcp_5",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gvp_mcp_4",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gvp_mcp_9",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gvp_mcp_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gvp_mcp_3",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gvp_mcp_7",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ESV1 Media Server Rec",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        ".": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_rm_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_rps_4",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_rps_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_mcp_7",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_mcp_8",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_rps_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_mcp_4",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_mcp_3",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_rcs_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_mcp_9",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_gir_mcp_6",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_mcp_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_mcp_10",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_rm_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_mcp_5",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_rcs_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_rps_3",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gir_mcp_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "EDN1 Interaction Server",
+      "Selected": false,
+      "Lftm": {
+        "Host": "edn1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_ixnp_media_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ixnp_media_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ixn_shadow_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ixnp_rpt_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ixnp_rpt_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ixn_shadow_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ixn_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ixn_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "EDN1 management layer",
+      "Selected": false,
+      "Lftm": {
+        "Host": "edn1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {},
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_msgserv_distributed_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_msgserv_urs_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_dbserver_cfg_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_msgserv_distributed_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_dbserver_cfg_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_scs_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_msgserv_urs_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_scs_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_msgserv_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_msgserv_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ESV1 management layer",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_scs_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_scs_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "EDN1 SIP agent",
+      "Selected": false,
+      "Lftm": {
+        "Host": "edn1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        "-1536": false,
+        "_sip-001": true,
+        "-768": false,
+        "-512": false,
+        ".": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_sip_agent_1_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_sip_agent_1_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "EDN1 SIP Routing",
+      "Selected": false,
+      "Lftm": {
+        "Host": "edn1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        "_sip-001": true,
+        ".": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_sip_routing_1_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_sip_vq_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_sip_routing_2_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_sip_routing_2_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_sip_routing_1_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_sip_vq_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "EDN1 routing",
+      "Selected": false,
+      "Lftm": {
+        "Host": "edn1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        "_web": true,
+        "_http": true,
+        ".": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_ors_6_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_stats_routing_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ors_5_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ors_2_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_stats_routing_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ors_1_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_urs_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_ors_6_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ors_2_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_ors_1_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_ors_4_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ors_3_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ors_4_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ors_5_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_urs_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_ors_3_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "EDN1 GVP IVR",
+      "Selected": false,
+      "Lftm": {
+        "Host": "edn1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        ".": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_gvp_mcp_9",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gvp_mcp_8",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gvp_mcp_7",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gvp_mcp_5",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gvp_mcp_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gvp_mcp_10",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_rm_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_rm_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gvp_mcp_4",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gvp_mcp_6",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gvp_mcp_3",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gvp_mcp_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "EDN1 GWS",
+      "Selected": false,
+      "Lftm": {
+        "Host": "edn1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": false,
+      "NameSuffixes": {
+        "*request.{YYYY}{MM}{DD}*.log": true,
+        "{NAME}.log": true,
+        ".": true,
+        "*{NAME}-cloud-{YYYY}-{MM}-{DD}-{HH}*.log": true
+      },
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_gws_api_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_gws_api_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_gws_sync",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gws_stats_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gws_stats_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "ESV1 LDS",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_lds_sipr2_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_lds_sipa1_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_lds_sipr1_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_lds_sipr2_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_lds_sipr1_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_lds_sipa1_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "ESV1 GMS",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "esv1_gms_ext_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gms_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_gms_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_gms_3",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "esv1_gms_ext_3",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "esv1_gms_ext_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "EDN1 GMS",
+      "Selected": false,
+      "Lftm": {
+        "Host": "edn1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_gms_ext_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gms_3",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_gms_ext_3",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gms_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_gms_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_gms_ext_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        }
+      ]
+    },
+    {
+      "Name": "EDN1 StatServers",
+      "Selected": false,
+      "Lftm": {
+        "Host": "edn1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_stats_wfm_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_stats_routing_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_stats_pulse_1_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_stats_pulse_2_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_stats_audit_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_stats_audit_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_stats_routing_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_stats_gws_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_stats_pulse_2_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_stats_pulse_1_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_stats_wfm_b",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_stats_gws_p",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "EDN1 GVP GIR",
+      "Selected": false,
+      "Lftm": {
+        "Host": "edn1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": [
+        {
+          "Name": "edn1_gir_mcp_10",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gir_mcp_4",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gir_mcp_7",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gir_mcp_9",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gir_mcp_8",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gir_mcp_3",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gir_mcp_5",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "edn1_gir_mcp_2",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gir_mcp_6",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "edn1_gir_mcp_1",
+          "AppDir": null,
+          "AppPrefix": null,
+          "IsWindows": false,
+          "Checked": true
+        }
+      ]
+    },
+    {
+      "Name": "test",
+      "Selected": false,
+      "Lftm": {
+        "Host": "esv1-c-lfmtc-01p.test.com",
+        "Instance": "",
+        "BaseDir": "/lfmt/lfmt_cls/archive"
+      },
+      "IsGenesysName": false,
+      "NameSuffixes": null,
+      "LogDirectory": null,
+      "LogFileNameBase": null,
+      "LoginProfile": null,
+      "Apps": []
+    }
+  ],
+  "LoginProfiles": [],
+  "Lfmt": true,
+  "Prod": true,
+  "Hours": "3",
+  "RangeStart": 1559550600000,
+  "RangeEnd": 1560478851000,
+  "MaxThreads": 5
+}

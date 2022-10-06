@@ -188,3 +188,4 @@ va1pwgenasync01,ActiveSync_Stat_B
 il3pwgenasync01,ActiveSync_Stat_Dbs_P
 va1pwgenasync01,ActiveSync_Stat_Dbs_B
 il3pwgenasync01,Active_Stat_DAP
+il3plgents01,Avaya_TServer

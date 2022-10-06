@@ -1,0 +1,96 @@
+{
+  "OutputDir": "C:\\GCTI\\work\\dev.1108",
+  "TimeProfile": "VALUE_FILES",
+  "DateSpec": "202109",
+  "TimeSpec": "",
+  "ActionCommand": "LS",
+  "GrepText": "",
+  "UseRSync": true,
+  "AppLogs": true,
+  "ZipDest": true,
+  "LcaLogs": false,
+  "StatusScript": "/Users/stepan_sydoruk/bin/getAppStatus",
+  "AfterActions": [
+    {
+      "Key": "cmd /C \"copy C:\\gcti\\bin\\logbrBE.bat {OUTDIR}\"",
+      "Value": true
+    },
+    {
+      "Key": "cmd /C \"copy C:\\gcti\\bin\\logbrFE.bat {OUTDIR}\"",
+      "Value": true
+    },
+    {
+      "Key": "cmd /C \"C:\\cygwin64\\bin\\bash.exe -l /cygdrive/c/GCTI/bin/expand.sh {OUTDIR}\"",
+      "Value": false
+    },
+    {
+      "Key": "cmd /C \"cd /D {OUTDIR} \u0026 logbrBE.bat\"",
+      "Value": true
+    },
+    {
+      "Key": "cmd /K \"cd /D {OUTDIR} \u0026 logbrFE.bat\"",
+      "Value": true
+    }
+  ],
+  "BeforeActions": null,
+  "ListFiles": true,
+  "LfmtHostInstances": [
+    {
+      "Host": "ppe_lfmt",
+      "Instance": "lfmt",
+      "BaseDir": "/AppLogs"
+    },
+    {
+      "Host": "lfmt1_host",
+      "Instance": "lfmt1",
+      "BaseDir": "/baseDir"
+    }
+  ],
+  "AppProfiles": [
+    {
+      "Name": "SIP Server",
+      "Selected": true,
+      "Lftm": {
+        "Host": "ppe_lfmt",
+        "Instance": "lfmt",
+        "BaseDir": "/AppLogs"
+      },
+      "IsGenesysName": true,
+      "NameSuffixes": {
+        "-1536": false,
+        "-768": false,
+        ".": true
+      },
+      "LogDirectory": "/opt/genesys/logs",
+      "LogFileNameBase": "sipserver",
+      "LoginProfile": "stisy7w3",
+      "Apps": [
+        {
+          "Name": "Linux Sip Server",
+          "AppDir": "/opt/genesys/logs",
+          "AppPrefix": "DEV_sipserver",
+          "IsWindows": false,
+          "Checked": true
+        }
+      ]
+    }
+  ],
+  "LoginProfiles": [
+    {
+      "Name": "stisy7w3",
+      "Username": "stisy7w3",
+      "Password": "zDZxJ79BLlMqJe/yo3LvgH835ZsGfCsdvf4gea6v3ok\u003d"
+    },
+    {
+      "Name": "stisy7",
+      "Username": "stisy7",
+      "Password": "qBxZzvAJ36cq6bZNG1ZAqg0y9TpSo5d6Q4CASxkwW54\u003d"
+    }
+  ],
+  "Lfmt": false,
+  "Prod": true,
+  "Hours": "8",
+  "RangeStart": 1556262000000,
+  "RangeEnd": 1556336629000,
+  "MaxThreads": 4
+}
