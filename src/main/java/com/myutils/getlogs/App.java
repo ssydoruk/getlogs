@@ -49,7 +49,7 @@ class App implements Comparable {
         name = n;
         this.appDir = appDir;
         this.appPrefix = appPrefix;
-        isWindows = true;
+        isWindows = false;
 
     }
 
@@ -105,7 +105,7 @@ class App implements Comparable {
     }
 
     public boolean correspondTo(String app, String file, String fullFileName) {
-        return StringUtils.equals(getName(), app);
+        return StringUtils.equalsIgnoreCase(getName(), app);
     }
 
 }
