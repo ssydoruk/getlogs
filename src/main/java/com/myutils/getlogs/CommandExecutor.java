@@ -1597,7 +1597,7 @@ public final class CommandExecutor {
                 lsGeneralTab = new JTablePasteFileList();
             }
             if (lsPasteOutput == null) {
-                lsPasteOutput = new InfoPanel(parent, "List of pasted", lsGeneralTab, "Download %d files");
+                lsPasteOutput = new InfoPanel(parent, "List of pasted", lsGeneralTab, "Get %d files");
             }
             ArrayList<JTableFileEntryGeneral> lsPasteFiles = new ArrayList<>();
             HashSet<String> sortedFiles = new HashSet<>();
@@ -1655,7 +1655,7 @@ public final class CommandExecutor {
                 lsTab = new JTableFileList();
             }
             if (lsOutput == null) {
-                lsOutput = new InfoPanel(parent, "List of files", lsTab, "Download %d files");
+                lsOutput = new InfoPanel(parent, "List of files", lsTab, "Get %d files");
             }
             lsTab.setFiles(lsFilesLast);
             lsOutput.doShow();

@@ -18,7 +18,10 @@ public class InfoPanel extends StandardDialog {
     private final Utils.swing.TableColumnAdjuster tca;
     JScrollPane jScrollPane;
     JButton jbFilter;
+
+    JButton jbAll;
     ButtonPanel buttonPanel;
+    private String btAllName="Get all";
 
     InfoPanel(Window parent, String title, JTable tab, String selectedFormat) {
         super(parent, title);
@@ -165,6 +168,19 @@ public class InfoPanel extends StandardDialog {
         setDefaultAction(jbFilter.getAction());
         getRootPane().setDefaultButton(jbFilter);
 
+        jbAll = new JButton(getBtAllName());
+        buttonPanel.addButton(jbAll);
+
+        jbAll.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                theTab.editingCanceled(null);
+                theTab.selectAll();
+                setCloseCause(JOptionPane.OK_OPTION);
+                dispose();
+            }
+        });
+
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         buttonPanel.setSizeConstraint(ButtonPanel.NO_LESS_THAN); // since the checkbox is quite wide, we don't want all of them have the same size.
         return buttonPanel;
@@ -177,5 +193,17 @@ public class InfoPanel extends StandardDialog {
 
     private void addButton(JButton jButton) {
         addButtons.add(jButton);
+    }
+
+    public String getBtAllName() {
+        return btAllName;
+    }
+
+    public void setBtAllName(String btAllName) {
+        this.btAllName = btAllName;
+    }
+
+    public void showButtonAll(boolean doShow) {
+        jbAll.setVisible(doShow);
     }
 }

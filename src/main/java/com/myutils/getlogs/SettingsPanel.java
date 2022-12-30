@@ -11,7 +11,7 @@ import Utils.swing.*;
 import com.google.gson.*;
 import com.jidesoft.swing.*;
 import static com.myutils.getlogs.GetLogs.logger;
-import com.myutils.getlogs.InfoPanel;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -1359,6 +1359,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             tab = getJTablePopup();
             p = new InfoPanel((Window) this.getRootPane().getParent(), "Select applications", tab,
                     "Add %d apps");
+            p.showButtonAll(false);
         }
         DefaultTableModel infoTableModel = new DefaultTableModel();
         infoTableModel.addColumn("Applications");
