@@ -142,19 +142,19 @@ public final class AppProfile {
                         && lfmtHostInstance.getInstance() != null && lfmt1.getInstance() != null
                         && lfmtHostInstance.getHost().equalsIgnoreCase(lfmt1.getHost())
                         && lfmtHostInstance.getInstance().equalsIgnoreCase(lfmt1.getInstance())) {
-                    return;
                 }
             }
 
         }
-        DownloadSettings.LFMTHostInstance newLFMT = null;
-        if (lfmtHostInstances != null && !lfmtHostInstances.isEmpty()) {
-            newLFMT = lfmtHostInstances.get(0);
+        else {
+            DownloadSettings.LFMTHostInstance newLFMT = null;
+            if (lfmtHostInstances != null && !lfmtHostInstances.isEmpty()) {
+                newLFMT = lfmtHostInstances.get(0);
+                logger.error("Incorrect LFMT setting for " + this.toString() + "; was: " + ((lfmt1 == null) ? "null" : lfmt1) + " changed to "
+                        + ((newLFMT == null) ? "null" : newLFMT));
+                setLFMT(newLFMT);
+            }
         }
-        logger.error("Incorrect LFMT setting for " + this.toString() + "; was: " + ((lfmt1 == null) ? "null" : lfmt1) + " changed to "
-                + ((newLFMT == null) ? "null" : newLFMT));
-        setLFMT(newLFMT);
-
     }
 
     public boolean fitsTimeRange(String string, UTCTimeRange timeRange) {

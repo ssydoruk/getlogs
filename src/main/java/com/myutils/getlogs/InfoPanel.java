@@ -35,7 +35,7 @@ public class InfoPanel extends StandardDialog {
         theTab.getTableHeader().setVisible(true);
         theTab.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         setAlwaysOnTop(true);
-
+        pack();
     }
 
     public int getCloseCause() {
