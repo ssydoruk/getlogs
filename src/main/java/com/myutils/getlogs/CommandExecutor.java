@@ -53,7 +53,10 @@ public final class CommandExecutor {
 
     private static final Pattern regVariable = Pattern.compile("\\{([A-Z]{2,4}|NAME)\\}");
     private static final Pattern regPostAction = Pattern.compile("\\{(NAME|OUTDIR)\\}");
-    private static final Pattern ptFullFileName = Pattern.compile("([^/]+)/([^/]+)$");
+    private static final Pattern ptFullFileName = Pattern.compile("([^/\\\\]+)[\\\\/]+([^\\\\/]+\\.\\d{8}_\\d{6}_\\d{3}\\.log)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+
+    private static final Pattern ptGenesysFileName = Pattern.compile("(?:[\\\\/]+)?(([^\\\\/]+)\\.\\d{8}_\\d{6}_\\d{3}\\.log)$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+
     private static final Matcher mWindowsErrorCode = Pattern.compile("error (\\d+) has occurred").matcher("");
     private static final int MAX_FILE_LIST_LEN = 80;
     private static final String zipExt = ".zip";
@@ -1577,21 +1580,33 @@ public final class CommandExecutor {
             JOptionPane.showMessageDialog(parent, "Nothing in clipboard", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        int lines=0;
         for (String wrd : StringUtils.split(data)) {
+            lines++;
             Matcher m;
             String app = null;
             String file = null;
             if ((m = ptFullFileName.matcher(wrd)).find()) {
                 app = m.group(1);
                 file = m.group(2);
-            }
-            if (file != null) {
                 Pair<AppProfile, App> findAppProfile = ds.findAppProfile(app, file, wrd);
                 if (findAppProfile != null) {
                     ftd.addDownloadFile(findAppProfile, file);
                 }
             }
+            else { // checking for genesys named file
+                if ((m = ptGenesysFileName.matcher(wrd)).find()) {
+                    file = m.group(1);
+                    app = m.group(2);
+                    Pair<AppProfile, App> findAppProfile = ds.findAppProfile(app, file, wrd);
+                    if (findAppProfile != null) {
+                        ftd.addDownloadFile(findAppProfile, file);
+                    }
+                }
+            }
         }
+//        JOptionPane.showConfirmDialog(parent, "lines processed: " +lines+"\n"+"files matched: "+ftd.size(), "Info", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(parent, "lines processed: " +lines+"\n"+"files matched: "+ftd.filesCount(), "Info", JOptionPane.INFORMATION_MESSAGE);
         if (!ftd.isEmpty()) {
             if (lsGeneralTab == null) {
                 lsGeneralTab = new JTablePasteFileList();
@@ -2134,6 +2149,13 @@ public final class CommandExecutor {
     }
 
     private class FilesToDownload extends ArrayList<FilesToGet> {
+        public int filesCount() {
+            int ret=0;
+            for (FilesToGet ftg : this) {
+                ret+=ftg.getCount();
+            }
+            return ret;
+        }
 
         public FilesToDownload() {
             super();

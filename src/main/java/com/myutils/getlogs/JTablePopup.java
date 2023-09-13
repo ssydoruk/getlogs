@@ -8,6 +8,9 @@ package com.myutils.getlogs;
 import Utils.Pair;
 import Utils.ScreenInfo;
 import Utils.SystemClipboard;
+import com.myutils.logbrowser.inquirer.gui.TabResultDataModel;
+import com.myutils.logbrowser.inquirer.inquirer;
+
 import static Utils.Util.matchFound;
 import static com.myutils.getlogs.EnterRegexDialog.RET_OK;
 import static com.myutils.getlogs.GetLogs.logger;
@@ -18,12 +21,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.HashSet;
 import java.util.regex.Pattern;
-import javax.swing.JOptionPane;
+import javax.swing.*;
+
 import static javax.swing.JOptionPane.INFORMATION_MESSAGE;
-import javax.swing.JPopupMenu;
-import javax.swing.JTable;
-import javax.swing.JViewport;
-import javax.swing.ListSelectionModel;
+
 import javax.swing.table.TableModel;
 
 /**
@@ -49,10 +50,12 @@ public abstract class JTablePopup extends JTable {
 
             @Override
             public void mousePressed(MouseEvent e) {
+                theMousePressed1(e);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                theMouseRelesed(e);
             }
 
             @Override
@@ -279,6 +282,64 @@ public abstract class JTablePopup extends JTable {
 
         }
 
+    }
+    public void popupMenuWillBecomeVisible(MouseEvent e, JTable tab) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+//                Point popupPoint = SwingUtilities.convertPoint((Component) e.getSource(), new Point(0, 0), tab);
+                Point popupPoint = e.getPoint();
+//                 SwingUtilities.convertPointFromScreen(popupPoint, tab);
+//                inquirer.logger.debug("convert: " + e.getPoint() + " to " + popupPoint);
+                int row = tab.rowAtPoint(e.getPoint());
+                int col = tab.columnAtPoint(popupPoint);
+//                if (inquirer.logger.isDebugEnabled()) {
+//                    TableModel model = tab.getModel();
+//                    if (model instanceof TabResultDataModel) {
+//                        inquirer.logger.debug("1Popup calling at " + popupPoint.toString() + " r:" + row + " c:" + col
+//                                + " rowSelected?" + tab.isRowSelected(row) + " selC: " + ((TabResultDataModel) model).getValueAt(tab.convertRowIndexToModel(row), tab.convertColumnIndexToModel(col))
+//                                + "\n\tdata1:" + ((TabResultDataModel) model).getRow(tab.convertRowIndexToModel(row))
+//                        );
+//                    }
+//                }
+                if (!tab.isRowSelected(row)) {
+//                        row = tab.convertRowIndexToModel(row);
+//                        col = tab.convertColumnIndexToModel(col);
+                    tab.changeSelection(row, col, false, false);
+                    if (inquirer.logger.isDebugEnabled()) {
+                        TableModel model = tab.getModel();
+                        if (model instanceof TabResultDataModel) {
+
+//                            inquirer.logger.debug("changed selection to " + popupPoint + " r:" + row + " c:" + col
+//                                    + " rowSelected?" + tab.isRowSelected(row) + " selC: " + model.getValueAt(tab.convertRowIndexToModel(row), tab.convertColumnIndexToModel(col))
+//                                    + "\n\tdata1:" + ((TabResultDataModel) model).getRow(tab.convertRowIndexToModel(row))
+//                            );
+                        }
+                    }
+                }
+                setPopupRow(row);
+                setPopupCol(col);
+
+                callingPopup();
+                popupMenu.show(tab, popupPoint.x, popupPoint.y);
+            }
+        });
+
+    }
+    private void theMousePressed1(MouseEvent e) {
+//        logger.debug("click at " + e.getPoint() + (e.isPopupTrigger() ? " popup!" : ""));
+
+        theMousePressed(e);
+        if (e.isPopupTrigger()) {
+            popupMenuWillBecomeVisible(e, this);
+        }
+    }
+
+    private void theMouseRelesed(MouseEvent e) {
+//        logger.debug("rel at " + e.getPoint() + (e.isPopupTrigger() ? " popup!" : ""));
+        if (e.isPopupTrigger()) {
+            popupMenuWillBecomeVisible(e, this);
+        }
     }
 
 }

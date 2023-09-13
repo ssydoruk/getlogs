@@ -39,4 +39,8 @@ class FilesToGet {
     public void addFile(String file) {
         fileNames.add(file);
     }
+
+    public int getCount(){
+        return fileNames.size();
+    }
 }
