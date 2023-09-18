@@ -6,17 +6,23 @@
 package com.myutils.getlogs;
 
 import Utils.*;
+
 import static com.myutils.getlogs.AColumnFilter.RECORD_EMPTY;
-import com.myutils.getlogs.InfoPanel;
+
+import Utils.swing.TableColumnAdjuster;
+import com.jidesoft.dialog.ButtonPanel;
+import com.jidesoft.dialog.StandardDialog;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
 
 /**
- *
  * @author stepan_sydoruk
  */
 abstract class JTableFileListBase<EntryType> extends JTablePopup {
@@ -40,7 +46,7 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
 
     }
 
-    private void doCancelFilters() {
+    public void doCancelFilters() {
         int sel = popupRow;
         if (sel >= 0) {
             sel = convertRowIndexToModel(sel);
@@ -53,7 +59,7 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
         setRowSorter(null);
         columnFilters.clear();
         ((AbstractTableModel) getModel()).fireTableDataChanged();
-        if (sel >= 0) {
+        if (sel >= 0 && getRowCount() > 0) {
             setRowSelectionInterval(sel, sel);
             scrollRectToVisible(new Rectangle(getCellRect(sel, 0, true)));
         }
@@ -144,10 +150,11 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
         }
         sorter.setRowFilter(RowFilter.andFilter(andFilters));
         setRowSorter(sorter);
-        ((AbstractTableModel) getModel()).fireTableDataChanged();
 //        getTableHeader().invalidate();
-//        getTableHeader().repaint();
 
+        ((AbstractTableModel) getModel()).fireTableDataChanged();
+        getTableHeader().invalidate();
+        getTableHeader().repaint();
     }
 
     public void setFiles(ArrayList<EntryType> lsFilesLast) {
@@ -158,7 +165,7 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
     protected class UniqueColumns extends AbstractAction {
 
         private final boolean showAll;
-        InfoPanel p = null;
+        InfoPanelUnique infoPanelUnique = null;
         private JTablePopup uniquePopup = null;
 
         public UniqueColumns(String menuTitle, boolean showAll) {
@@ -208,11 +215,10 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
             }
 
             String theTitle = "Unique values in column (total " + grandTotal + ")";
-            p = new InfoPanel((JFrame) table.getRootPane().getParent(), theTitle, tab,
-                    "Download %d files");
+            infoPanelUnique = getInfoPanelUnique((Window) table.getRootPane().getParent());
 
-            p.doShow();
-            if (p.getCloseCause() == JOptionPane.OK_OPTION) { //apply filter
+            infoPanelUnique.doShow(theTitle, tab);
+            if (infoPanelUnique.getCloseCause() == JOptionPane.OK_OPTION) { //apply filter
                 int[] selectedRows = tab.getSelectedRows();
                 if (selectedRows.length == uniqueVals.size()) {
                     doCancelFilters();
@@ -226,6 +232,13 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
                 applyFilter();
             }
             GetLogs.logger.trace(table.getSelectedRow() + " : " + table.getSelectedColumn());
+        }
+
+        private InfoPanelUnique getInfoPanelUnique(Window parent) {
+            if (infoPanelUnique == null || infoPanelUnique.getParent() != parent) {
+                infoPanelUnique = new InfoPanelUnique(parent);
+            }
+            return infoPanelUnique;
         }
 
         private JTablePopup getJTablePopup() {
@@ -553,6 +566,134 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
             return filter.showValue(entry.getValue(col));
         }
 
+    }
+
+
+    class InfoPanelUnique extends StandardDialog {
+
+        private TableColumnAdjuster tca;
+
+        public InfoPanelUnique setTab(JTable tab) {
+            this.tab = tab;
+            tca = new Utils.swing.TableColumnAdjuster(tab);
+            tca.setColumnHeaderIncluded(true);
+            return this;
+        }
+
+        private JTable tab;
+        JButton jbFilter;
+        private int closeCause = JOptionPane.CANCEL_OPTION;
+
+        InfoPanelUnique(Window parent) {
+            super(parent);
+        }
+
+
+        public int getCloseCause() {
+            return closeCause;
+        }
+
+        public void setCloseCause(int closeCause) {
+            this.closeCause = closeCause;
+        }
+
+        private void selectionChanged(JButton bt, JTable tab) {
+            int rowsSelected = tab.getSelectedRows().length;
+            bt.setEnabled(rowsSelected > 0);
+            bt.setText((rowsSelected == 0)
+                    ? "Empty selection"
+                    : "Filter with " + rowsSelected + " items");
+        }
+
+        public void doShow(String theTitle, JTable tab) {
+            setModal(true);
+            setTitle(theTitle);
+            setTab(tab);
+            tca.adjustColumns();
+
+            pack();
+//            ScreenInfo.CenterWindow(this);
+            this.setLocationRelativeTo(getParent());
+            setVisible(
+                    true);
+        }
+
+        @Override
+        public JComponent createBannerPanel() {
+            return null;
+        }
+
+        @Override
+        public JComponent createContentPanel() {
+//                        JPanel panel = new JPanel(new BorderLayout(10, 10));
+//            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
+
+//            panel.add(mainPanel, BorderLayout.CENTER);
+//            return panel;
+            JScrollPane jScrollPane = new JScrollPane(tab);
+            tab.getTableHeader().setVisible(true);
+
+            JPanel listPane = new JPanel(new BorderLayout(10, 10));
+
+            listPane.add(new JPanel(new BorderLayout()).add(jScrollPane));
+            return listPane;
+        }
+
+        @Override
+        public ButtonPanel createButtonPanel() {
+            ButtonPanel buttonPanel = new ButtonPanel();
+            JButton cancelButton = new JButton();
+            buttonPanel.addButton(cancelButton);
+
+            cancelButton.setAction(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setDialogResult(RESULT_CANCELLED);
+                    setCloseCause(JOptionPane.CANCEL_OPTION);
+                    setVisible(false);
+                    dispose();
+                }
+            });
+            cancelButton.setText("Close");
+
+            jbFilter = new JButton("Use as filter");
+            buttonPanel.addButton(jbFilter);
+            tab.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    selectionChanged(jbFilter, tab);
+                }
+            });
+            selectionChanged(jbFilter, tab);
+
+//            listPane.add(jbFilter);
+            jbFilter.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    tab.editingCanceled(null);
+                    setCloseCause(JOptionPane.OK_OPTION);
+                    dispose();
+                }
+            });
+
+            String act = "ApplyFilter";
+
+            tab.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0), act);
+            tab.getActionMap().put(act, jbFilter.getAction());
+
+            setDefaultCancelAction(cancelButton.getAction());
+            setDefaultAction(jbFilter.getAction());
+            getRootPane().setDefaultButton(jbFilter);
+
+            buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            buttonPanel.setSizeConstraint(ButtonPanel.NO_LESS_THAN); // since the checkbox is quite wide, we don't want all of them have the same size.
+            return buttonPanel;
+        }
+
+        private void doShow(String theTitle) {
+            this.setTitle(theTitle);
+            doShow(theTitle, tab);
+        }
     }
 
 }

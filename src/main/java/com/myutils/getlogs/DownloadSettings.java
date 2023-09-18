@@ -364,7 +364,7 @@ public class DownloadSettings {
                 lp.setUsername((String) objects[1].getValue());
             }
             if (objects.length >= 2) {
-                lp.setPassword((PasswordValue) objects[2]);
+                lp.setPassword(new PasswordValue( objects[2].toString()));
             }
             loginProfiles.add(lp);
         }

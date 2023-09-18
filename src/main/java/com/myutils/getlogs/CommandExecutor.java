@@ -843,7 +843,6 @@ public final class CommandExecutor {
                 lsTab = new JTableFileList();
             }
             lsTab.clearTable();
-
         }
 
         tsk = new QueryThreadingTask(this, new IThreadingSubTask() {
@@ -968,13 +967,12 @@ public final class CommandExecutor {
         // logger.trace("executing: " + rsyncParams);
         ExtProcess proc = extProcessManager.addProcess(new ExtProcessFinishing(cmdParams, false, true, logPrefix));
         proc.startProcess(saveStdOut, saveStdErr);
-        if(waitTermination) {
+        if (waitTermination) {
             ExtProcess.ExecutionResult executionResult = proc.waitForExecutionResult();
             logger.debug(logPrefix + " process terminated, result: " + executionResult.getExitCode());
             extProcessManager.doneProcess(proc);
             return executionResult;
-        }
-        else {
+        } else {
             return new ExtProcess.ExecutionResult(0, null, null);
         }
 
@@ -1580,7 +1578,7 @@ public final class CommandExecutor {
             JOptionPane.showMessageDialog(parent, "Nothing in clipboard", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        int lines=0;
+        int lines = 0;
         for (String wrd : StringUtils.split(data)) {
             lines++;
             Matcher m;
@@ -1593,8 +1591,7 @@ public final class CommandExecutor {
                 if (findAppProfile != null) {
                     ftd.addDownloadFile(findAppProfile, file);
                 }
-            }
-            else { // checking for genesys named file
+            } else { // checking for genesys named file
                 if ((m = ptGenesysFileName.matcher(wrd)).find()) {
                     file = m.group(1);
                     app = m.group(2);
@@ -1606,11 +1603,13 @@ public final class CommandExecutor {
             }
         }
 //        JOptionPane.showConfirmDialog(parent, "lines processed: " +lines+"\n"+"files matched: "+ftd.size(), "Info", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE);
-        JOptionPane.showMessageDialog(parent, "lines processed: " +lines+"\n"+"files matched: "+ftd.filesCount(), "Info", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(parent, "lines processed: " + lines + "\n" + "files matched: " + ftd.filesCount(), "Info", JOptionPane.INFORMATION_MESSAGE);
         if (!ftd.isEmpty()) {
             if (lsGeneralTab == null) {
                 lsGeneralTab = new JTablePasteFileList();
             }
+            lsGeneralTab.clearTable();
+            lsGeneralTab.doCancelFilters();
             if (lsPasteOutput == null) {
                 lsPasteOutput = new InfoPanel(parent, "List of pasted", lsGeneralTab, "Get %d files");
             }
@@ -2150,9 +2149,9 @@ public final class CommandExecutor {
 
     private class FilesToDownload extends ArrayList<FilesToGet> {
         public int filesCount() {
-            int ret=0;
+            int ret = 0;
             for (FilesToGet ftg : this) {
-                ret+=ftg.getCount();
+                ret += ftg.getCount();
             }
             return ret;
         }
@@ -2473,7 +2472,7 @@ public final class CommandExecutor {
                                     @Override
                                     public void task() throws InterruptedException, IOException {
                                         for (int i = 0; i < afterActions.size(); i++) {
-                                            executeCommand(afterActions.get(i), i<afterActions.size()-1);
+                                            executeCommand(afterActions.get(i), i < afterActions.size() - 1);
                                         }
                                         finalLatch.countDown();
                                     }

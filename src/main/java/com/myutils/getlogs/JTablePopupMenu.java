@@ -23,13 +23,14 @@ class JTablePopupMenu extends JPopupMenu {
 
     JTablePopupMenu(JTablePopup aThis) {
         tab = aThis;
-        addPopupMenuListener(new PopupListener());
+//        addPopupMenuListener(new PopupListener());
 
     }
 
     private class PopupListener implements PopupMenuListener {
 
         public PopupListener() {
+            System.out.println("-1-");
         }
 
         @Override
@@ -38,7 +39,8 @@ class JTablePopupMenu extends JPopupMenu {
 //                @Override
 //                public void run() {
             Point popupPoint = SwingUtilities.convertPoint((Component) e.getSource(), new Point(0, 0), tab);
-            logger.debug("p: " + popupPoint + " row: " + tab.rowAtPoint(popupPoint) + " col: " + tab.columnAtPoint(popupPoint));
+            logger.debug("p: " + popupPoint + " row: " + tab.rowAtPoint(popupPoint) + " col: " + tab.columnAtPoint(popupPoint)
+            +((Component) e.getSource()).getLocation());
             int row = tab.rowAtPoint(popupPoint);
             int col = tab.columnAtPoint(popupPoint);
             tab.setPopupRow(row);
