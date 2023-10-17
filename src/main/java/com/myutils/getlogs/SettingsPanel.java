@@ -10,6 +10,7 @@ import Utils.TDateRange;
 import Utils.swing.*;
 import com.google.gson.*;
 import com.jidesoft.swing.*;
+
 import static com.myutils.getlogs.GetLogs.logger;
 
 import java.awt.*;
@@ -23,6 +24,7 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.text.*;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -135,15 +137,14 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         });
         ext = new StringListEdit("Extention");
-        ext.setUpdatedFun(new StringListEdit.IDataChangedFun() {
-            @Override
-            public void dataChanged(ArrayList<Pair<String, Boolean>> newData) {
-                AppProfile sel = (AppProfile) clbProfile.getSelectedValue();
-                if (sel != null) {
-                    sel.setNameSuffixes(newData);
+        ext.setUpdatedFun(
+                (ArrayList<Pair<String, Boolean>> newData) -> {
+                    AppProfile sel = (AppProfile) clbProfile.getSelectedValue();
+                    if (sel != null) {
+                        sel.setNameSuffixes(newData);
+                    }
                 }
-            }
-        });
+        );
 
         ext.setAddChoices(new Utils.swing.ValuesEditor.IAddChoices() {
             @Override
@@ -164,21 +165,16 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         pExtensions.add(ext);
         afterActions = new StringListEdit("After actions");
-        afterActions.setUpdatedFun(new StringListEdit.IDataChangedFun() {
-            @Override
-            public void dataChanged(ArrayList<Pair<String, Boolean>> newData) {
-                getDs().setAfterActions(newData);
-            }
-        });
+        afterActions.setUpdatedFun(
+                (ArrayList<Pair<String, Boolean>> newData) ->
+                        getDs().setAfterActions(newData)
+        );
         pAfterActions.add(afterActions);
 
         beforeActions = new StringListEdit("Before actions");
-        beforeActions.setUpdatedFun(new StringListEdit.IDataChangedFun() {
-            @Override
-            public void dataChanged(ArrayList<Pair<String, Boolean>> newData) {
-                getDs().setBeforeActions(newData);
-            }
-        });
+        beforeActions.setUpdatedFun((ArrayList<Pair<String, Boolean>> newData) ->
+                getDs().setBeforeActions(newData)
+        );
         pBeforeActions.add(beforeActions);
 
         tfGrepText.setMaximumSize(new Dimension(tfGrepText.getMaximumSize().width, tfGrepText.getMinimumSize().height));
@@ -1162,7 +1158,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         lCommand.setText("Command");
         jPanel23.add(lCommand);
 
-        cbCommand.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbCommand.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
         cbCommand.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbCommandActionPerformed(evt);
@@ -1441,8 +1437,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         ArrayList<EditableValue[]> values = new ArrayList<>();
         for (DownloadSettings.LFMTHostInstance hi : ds.getLfmtHostInstances()) {
             values.add(new EditableValue[]{new StringValue(hi.getHost()),
-                new StringValue(hi.getInstance()),
-                new StringValue(hi.getBaseDir())});
+                    new StringValue(hi.getInstance()),
+                    new StringValue(hi.getBaseDir())});
         }
         lfmtEditor.setData(new Object[]{"LFMT host", "LFMT instance", "Base directory"},
                 values
@@ -1953,8 +1949,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         ArrayList<EditableValue[]> loginProfiles = new ArrayList<>();
         for (LoginProfile lp : ds.getLoginProfiles()) {
             loginProfiles.add(new EditableValue[]{new StringValue(lp.getName()),
-                new StringValue(lp.getUsername()),
-                new PasswordValue(lp.getPassword())});
+                    new StringValue(lp.getUsername()),
+                    new PasswordValue(lp.getPassword())});
         }
         loginProfilesEditor.setData(loginProfiles);
         if (loginProfilesEditor.doShow()) {

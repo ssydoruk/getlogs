@@ -8,7 +8,9 @@ package com.myutils.getlogs;
 import Utils.*;
 import Utils.swing.*;
 import com.jidesoft.swing.*;
+
 import static com.myutils.getlogs.GetLogs.logger;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -16,7 +18,6 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 /**
- *
  * @author stepan_sydoruk
  */
 public class StringListEdit extends JPanel {
@@ -273,6 +274,7 @@ public class StringListEdit extends JPanel {
         clbItems.setMaximumSize(new Dimension(clbItems.getMaximumSize().width, clbItems.getMinimumSize().height));
     }
 
+    @FunctionalInterface
     public interface IDataChangedFun {
 
         public void dataChanged(ArrayList<Pair<String, Boolean>> newData);

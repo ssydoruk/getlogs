@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="error" strict="true" name="XMLConfigTest">
+  <Properties>
+    <Property name="Filename">/Users/stepan_sydoruk/tmp/csUtilsDebug</Property>
+  </Properties>
+  <Filter type="ThresholdFilter" level="trace"/>
+
+  <Appenders>
+    <Appender type="Console" name="CONSOLE">
+      <!--Layout type="PatternLayout" pattern="%m%n"/-->
+      <Layout type="PatternLayout" pattern="%d %5.5p %m%n"/>
+      <ThresholdFilter level="trace" />
+    </Appender>
+	
+    <RollingFile name="File" fileName="${Filename}.log"
+        filePattern="${Filename}-%d{yyyyMMdd-HHmmss_SSS}.log"
+        immediateFlush="false" >
+      <Layout type="PatternLayout">
+        <Pattern>%d %5.5p %30.30C [%t] %m%n</Pattern>
+      </Layout>
+      <Policies>
+        <OnStartupTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="20 MB" />
+      </Policies>
+    </RollingFile>
+  </Appenders>
+
+  <Loggers>
+
+    <Root level="info">
+      <AppenderRef ref="File"/>
+      <AppenderRef ref="CONSOLE"/>
+    </Root>
+  </Loggers>
+
+</Configuration>

@@ -1,0 +1,288 @@
+<?xml version="1.0"?>
+
+<Config>
+  <!--+++++++++++++++++++++++++++++++++++++++SCS +++++++++++++++++++++++++++-->
+  <file type="RouterServer">
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}" format="yyyy-MM-dd'T'HH:mm:ss.SSS" />
+    <!--Thu 11 Aug 2016 09:01:46 AM CDT.060-->
+    <Date pattern="^ \w{3} \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} \w{2} \w{3}\.\d{3}" format="EEE d MMM yyyy HH:mm:ss a zzz.SSS" />
+    <Date pattern="^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2} ((?:a|p)\.m\.)\.\d{3}" format="MM/dd/yyyy HH:mm:ss a.SSS">
+      <replace from="a.m." to="AM" />
+      <replace from="p.m." to="PM" />
+    </Date>
+
+  </file>
+
+
+  <!--+++++++++++++++++++++++++++++++++++++++WWE +++++++++++++++++++++++++++-->
+  <file type="WWE">
+
+    <CustomSearch>
+      <match name="ElasticSeachRelated" pattern="\s+o[^\.]+\.e[^\.]+\.[\.\S]+\s+(.+)$" ignorecase="true" parserRest="false">
+        <component name="ElasticSearchRelated">
+          <attribute name="Message" value="1" />
+        </component>
+      </match>
+    </CustomSearch>
+
+  </file>
+
+
+  <!--+++++++++++++++++++++++++++++++++++++++URS_HTTP +++++++++++++++++++++++++++-->
+  <file type="URS_HTTP">
+    <!-- 02/26/20@20:40:26.379: [HTTP Handler 2382f70] Processing HTTP Router call -->
+    <Date pattern="^\d{2}/\d{2}/\d{2}@\d{2}:\d{2}:\d{2}\.\d{3}:\s+" format="MM/dd/yy@HH:mm:ss.SSS" />
+  </file>
+
+
+  <!--+++++++++++++++++++++++++++++++++++++++WWECloud +++++++++++++++++++++++++++-->
+  <file type="WWECloud">
+    <Date pattern="^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yyyy HH:mm:ss.SSS" />
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}" format="yyyy-MM-dd'T'HH:mm:ss.SSS" />
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}" format="yyyy-MM-dd'T'HH:mm:ss" />
+    <!--Thu 11 Aug 2016 09:01:46 AM CDT.060-->
+    <Date pattern="^ \w{3} \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} \w{2} \w{3}\.\d{3}" format="EEE d MMM yyyy HH:mm:ss a zzz.SSS" />
+
+    <CustomSearch>
+      <match name="LogMessage" pattern="(INFO|ERROR|WARN|FATAL)\s+\[([^\]]*)\]\s+\[([^\]]*)\]\s+\[([^\]]*)\]\s+\[([^\]]*)\].+(?:(?:[\S_]+\.)+[\S_]+|http\S+) (.+)$" ignorecase="true" parserRest="false">
+        <component name="Cloud log message">
+          <attribute name="Log level" value="1" />
+          <attribute name="User" value="2" />
+          <attribute name="Message" value="6">
+            <modification search="agent \[(\S+)\]" replace="agent [...]" />
+            <modification search="user \[(\S+)\]" replace="user [...]" />
+            <modification search="Device \[([\S\-]+)\]" replace="Device [...]" />
+            <modification search="with id \[\d+\]" replace="with id [...]" />
+            <modification search="Object (\S+)" replace="Object ..." />
+            <modification search="CustomContact[\s\+\(\)\d\-]+ in group" replace="CustomContact... in group" />
+            <modification search="Device \[Number=(\S+)\]" replace="Device [Number=...]" />
+          </attribute>
+        </component>
+      </match>
+    </CustomSearch>
+
+  </file>
+
+
+  <!--+++++++++++++++++++++++++++++++++++++++SCS +++++++++++++++++++++++++++-->
+  <file type="StatServer">
+    <Date pattern="^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}" format="yyyy-MM-dd HH:mm:ss.SSS" />
+  </file>
+
+
+  <!--+++++++++++++++++++++++++++++++++++++++SCS +++++++++++++++++++++++++++-->
+  <file type="SCS">
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}" format="yyyy-MM-dd'T'HH:mm:ss.SSS" />
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}" format="yyyy-MM-dd'T'HH:mm:ss" />
+    <!--Thu 11 Aug 2016 09:01:46 AM CDT.060-->
+    <Date pattern="^ \w{3} \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} \w{2} \w{3}\.\d{3}" format="EEE d MMM yyyy HH:mm:ss a zzz.SSS" />
+    <Date pattern="^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yyyy HH:mm:ss.SSS" />
+
+    <CustomSearch>
+      <match name="NotifyHost" pattern="Notify Host: (\S+) \{(\S+), ([^\}]+)\}" ignorecase="true" parserRest="false">
+        <component name="Host status notifications">
+          <attribute name="Host status" value="1" mustChange="true" /> <!-- mustChange indicate attribute that, if not changed from previous, custom seach not saved -->
+          <attribute name="hostDBID" value="2" />
+          <attribute name="host name" value="3" />
+        </component>
+      </match>
+    </CustomSearch>
+
+  </file>
+
+  <!--+++++++++++++++++++++++++++++++++++++++LCA +++++++++++++++++++++++++++-->
+  <file type="LCA">
+    <Date pattern="^\d{2}:\d{2}:\d{2}" format="HH:mm:ss" />
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}" format="yyyy-MM-dd'T'HH:mm:ss.SSS" />
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}" format="yyyy-MM-dd'T'HH:mm:ss" />
+    <!--Thu 11 Aug 2016 09:01:46 AM CDT.060-->
+    <Date pattern="^ \w{3} \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} \w{2} \w{3}\.\d{3}" format="EEE d MMM yyyy HH:mm:ss a zzz.SSS" />
+    <Date pattern="^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yyyy HH:mm:ss.SSS" />
+    <!--Thu 11 Aug 2016 09:01:46 AM CDT.060-->
+    <CustomSearch>
+      <match name="NotifyHost" pattern="Notify Host: (\S+) \{(\S+), ([^\}]+)\}" ignorecase="true" parserRest="false">
+        <component name="Host status notifications">
+          <attribute name="Host status" value="1" mustChange="true" /> <!-- mustChange indicate attribute that, if not changed from previous, custom seach not saved -->
+          <attribute name="hostDBID" value="2" />
+          <attribute name="host name" value="3" />
+        </component>
+      </match>
+    </CustomSearch>
+
+  </file>
+
+
+  <!--+++++++++++++++++++++++++++++++++++++++OCServer +++++++++++++++++++++++++++-->
+
+  <file type="OCServer">
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}" format="yyyy-MM-dd'T'HH:mm:ss.SSS" />
+    <!--Thu 11 Aug 2016 09:01:46 AM CDT.060-->
+    <Date pattern="^ \w{3} \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} \w{2} \w{3}\.\d{3}" format="EEE d MMM yyyy HH:mm:ss a zzz.SSS" />
+    <Date pattern="^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yyyy HH:mm:ss.SSS" />
+
+    <CustomSearch>
+      <match pattern="Std 50132 Campaign Group '([^']+)', (.+)" ignorecase="true" parserRest="false">
+        <component name="Campaign Group progress">
+          <attribute name="Campaign Group" value="1" />
+          <attribute name="Message" value="2" />
+        </component>
+      </match>
+    </CustomSearch>
+
+  </file>
+  <file type="TServer">
+
+    <CustomSearch>
+      <match pattern="gateway '(.+)' associated with address '([^']+)'" ignorecase="true" handleronly="true">
+        <component name="gateway associations">
+          <attribute name="gateway" value="1" />
+          <attribute name="IP" value="2" />
+        </component>
+      </match>
+
+      <match pattern="no gateway is found using address '([^']+)' for number '(.+)'" ignorecase="true" handleronly="true">
+        <component name="gateway associations">
+          <attribute name="number" value="2" />
+          <attribute name="IP" value="1" />
+        </component>
+      </match>
+
+      <match pattern="DialPlan: (No rule applied), using original destination '([^']+)'" ignorecase="true" handleronly="true">
+        <component name="DialPlan">
+          <attribute name="destination" value="2" />
+          <attribute name="rule" value="1" />
+        </component>
+      </match>
+
+      <match pattern="DialPlan:executing for dest (\S+) - (\S+): (.+=>.+)" ignorecase="true" handleronly="true">
+        <component name="DialPlan">
+          <attribute name="destination" value="1" />
+          <attribute name="rule" value="2" />
+          <attribute name="conversion" value="3" />
+        </component>
+      </match>
+
+      <match pattern="Selected for Dn .+: Service (\S+) \(geo-loc\[([^\]]*)\]" ignorecase="true" handleronly="true">
+        <component name="VOIP DN">
+          <attribute name="DN" value="1" />
+          <attribute name="geo-location" value="2" />
+        </component>
+      </match>
+
+      <match pattern="04561 (.+) mode activated$" ignorecase="true" handleronly="false">
+        <component name="Switchover message">
+          <attribute name="message" value="1" />
+        </component>
+      </match>
+
+      <match pattern="HA:ROLE:(.+)" ignorecase="true" handleronly="false">
+        <component name="Switchover message">
+          <attribute name="HA role" value="1" />
+        </component>
+      </match>
+
+
+    </CustomSearch>
+
+    <!--Sun Jun  5 15:22:21 2016.741 -->
+    <!-- http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html -->
+    <Date pattern="^\w{3} \w{3}\s+\d{1,2} \d{2}:\d{2}:\d{2} \d{4}\.\d{3}" format="EEE MMM d HH:mm:ss yyyy.SSS" />
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}" format="yyyy-MM-dd'T'HH:mm:ss.SSS" />
+    <Date pattern="^\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yy' 'HH:mm:ss.SSS" />
+
+    <!--Thu 11 Aug 2016 09:01:46 AM CDT.060-->
+    <Date pattern="^\w{3} \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} \w{2} \w{3}\.\d{3}" format="EEE d MMM yyyy HH:mm:ss a zzz.SSS" />
+    <Date pattern="^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yyyy HH:mm:ss.SSS" />
+  </file>
+  <file type="OrchestrationServer">
+    <!--Sun Jun  5 15:22:21 2016.741 -->
+    <!-- http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html -->
+    <Date pattern="^\w{3} \w{3}\s+\d{1,2} \d{2}:\d{2}:\d{2} \d{4}\.\d{3}" format="EEE MMM d HH:mm:ss yyyy.SSS" />
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}" format="yyyy-MM-dd'T'HH:mm:ss.SSS" />
+    <Date pattern="^\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yy' 'HH:mm:ss.SSS" />
+    <Date pattern="^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yyyy HH:mm:ss.SSS" />
+
+    <!--Thu 11 Aug 2016 09:01:46 AM CDT.060-->
+    <Date pattern="^\w{3} \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} \w{2} \w{3}\.\d{3}" format="EEE d MMM yyyy HH:mm:ss a zzz.SSS" />
+  </file>
+  <file type="Workspace">
+    <!--Sun Jun  5 15:22:21 2016.741 -->
+    <!-- http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html -->
+    <Date pattern="^\d{2}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}" format="yy-MM-dd' 'HH:mm:ss.SSS" />
+    <Date pattern="^\w{3} \w{3}\s+\d{1,2} \d{2}:\d{2}:\d{2} \d{4}\.\d{3}" format="EEE MMM d HH:mm:ss yyyy.SSS" />
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}" format="yyyy-MM-dd'T'HH:mm:ss.SSS" />
+    <Date pattern="^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yyyy HH:mm:ss.SSS" />
+    <Date pattern="^\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yy' 'HH:mm:ss.SSS" />
+
+    <!--Thu 11 Aug 2016 09:01:46 AM CDT.060-->
+    <Date pattern="^\w{3} \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} \w{2} \w{3}\.\d{3}" format="EEE d MMM yyyy HH:mm:ss a zzz.SSS" />
+  </file>
+  <file type="InteractionServer">
+    <!--Sun Jun  5 15:22:21 2016.741 -->
+    <!-- http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html -->
+    <Date pattern="^\w{3} \w{3}\s+\d{1,2} \d{2}:\d{2}:\d{2} \d{4}\.\d{3}" format="EEE MMM d HH:mm:ss yyyy.SSS" />
+    <Date pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}" format="yyyy-MM-dd'T'HH:mm:ss.SSS" />
+    <!--Date pattern="^\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yy' 'HH:mm:ss.SSS" /-->
+    <Date pattern="^\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yy HH:mm:ss.SSS" />
+    <Date pattern="^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{3}" format="MM/dd/yyyy HH:mm:ss.SSS" />
+
+    <!--Thu 11 Aug 2016 09:01:46 AM CDT.060-->
+    <Date pattern="^\w{3} \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} \w{2} \w{3}\.\d{3}" format="EEE d MMM yyyy HH:mm:ss a zzz.SSS" />
+  </file>
+  <load>
+    <Table type="OCSTLib">
+      <!--ignore pattern="message (RequestAttachUserData|EventCallDataChanged|EventCallPartyAdded|EventCallPartyState|RequestUpdateUserData|EventAttachedDataChanged|RequestDistributeEvent|EventCallPartyDeleted|RequestDeletePair|EventCallPartyMoved|ISCCEventAttachedDataChanged)"/-->
+    </Table>
+
+    <!--Table type="TLib">
+            <ignore pattern="^(EventCallDataChanged|EventCallPartyAdded|EventResourceInfo|EventRegistered)$"/>
+            <ignore pattern="^(EventCallPartyState|EventAttachedDataChanged|EventCallPartyDeleted|EventCallPartyMoved|ISCCEventAttachedDataChanged)$"/>
+            <ignore pattern="^(RequestRegisterAddress|RequestAttachUserData|RequestUpdateUserData|RequestDistributeEvent|RequestDeletePair)$"/>
+
+        </Table-->
+
+    <!--Table type="URSTlib">
+            <ignore pattern="^(RequestUpdateUserData|RequestDistributeEvent|RequestDeletePair|RequestAttachUserData)$"/>
+            <ignore pattern="(EventAttachedDataChanged|EventACK)$"/>
+            <!ignore pattern="message EventAttachedDataChanged\(refid=[^\)]\)$"/>
+        </Table-->
+
+    <Table type="URSStrategy">
+      <!--ignore pattern="\[17:0b\].+: not ready$"/>
+            <ignore pattern="\[17:0b\].+: logged out$"/>
+            <ignore pattern="\[17:0e\].+\): not ready passed"/-->
+      <!--ignore pattern=" ASSIGN:"/-->
+    </Table>
+
+    <Table type="OCSClient">
+      <ignore pattern="GSW_CM_MessageType.+GSW_CM_ReqGetCampaignStatus" />
+    </Table>
+
+
+    <Table type="MSGOCServer">
+      <ignore pattern="Trc 50002" />
+      <ignore pattern="Trc 50150" />
+      <ignore pattern="Trc 50008|Trc 50080|Trc 61007" />
+      <ignore pattern="Trc 50071|Trc 04542" />
+      <ignore pattern="Trc 90005" />
+      <ignore pattern="Std 61008|Std 10000" />
+    </Table>
+
+    <Table type="MSGURServer">
+      <ignore pattern="Int 20001" />
+    </Table>
+    <Table type="MSGTServer">
+      <ignore pattern="Trc 04542|Trc 04541" />
+      <ignore pattern="Int 04544|Int 04543|Int 04545" />
+    </Table>
+  </load>
+  <finalize>
+    <report file="out.txt">
+      <sql>
+                select * from
+            </sql>
+    </report>
+  </finalize>
+
+
+</Config>

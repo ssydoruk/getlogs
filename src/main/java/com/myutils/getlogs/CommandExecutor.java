@@ -845,67 +845,58 @@ public final class CommandExecutor {
             lsTab.clearTable();
         }
 
-        tsk = new QueryThreadingTask(this, new IThreadingSubTask() {
-            @Override
-            public ArrayList<ISubTask> task() throws InterruptedException, IOException {
+        tsk = new QueryThreadingTask(this, () -> {
 
-                ArrayList<ISubTask> ret1 = new ArrayList<>();
+            ArrayList<ISubTask> ret1 = new ArrayList<>();
 
-                for (Map.Entry<FilesToGet, ArrayList<String>> entry : r.entrySet()) {
-                    FilesToGet key = entry.getKey();
-                    ArrayList<String> value1 = entry.getValue();
-                    ArrayList<String> value = new ArrayList<>();
-                    for (String string : value1) {
-                        value.add(string);
+            for (Map.Entry<FilesToGet, ArrayList<String>> entry : r.entrySet()) {
+                FilesToGet key = entry.getKey();
+                ArrayList<String> value1 = entry.getValue();
+                ArrayList<String> value = new ArrayList<>();
+                for (String string : value1) {
+                    value.add(string);
 
-                    }
-
-                    if (getDs().isLfmt()) {
-                        ret1.add(new ISubTask() {
-                            @Override
-                            public void task() throws InterruptedException, IOException {
-                                HostAppdir hh = GetLogs.getHosts().lookupHost(key.getApp().getName());
-
-                                ArrayList<JTableFileEntry> lsFiles = null;
-                                try {
-                                    lsFiles = executeLS(key.getProfile(), key.getApp(), hh,
-                                            getLogDir(key.getProfile(), key.getApp(), true, hh.toString()), value, true,
-                                            false);
-                                    if (lsFiles != null && !lsFiles.isEmpty()) {
-                                        synchronized (lsFilesAll) {
-                                            lsFilesAll.addAll(lsFiles);
-                                        }
-                                    }
-                                } catch (ConfigException e) {
-                                    logMessage("Config error", e, key.getProfile(), key.getApp());
-                                }
-                            }
-                        });
-                    }
-                    if (getDs().isProd()) {
-                        ret1.add(new ISubTask() {
-                            @Override
-                            public void task() throws InterruptedException, IOException {
-                                HostAppdir hh = GetLogs.getHosts().lookupHost(key.getApp().getName());
-                                try {
-
-                                    ArrayList<JTableFileEntry> lsFiles = executeLS(key.getProfile(), key.getApp(), hh,
-                                            getLogDir(key.getProfile(), key.getApp(), false, hh.toString()), value, false,
-                                            false);
-                                    if (lsFiles != null && !lsFiles.isEmpty()) {
-                                        synchronized (lsFilesAll) {
-                                            lsFilesAll.addAll(lsFiles);
-                                        }
-                                    }
-                                } catch (ConfigException e) {
-                                    logMessage("Config error", e, key.getProfile(), key.getApp());
-                                }
-                            }
-                        });
-                    }
                 }
-                return ret1;
+
+                if (getDs().isLfmt()) {
+                    ret1.add(() -> {
+                        HostAppdir hh = GetLogs.getHosts().lookupHost(key.getApp().getName());
+
+                        ArrayList<JTableFileEntry> lsFiles = null;
+                        try {
+                            lsFiles = executeLS(key.getProfile(), key.getApp(), hh,
+                                    getLogDir(key.getProfile(), key.getApp(), true, hh.toString()), value, true,
+                                    false);
+                            if (lsFiles != null && !lsFiles.isEmpty()) {
+                                synchronized (lsFilesAll) {
+                                    lsFilesAll.addAll(lsFiles);
+                                }
+                            }
+                        } catch (ConfigException e) {
+                            logMessage("Config error", e, key.getProfile(), key.getApp());
+                        }
+                    });
+                }
+                if (getDs().isProd()) {
+                    ret1.add(() -> {
+                        HostAppdir hh = GetLogs.getHosts().lookupHost(key.getApp().getName());
+                        try {
+
+                            ArrayList<JTableFileEntry> lsFiles = executeLS(key.getProfile(), key.getApp(), hh,
+                                    getLogDir(key.getProfile(), key.getApp(), false, hh.toString()), value, false,
+                                    false);
+                            if (lsFiles != null && !lsFiles.isEmpty()) {
+                                synchronized (lsFilesAll) {
+                                    lsFilesAll.addAll(lsFiles);
+                                }
+                            }
+                        } catch (ConfigException e) {
+                            logMessage("Config error", e, key.getProfile(), key.getApp());
+                        }
+                    });
+                }
             }
+            return ret1;
         });
         if (rp == null) {
             rp = new RequestProgress(parent, false, tsk);
@@ -997,10 +988,11 @@ public final class CommandExecutor {
         String outDir = FilenameUtils.concat(getDs().getOutputDir(), ap.getName());
         for (OSFile file
                 : filesList) {
-            fileTransfer(file, outDir, appProfile, ap, (f, src, dst) -> {
-                filesToGet.add(f);
-                return true;
-            });
+            fileTransfer(file, outDir, appProfile, ap,
+                    (f, src, dst) -> {
+                        filesToGet.add(f);
+                        return true;
+                    });
         }
         if (filesToGet.isEmpty()) {
             logMessage("File list empty; nothing to do", appProfile, ap);
@@ -1164,50 +1156,51 @@ public final class CommandExecutor {
             logMessage("Transfering file [" + file.getFileName() + "] to dir [" + outDir + "]: ",
                     appProfile, ap);
 
-            fileTransfer(file, outDir, appProfile, ap, (f, src, dst) -> {
-                for (int i = 0; i < 30; i++) {
-                    if (shouldTerminate.get()) {
-                        return false;
-                    }
-                    if (Files.exists(src.toPath())) {
-                        long srcSize = -1;
-                        long destSize = -1;
-                        try {
-                            if (Files.exists(dst.toPath())) {
-                                destSize = Files.size(dst.toPath());
-                                srcSize = Files.size(src.toPath());
+            fileTransfer(file, outDir, appProfile, ap,
+                    (f, src, dst) -> {
+                        for (int i = 0; i < 30; i++) {
+                            if (shouldTerminate.get()) {
+                                return false;
                             }
-                        } catch (IOException e) {
-                        }
-                        if (srcSize < 0 || destSize < 0 || destSize < srcSize) {
-                            try {
-                                FileUtils.copyFile(src, dst, true);
-                                if (indexer != null)
-                                    indexer.processAddedFile(dst);
-                                logMessage("Copied [" + file.getFileName() + "] to dir [" + outDir + "]: ",
-                                        appProfile, ap);
-                            } catch (IOException e) {
-                                logMessage("Failed to copy [" + file.getFileName() + "] to dir [" + outDir + "]: ", e,
-                                        appProfile, ap);
-                            }
-                        }
+                            if (Files.exists(src.toPath())) {
+                                long srcSize = -1;
+                                long destSize = -1;
+                                try {
+                                    if (Files.exists(dst.toPath())) {
+                                        destSize = Files.size(dst.toPath());
+                                        srcSize = Files.size(src.toPath());
+                                    }
+                                } catch (IOException e) {
+                                }
+                                if (srcSize < 0 || destSize < 0 || destSize < srcSize) {
+                                    try {
+                                        FileUtils.copyFile(src, dst, true);
+                                        if (indexer != null)
+                                            indexer.processAddedFile(dst);
+                                        logMessage("Copied [" + file.getFileName() + "] to dir [" + outDir + "]: ",
+                                                appProfile, ap);
+                                    } catch (IOException e) {
+                                        logMessage("Failed to copy [" + file.getFileName() + "] to dir [" + outDir + "]: ", e,
+                                                appProfile, ap);
+                                    }
+                                }
 
-                        try {
-                            Files.delete(src.toPath());
-                        } catch (IOException e) {
-                            logMessage("Failed to delete [" + src.toString() + "]: ", e,
-                                    appProfile, ap);
-                        } finally {
-                            break;
+                                try {
+                                    Files.delete(src.toPath());
+                                } catch (IOException e) {
+                                    logMessage("Failed to delete [" + src.toString() + "]: ", e,
+                                            appProfile, ap);
+                                } finally {
+                                    break;
+                                }
+                            } else {
+                                logMessage("File [" + file.getFileName() + "] not found yet. Waiting",
+                                        appProfile, ap);
+                                Thread.sleep(1000);
+                            }
                         }
-                    } else {
-                        logMessage("File [" + file.getFileName() + "] not found yet. Waiting",
-                                appProfile, ap);
-                        Thread.sleep(1000);
-                    }
-                }
-                return true;
-            });
+                        return true;
+                    });
         }
         return true;
     }
@@ -1694,13 +1687,7 @@ public final class CommandExecutor {
 
                     CountDownLatch latch = new CountDownLatch(r.size());
 
-                    doExecuteCmd(parent, this, latch, new ISubTask() {
-                        @Override
-                        public void task() throws Exception {
-                            executeDownload(r, latch);
-                        }
-                    });
-
+                    doExecuteCmd(parent, this, latch, () -> executeDownload(r, latch));
                 }
             }
         } else {
@@ -1738,13 +1725,10 @@ public final class CommandExecutor {
         for (Map.Entry<SavedSearchStorage, ArrayList<OSFile>> entry : r.entrySet()) {
             SavedSearchStorage key = entry.getKey();
             ArrayList<OSFile> value = entry.getValue();
-            executor.execute(new CallbackThreadLatched(latch, new ISubTask() {
-                @Override
-                public void task() throws InterruptedException, IOException {
+            executor.execute(new CallbackThreadLatched(latch, () ->
                     executeDownload(key.getAppProfile(), key.getAp(), key.getAppHost(), key.getLogsDir(), value,
-                            key.isLfmt(), key.isLcaLog());
-                }
-            }));
+                            key.isLfmt(), key.isLcaLog())
+            ));
         }
     }
 
@@ -1908,55 +1892,46 @@ public final class CommandExecutor {
         if (ds.getActionCommand() == GetCommand.GET || ds.getActionCommand() == GetCommand.GREPGET) {
             initParser();
         }
-        tsk = new QueryThreadingTask(aThis, new IThreadingSubTask() {
-            @Override
-            public ArrayList<ISubTask> task() throws InterruptedException, IOException {
-                lsFilesAll.clear();
-                if (!isText) {
-                    if (lsTab == null) {
-                        lsTab = new JTableFileList();
-                    }
-                    lsTab.clearTable();
-
+        tsk = new QueryThreadingTask(aThis, () -> {
+            lsFilesAll.clear();
+            if (!isText) {
+                if (lsTab == null) {
+                    lsTab = new JTableFileList();
                 }
+                lsTab.clearTable();
 
-                ArrayList<ISubTask> ret1 = new ArrayList<>();
-                for (AppProfile appProfile : ds.getAppProfiles()) {
-                    if (appProfile.isSelected()) {
-                        GetLogs.logger.debug("processing command for profile " + appProfile);
-                        for (App app : appProfile.getApps()) {
-                            GetLogs.logger.debug("processing app  " + app + ": " + app.isChecked());
-                            if (app.isChecked()) {
-                                if (ds.isProd()) {
-                                    ret1.add(new ISubTask() {
-                                        @Override
-                                        public void task() throws Exception {
-                                            try {
-                                                executeCmd(appProfile, app, false);
-                                            } catch (ConfigException e) {
-                                                logMessage("Config error", e, appProfile, app);
-                                            }
-                                        }
-                                    });
-                                }
-                                if (ds.isLfmt()) {
-                                    ret1.add(new ISubTask() {
-                                        @Override
-                                        public void task() throws Exception {
-                                            try {
-                                                executeCmd(appProfile, app, true);
-                                            } catch (ConfigException e) {
-                                                logMessage("Config error", e, appProfile, app);
-                                            }
-                                        }
-                                    });
-                                }
+            }
+
+            ArrayList<ISubTask> ret1 = new ArrayList<>();
+            for (AppProfile appProfile : ds.getAppProfiles()) {
+                if (appProfile.isSelected()) {
+                    GetLogs.logger.debug("processing command for profile " + appProfile);
+                    for (App app : appProfile.getApps()) {
+                        GetLogs.logger.debug("processing app  " + app + ": " + app.isChecked());
+                        if (app.isChecked()) {
+                            if (ds.isProd()) {
+                                ret1.add(() -> {
+                                    try {
+                                        executeCmd(appProfile, app, false);
+                                    } catch (ConfigException e) {
+                                        logMessage("Config error", e, appProfile, app);
+                                    }
+                                });
+                            }
+                            if (ds.isLfmt()) {
+                                ret1.add(() -> {
+                                    try {
+                                        executeCmd(appProfile, app, true);
+                                    } catch (ConfigException e) {
+                                        logMessage("Config error", e, appProfile, app);
+                                    }
+                                });
                             }
                         }
                     }
                 }
-                return ret1;
             }
+            return ret1;
         });
         if (rp == null) {
             rp = new RequestProgress(parent1, false, tsk);
@@ -1988,6 +1963,7 @@ public final class CommandExecutor {
 
     }
 
+    @FunctionalInterface
     interface IFileTransferAction {
 
         boolean TransferActionOK(OSFile file, File src, File dst) throws InterruptedException;
@@ -2425,60 +2401,40 @@ public final class CommandExecutor {
             if (beforeActions != null) {
                 CountDownLatch startingLatch = new CountDownLatch(1);
                 setStartingLatch(startingLatch);
-                setStartingTask(new ISubTask() {
-                    @Override
-                    public void task() throws InterruptedException, IOException {
+                setStartingTask(() -> {
+                    executor.execute(new CallbackThreadLatched(startingLatch, () -> {
+                        for (String beforeAction : beforeActions) {
+                            executeCommand(beforeAction);
+                        }
 
-                        executor.execute(new CallbackThreadLatched(startingLatch, new ISubTask() {
-                            @Override
-                            public void task() throws InterruptedException, IOException {
-                                for (String beforeAction : beforeActions) {
-                                    executeCommand(beforeAction);
-                                }
-
-                                startingLatch.countDown();
-                            }
-
-                        }));
-
-                    }
+                        startingLatch.countDown();
+                    }));
                 });
             }
         }
 
         private void addParsingFinalize() {
             CountDownLatch finalLatch = new CountDownLatch(1);
-            setFinishingAction(
-                    new ISubTask() {
-                        @Override
-                        public void task() throws Exception {
-                            if (indexer != null) {
-//                                Thread.sleep(10000);
-                                indexer.finishParsing();
-                            }
-                            finalLatch.countDown();
+            setFinishingAction(() -> {
+                        if (indexer != null) {
+                            indexer.finishParsing();
                         }
-                    }, finalLatch);
+                        finalLatch.countDown();
+                    },
+                    finalLatch);
         }
 
         private void setAfterActions(ArrayList<String> afterActions) {
             if (afterActions != null) {
                 CountDownLatch finalLatch = new CountDownLatch(1);
                 setFinishingAction(
-                        new ISubTask() {
-                            @Override
-                            public void task() throws InterruptedException, IOException {
-                                executor.execute(new CallbackThreadLatched(finalLatch, new ISubTask() {
-                                    @Override
-                                    public void task() throws InterruptedException, IOException {
-                                        for (int i = 0; i < afterActions.size(); i++) {
-                                            executeCommand(afterActions.get(i), i < afterActions.size() - 1);
-                                        }
-                                        finalLatch.countDown();
+                        () ->
+                                executor.execute(new CallbackThreadLatched(finalLatch, () -> {
+                                    for (int i = 0; i < afterActions.size(); i++) {
+                                        executeCommand(afterActions.get(i), i < afterActions.size() - 1);
                                     }
-                                }));
-                            }
-                        }, finalLatch);
+                                    finalLatch.countDown();
+                                })), finalLatch);
             }
         }
     }

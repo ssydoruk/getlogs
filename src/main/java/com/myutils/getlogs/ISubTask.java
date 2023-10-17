@@ -5,7 +5,7 @@ import java.io.IOException;
 /**
  *
  */
-public interface ISubTask {
+@FunctionalInterface  public interface ISubTask {
 
     void task() throws Exception;
 }
