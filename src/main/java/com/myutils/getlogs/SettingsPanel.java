@@ -19,6 +19,7 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -166,14 +167,14 @@ public class SettingsPanel extends javax.swing.JPanel {
         pExtensions.add(ext);
         afterActions = new StringListEdit("After actions");
         afterActions.setUpdatedFun(
-                (ArrayList<Pair<String, Boolean>> newData) ->
-                        getDs().setAfterActions(newData)
+                (ArrayList<Pair<String, Boolean>> newData)
+                -> getDs().setAfterActions(newData)
         );
         pAfterActions.add(afterActions);
 
         beforeActions = new StringListEdit("Before actions");
-        beforeActions.setUpdatedFun((ArrayList<Pair<String, Boolean>> newData) ->
-                getDs().setBeforeActions(newData)
+        beforeActions.setUpdatedFun((ArrayList<Pair<String, Boolean>> newData)
+                -> getDs().setBeforeActions(newData)
         );
         pBeforeActions.add(beforeActions);
 
@@ -1434,12 +1435,16 @@ public class SettingsPanel extends javax.swing.JPanel {
                     "Select %d LFMTs");
 
         }
-        ArrayList<EditableValue[]> values = new ArrayList<>();
-        for (DownloadSettings.LFMTHostInstance hi : ds.getLfmtHostInstances()) {
-            values.add(new EditableValue[]{new StringValue(hi.getHost()),
+        ArrayList<EditableValue[]> values
+                = ds.getLfmtHostInstances()
+                        .stream()
+                        .map(hi -> new EditableValue[]{
+                    new StringValue(hi.getHost()),
                     new StringValue(hi.getInstance()),
-                    new StringValue(hi.getBaseDir())});
-        }
+                    new StringValue(hi.getBaseDir())
+                })
+                        .collect(Collectors.toCollection(ArrayList::new));
+
         lfmtEditor.setData(new Object[]{"LFMT host", "LFMT instance", "Base directory"},
                 values
         );
@@ -1946,12 +1951,14 @@ public class SettingsPanel extends javax.swing.JPanel {
             );
 
         }
-        ArrayList<EditableValue[]> loginProfiles = new ArrayList<>();
-        for (LoginProfile lp : ds.getLoginProfiles()) {
-            loginProfiles.add(new EditableValue[]{new StringValue(lp.getName()),
-                    new StringValue(lp.getUsername()),
-                    new PasswordValue(lp.getPassword())});
-        }
+        ArrayList<EditableValue[]> loginProfiles
+                = ds.getLoginProfiles().stream()
+                        .map(lp -> {
+                            return new EditableValue[]{new StringValue(lp.getName()),
+                                new StringValue(lp.getUsername()),
+                                new PasswordValue(lp.getPassword())};
+                        }).collect(Collectors.toCollection(ArrayList::new));
+
         loginProfilesEditor.setData(loginProfiles);
         if (loginProfilesEditor.doShow()) {
             ds.setLoginProfiles(loginProfilesEditor.getData());
@@ -1962,9 +1969,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void reloadLoginProfiles() {
         cbLoginProfile.removeAllItems();
-        for (LoginProfile loginProfile : ds.getLoginProfiles()) {
-            cbLoginProfile.addItem(loginProfile.getName());
-        }
+        ds.getLoginProfiles().forEach(pr -> cbLoginProfile.addItem(pr.getName()));
     }
 
     public enum TimeProfile {

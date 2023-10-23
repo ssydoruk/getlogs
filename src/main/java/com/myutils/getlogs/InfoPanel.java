@@ -122,9 +122,7 @@ public class InfoPanel extends StandardDialog {
     @Override
     public ButtonPanel createButtonPanel() {
         buttonPanel = new ButtonPanel();
-        for (JButton addButton : addButtons) {
-            buttonPanel.add(addButton);
-        }
+        addButtons.forEach(b->buttonPanel.add(b));
         JButton cancelButton = new JButton();
         buttonPanel.addButton(cancelButton);
 

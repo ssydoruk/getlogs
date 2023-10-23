@@ -18,9 +18,10 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RSyncReadProcessor {
+
     private final boolean zipDest;
-    private  Path logsDir;
-    private  Main indexer;
+    private Path logsDir;
+    private Main indexer;
     private String previousLine;
     private HashSet<String> filesToGet = new HashSet<>();
 
@@ -33,9 +34,9 @@ public class RSyncReadProcessor {
     private IProcessOutputRead stdoutReader = new IProcessOutputRead() {
         @Override
         public void lineRead(String s) {
-            if(StringUtils.isNotBlank(previousLine)){ // rsync prints to stdout name of file being transferred
+            if (StringUtils.isNotBlank(previousLine)) { // rsync prints to stdout name of file being transferred
                 String fileName = FilenameUtils.getName(previousLine);
-                if(StringUtils.isNotBlank(fileName) && filesToGet.contains(fileName)){
+                if (StringUtils.isNotBlank(fileName) && filesToGet.contains(fileName)) {
                     filesToProcess.add(fileName);
                 }
             }
@@ -46,47 +47,39 @@ public class RSyncReadProcessor {
     public RSyncReadProcessor(Path logsDir, Main indexer, ArrayList<OSFile> fileNames, boolean zipDest) {
         this.logsDir = logsDir;
         this.indexer = indexer;
-        this.zipDest=zipDest;
+        this.zipDest = zipDest;
 
-        for (OSFile f: fileNames){
-            filesToGet.add(FilenameUtils.getName( f.getFileName()));
-        }
+        fileNames.forEach(f->filesToGet.add(FilenameUtils.getName(f.getFileName())));
 
-        zipperThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String fileInfo;
-                while ((fileInfo = filesToProcess.poll()) != null || !threadExit.get()) {
-                    if(fileInfo!=null) {
-                        Path downloadedFile = Paths.get(logsDir.toString(), fileInfo);
-                        ArrayList<Path > zipNames = new ArrayList<>();
-                        if(Files.isReadable(downloadedFile)){
-                            if(zipDest) {
-                                FileUtils.zipFile(downloadedFile, destFile -> zipNames.add(destFile), s -> logger.info(s));
-                                if (indexer != null) {
-                                    for (Path f : zipNames) {
-                                        indexer.processAddedFile(f);
-                                    }
-                                }
+        zipperThread = new Thread(() -> {
+            String fileInfo;
+            while ((fileInfo = filesToProcess.poll()) != null || !threadExit.get()) {
+                if (fileInfo != null) {
+                    Path downloadedFile = Paths.get(logsDir.toString(), fileInfo);
+                    ArrayList<Path> zipNames = new ArrayList<>();
+                    if (Files.isReadable(downloadedFile)) {
+                        if (zipDest) {
+                            FileUtils.zipFile(downloadedFile, destFile -> zipNames.add(destFile), s -> logger.info(s));
+                            if (indexer != null) {
+                                zipNames.forEach(f->indexer.processAddedFile(f));
                             }
-                            else {
+                        } else {
+                            if (indexer != null) {
                                 indexer.processAddedFile(downloadedFile);
                             }
                         }
-                        else {
-                            logger.error("Cannot read file "+downloadedFile);
-                        }
+                    } else {
+                        logger.error("Cannot read file " + downloadedFile);
                     }
-                    else {
-                        try {
-                            Thread.sleep(200);
-                        } catch (InterruptedException e) {
-                            break;
-                        }
+                } else {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        break;
                     }
                 }
-                logger.info("done thread rsyncreader");
             }
+            logger.info("done thread rsyncreader");
         });
         zipperThread.start();
     }
@@ -104,5 +97,5 @@ public class RSyncReadProcessor {
         }
     }
 
-    ;
+;
 }

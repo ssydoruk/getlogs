@@ -187,9 +187,10 @@ public class RequestProgress extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     public void addProgress(List<String> chunks) {
-        for (String chunk : chunks) {
+        chunks.forEach(chunk -> {
             logger.trace("Displaying progress: " + chunk);
             taMessages.append(chunk + "\n");
         }
+        );
     }
 }

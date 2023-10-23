@@ -14,6 +14,10 @@ import static com.myutils.getlogs.GetLogs.logger;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import static java.util.Map.entry;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.*;
 import javax.swing.event.*;
 
@@ -83,15 +87,10 @@ public class StringListEdit extends JPanel {
 
     private void btChangePressed(ActionEvent e) {
 
-        ArrayList<EditableValue[]> values = new ArrayList<>();
-
-        for (Object entry : lmItems.toArray()) {
-            if (!entry.equals(CheckBoxList.ALL_ENTRY)) {
-                values.add(
-                        new EditableValue[]{new StringValue(entry.toString())});
-            }
-
-        }
+        ArrayList<EditableValue[]> values = Stream.of(lmItems.toArray())
+                .filter(entry -> !entry.equals(CheckBoxList.ALL_ENTRY))
+                .map(entry -> new EditableValue[]{new StringValue(entry.toString())})
+                .collect(Collectors.toCollection(ArrayList::new));
 
         getStringsEditor().setData(new Object[]{columnTitle},
                 values
@@ -173,12 +172,11 @@ public class StringListEdit extends JPanel {
 
     void setData(HashMap<String, Boolean> nameSuffixes) {
         if (nameSuffixes != null && !nameSuffixes.isEmpty()) {
-            ArrayList<Pair<String, Boolean>> ar = new ArrayList<>(nameSuffixes.size());
-            for (Map.Entry<String, Boolean> entry : nameSuffixes.entrySet()) {
-                String key = entry.getKey();
-                Boolean value = entry.getValue();
-                ar.add(new Pair(key, value));
-            }
+            ArrayList<Pair<String, Boolean>> ar
+                    = nameSuffixes.entrySet()
+                            .stream()
+                            .map(e -> new Pair<String, Boolean>(e.getKey(), e.getValue()))
+                            .collect(Collectors.toCollection(ArrayList::new));
             setData(ar);
         } else {
             setData((ArrayList<Pair<String, Boolean>>) null);
@@ -199,7 +197,7 @@ public class StringListEdit extends JPanel {
         clbItemsSelectionModel.clearSelection();
         lmItems.clear();
 
-        if (data != null) {
+        if (data != null && !data.isEmpty()) {
             ArrayList<ListEntry> selected = new ArrayList<>();
             for (Pair<String, Boolean> entry : data) {
                 ListEntry le = new ListEntry(entry.getKey(), entry.getValue());
@@ -214,9 +212,7 @@ public class StringListEdit extends JPanel {
             clbItems.addCheckBoxListSelectedValues(selected.toArray(new ListEntry[selected.size()]));
 
         }
-        for (ListSelectionListener listSelectionListener : listSelectionListeners) {
-            clbItemsSelectionModel.addListSelectionListener(listSelectionListener);
-        }
+        Stream.of(listSelectionListeners).forEach(e -> clbItemsSelectionModel.addListSelectionListener(e));
     }
 
     void noSelection() {

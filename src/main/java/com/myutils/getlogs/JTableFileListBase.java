@@ -17,6 +17,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -120,13 +122,12 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
                 }
             }
         }
-        ArrayList<String> sorted = new ArrayList<>(hsTmp.keySet());
-        Collections.sort(sorted);
-        ArrayList<Pair<String, Integer>> ret = new ArrayList<>(sorted.size());
-        for (String string : sorted) {
-            ret.add(new Pair(string, hsTmp.get(string)));
-        }
-        return ret;
+
+        Stream<Pair<String, Integer>> m1 = hsTmp.keySet()
+                .stream()
+                .sorted()
+                .map(s -> new Pair(s, hsTmp.get(s)));
+        return m1.collect(Collectors.toCollection(ArrayList::new));
     }
 
     private void applyFilter() {
@@ -568,7 +569,6 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
 
     }
 
-
     class InfoPanelUnique extends StandardDialog {
 
         private TableColumnAdjuster tca;
@@ -587,7 +587,6 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
         InfoPanelUnique(Window parent) {
             super(parent);
         }
-
 
         public int getCloseCause() {
             return closeCause;

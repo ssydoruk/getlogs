@@ -58,9 +58,7 @@ public final class AppProfile {
     public AppProfile(String newName, AppProfile appPr) {
         this(newName);
         setSelected(selected);
-        for (App app : appPr.getApps()) {
-            apps.add(new App(app));
-        }
+        appPr.getApps().forEach(app->apps.add(new App(app)));
     }
 
     public AppProfile(String Name) {

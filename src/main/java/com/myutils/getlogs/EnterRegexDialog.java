@@ -363,9 +363,7 @@ public class EnterRegexDialog extends javax.swing.JDialog {
         DefaultComboBoxModel model = (DefaultComboBoxModel) jcb.getModel();
         model.removeAllElements();
         if (!elements.isEmpty()) {
-            for (String regEx : elements) {
-                model.addElement(regEx);
-            }
+            elements.forEach(e->model.addElement(e));
             jcb.setSelectedIndex(0);
             jcb.getEditor().selectAll();
         }
