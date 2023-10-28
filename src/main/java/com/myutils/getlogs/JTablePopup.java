@@ -10,6 +10,7 @@ import Utils.ScreenInfo;
 import Utils.SystemClipboard;
 import com.myutils.logbrowser.inquirer.gui.TabResultDataModel;
 import com.myutils.logbrowser.inquirer.inquirer;
+import lombok.Getter;
 
 import static Utils.Util.matchFound;
 import static com.myutils.getlogs.EnterRegexDialog.RET_OK;
@@ -36,7 +37,13 @@ public abstract class JTablePopup extends JTable {
     protected final JTablePopupMenu popupMenu;
     protected int popupRow;
     protected int popupCol;
-    private EnterRegexDialog findDlg = null;
+
+    @Getter(lazy = true)
+    private final EnterRegexDialog findDlg = createFindDialog();
+
+    private EnterRegexDialog createFindDialog() {
+        return new EnterRegexDialog(null, true);
+    }
 
     public JTablePopup() {
         super();
@@ -140,32 +147,26 @@ public abstract class JTablePopup extends JTable {
     abstract void callingPopup();
 
     void showFindDialog() {
-        if (findDlg == null) {
-            findDlg = new EnterRegexDialog(null, true);
-        }
-        ScreenInfo.setVisible(this, findDlg, true);
-        if (findDlg.getReturnStatus() == RET_OK) {
-            nextFind(findDlg.isDownChecked());
+        ScreenInfo.setVisible(this, getFindDlg(), true);
+        if (getFindDlg().getReturnStatus() == RET_OK) {
+            nextFind(getFindDlg().isDownChecked());
         }
 
     }
 
     void findAndSelect() {
-        if (findDlg == null) {
-            findDlg = new EnterRegexDialog(null, true);
-        }
-        ScreenInfo.setVisible(this, findDlg, true);
-        if (findDlg.getReturnStatus() == RET_OK) {
+        ScreenInfo.setVisible(this, getFindDlg(), true);
+        if (getFindDlg().getReturnStatus() == RET_OK) {
 
             TableModel model = getModel();
             ListSelectionModel selectionModel1 = getSelectionModel();
 
             selectionModel1.clearSelection();
-            String search = findDlg.getSearch();
+            String search = getFindDlg().getSearch();
 
             if (search != null && !search.isEmpty()) {
-                boolean matchWholeWordSelected = findDlg.isMatchWholeWordSelected();
-                Pattern pt = (findDlg.isRegexChecked()) ? EnterRegexDialog.getRegex(search, matchWholeWordSelected) : null;
+                boolean matchWholeWordSelected = getFindDlg().isMatchWholeWordSelected();
+                Pattern pt = (getFindDlg().isRegexChecked()) ? EnterRegexDialog.getRegex(search, matchWholeWordSelected) : null;
                 search = search.toLowerCase();
 
                 for (int i = 0; i < getRowCount(); i++) {
@@ -182,13 +183,10 @@ public abstract class JTablePopup extends JTable {
     }
 
     protected EnterRegexDialog showFind() {
-        if (findDlg == null) {
-            findDlg = new EnterRegexDialog(null, true);
-        }
-        ScreenInfo.setVisible(this, findDlg, true);
+         ScreenInfo.setVisible(this, getFindDlg(), true);
 
-        if (findDlg.getReturnStatus() == RET_OK) {
-            return findDlg;
+        if (getFindDlg().getReturnStatus() == RET_OK) {
+            return getFindDlg();
         }
         return null;
     }
@@ -241,8 +239,8 @@ public abstract class JTablePopup extends JTable {
     }
 
     void nextFind(boolean isDown) {
-        findDlg.setDown(isDown);
-        Pair<Integer, Integer> cell = searchCell(findDlg, getPopupRow(), getPopupCol());
+        getFindDlg().setDown(isDown);
+        Pair<Integer, Integer> cell = searchCell(getFindDlg(), getPopupRow(), getPopupCol());
         logger.debug("found cell: " + cell);
         if (cell != null) {
             Integer thePopupRow = cell.getKey();

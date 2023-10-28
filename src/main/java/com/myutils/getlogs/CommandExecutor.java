@@ -5,23 +5,11 @@
  */
 package com.myutils.getlogs;
 
-import Utils.Pair;
-import Utils.UTCTimeRange;
-import Utils.UnixProcess.*;
-import com.jidesoft.dialog.StandardDialog;
-import com.myutils.logbrowser.common.ExecutionEnvironment;
-import com.myutils.logbrowser.indexer.Main;
-import org.apache.commons.io.Charsets;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.logging.log4j.Level;
-import org.apache.mina.util.Base64;
+import static Utils.SystemClipboard.getSystemClipboard;
+import static Utils.Util.rSyncAddClause;
+import static com.myutils.getlogs.GetLogs.logger;
 
-import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import java.awt.*;
+import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -31,8 +19,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -41,12 +34,35 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static Utils.SystemClipboard.getSystemClipboard;
-import static Utils.Util.rSyncAddClause;
-import static com.myutils.getlogs.GetLogs.logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.table.AbstractTableModel;
+
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.logging.log4j.Level;
+import org.apache.mina.util.Base64;
+
+import com.jidesoft.dialog.StandardDialog;
+import com.myutils.logbrowser.common.ExecutionEnvironment;
+import com.myutils.logbrowser.indexer.Main;
+
+import Utils.Pair;
+import Utils.UTCTimeRange;
+import Utils.UnixProcess.ExtProcess;
+import Utils.UnixProcess.IDoneFileAction;
+import Utils.UnixProcess.IProcessOutputRead;
+import Utils.UnixProcess.RemoteExecutionResult;
+import Utils.UnixProcess.SSHClientWrapper;
+import Utils.UnixProcess.ThreadedUnTarGZ;
+import lombok.Synchronized;
 
 /**
  * @author stepan_sydoruk
@@ -194,7 +210,8 @@ public final class CommandExecutor {
         );
     }
 
-    synchronized private void cancelExecutor() {
+	@Synchronized
+	private void cancelExecutor() {
         logger.debug("Cancelling...");
         boolean terminatedOK = true;
         shutdownExecutor(helperExecutor, "helper executor");
@@ -429,7 +446,8 @@ public final class CommandExecutor {
 
     }
 
-    private synchronized String connectWindowsShare(AppProfile appProfile, App ap) throws IncorrectPasswordException {
+	@Synchronized
+	private String connectWindowsShare(AppProfile appProfile, App ap) throws IncorrectPasswordException {
         Pair<String, String> winPath = getWinDrive(ap.getAppDir());
         String logPath = "\\\\" + ap.getHost() + "\\" + winPath.getKey();
         String ret = logPath + winPath.getValue();

@@ -5,21 +5,33 @@
  */
 package com.myutils.getlogs;
 
-import Utils.*;
-import Utils.swing.*;
-import com.jidesoft.swing.*;
-
 import static com.myutils.getlogs.GetLogs.logger;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import static java.util.Map.entry;
-import java.util.function.Function;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.swing.*;
-import javax.swing.event.*;
+
+import javax.swing.AbstractAction;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import com.jidesoft.swing.CheckBoxList;
+import com.jidesoft.swing.CheckBoxListSelectionModel;
+import com.jidesoft.swing.SearchableUtils;
+
+import Utils.Pair;
+import Utils.swing.EditableValue;
+import Utils.swing.StringValue;
 
 /**
  * @author stepan_sydoruk
