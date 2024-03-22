@@ -1,6 +1,6 @@
 {
   "OutputDir": "C:\\GCTI\\work\\ppe.0829",
-  "TimeProfile": "VALUE_FILES",
+  "TimeProfile": "REGEX",
   "DateSpec": "202208",
   "TimeSpec": "",
   "ActionCommand": "GET",
@@ -67,13 +67,6 @@
       "LoginProfile": "stisy7w3",
       "Apps": [
         {
-          "Name": "CHI_SipServer_Q2",
-          "AppDir": "sipserver",
-          "AppPrefix": "CHI_SipServer_Q2",
-          "IsWindows": false,
-          "Checked": false
-        },
-        {
           "Name": "GSO_SipServer_Q2",
           "AppDir": "sipserver",
           "AppPrefix": "",
@@ -81,16 +74,9 @@
           "Checked": false
         },
         {
-          "Name": "FTW_SipServer_Q1",
+          "Name": "ASH_SipServer_Q2",
           "AppDir": "sipserver",
-          "AppPrefix": "sipserver",
-          "IsWindows": false,
-          "Checked": false
-        },
-        {
-          "Name": "GSO_SipServer_Q1",
-          "AppDir": "sipserver",
-          "AppPrefix": "",
+          "AppPrefix": "ASH_SipServer_Q2",
           "IsWindows": false,
           "Checked": false
         },
@@ -109,9 +95,9 @@
           "Checked": true
         },
         {
-          "Name": "ASH_SipServer_Q2",
+          "Name": "GSO_SipServer_Q1",
           "AppDir": "sipserver",
-          "AppPrefix": "ASH_SipServer_Q2",
+          "AppPrefix": "",
           "IsWindows": false,
           "Checked": false
         },
@@ -121,6 +107,20 @@
           "AppPrefix": "ASH_SipServer_Q1",
           "IsWindows": false,
           "Checked": true
+        },
+        {
+          "Name": "CHI_SipServer_Q2",
+          "AppDir": "sipserver",
+          "AppPrefix": "CHI_SipServer_Q2",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "FTW_SipServer_Q1",
+          "AppDir": "sipserver",
+          "AppPrefix": "sipserver",
+          "IsWindows": false,
+          "Checked": false
         }
       ]
     },
@@ -141,15 +141,29 @@
       "LoginProfile": "stisy7w3",
       "Apps": [
         {
-          "Name": "CHI_PP_MCP_4",
-          "AppDir": "chi_mcp_4",
-          "AppPrefix": "mcp",
+          "Name": "CHI_ResourceManager_Q1",
+          "AppDir": "rm",
+          "AppPrefix": "rm",
           "IsWindows": false,
           "Checked": true
         },
         {
-          "Name": "CHI_PP_MCP_3",
-          "AppDir": "chi_mcp_3",
+          "Name": "ASH_PP_MCP_4",
+          "AppDir": "ash_mcp_4",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "ASH_ResourceManager_Q2",
+          "AppDir": "rm",
+          "AppPrefix": "rm",
+          "IsWindows": false,
+          "Checked": false
+        },
+        {
+          "Name": "CHI_PP_MCP_4",
+          "AppDir": "chi_mcp_4",
           "AppPrefix": "mcp",
           "IsWindows": false,
           "Checked": true
@@ -162,23 +176,16 @@
           "Checked": false
         },
         {
-          "Name": "CHI_ResourceManager_Q1",
-          "AppDir": "rm",
-          "AppPrefix": "rm",
-          "IsWindows": false,
-          "Checked": true
-        },
-        {
-          "Name": "ASH_ResourceManager_Q2",
-          "AppDir": "rm",
-          "AppPrefix": "rm",
+          "Name": "ASH_PP_MCP_3",
+          "AppDir": "ash_mcp_3",
+          "AppPrefix": "mcp",
           "IsWindows": false,
           "Checked": false
         },
         {
-          "Name": "CHI_ResourceManager_Q2",
-          "AppDir": "rm",
-          "AppPrefix": "rm",
+          "Name": "CHI_PP_MCP_3",
+          "AppDir": "chi_mcp_3",
+          "AppPrefix": "mcp",
           "IsWindows": false,
           "Checked": true
         },
@@ -190,25 +197,18 @@
           "Checked": true
         },
         {
-          "Name": "ASH_PP_MCP_3",
-          "AppDir": "ash_mcp_3",
-          "AppPrefix": "mcp",
-          "IsWindows": false,
-          "Checked": false
-        },
-        {
-          "Name": "ASH_PP_MCP_4",
-          "AppDir": "ash_mcp_4",
-          "AppPrefix": "mcp",
-          "IsWindows": false,
-          "Checked": false
-        },
-        {
           "Name": "ASH_PP_MCP_2",
           "AppDir": "ash_mcp_2",
           "AppPrefix": "mcp",
           "IsWindows": false,
           "Checked": false
+        },
+        {
+          "Name": "CHI_PP_MCP_2",
+          "AppDir": "chi_mcp_2",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
         },
         {
           "Name": "ASH_ResourceManager_Q1",
@@ -218,9 +218,9 @@
           "Checked": false
         },
         {
-          "Name": "CHI_PP_MCP_2",
-          "AppDir": "chi_mcp_2",
-          "AppPrefix": "mcp",
+          "Name": "CHI_ResourceManager_Q2",
+          "AppDir": "rm",
+          "AppPrefix": "rm",
           "IsWindows": false,
           "Checked": true
         }
@@ -251,11 +251,11 @@
           "Checked": false
         },
         {
-          "Name": "Email_URS",
-          "AppDir": "D:\\Genesys\\Logs\\Email_URS",
-          "AppPrefix": "Email_URS",
+          "Name": "FTW_URS_Q1",
+          "AppDir": "d$\\Logs\\FTW_URS_Q1",
+          "AppPrefix": "FTW_URS_Q1",
           "IsWindows": true,
-          "Checked": false
+          "Checked": true
         },
         {
           "Name": "Email_URS_Backup",
@@ -265,11 +265,11 @@
           "Checked": false
         },
         {
-          "Name": "FTW_URS_Q1",
-          "AppDir": "d$\\Logs\\FTW_URS_Q1",
-          "AppPrefix": "FTW_URS_Q1",
+          "Name": "Email_URS",
+          "AppDir": "D:\\Genesys\\Logs\\Email_URS",
+          "AppPrefix": "Email_URS",
           "IsWindows": true,
-          "Checked": true
+          "Checked": false
         }
       ]
     },
@@ -318,11 +318,11 @@
       "LoginProfile": "stisy7w3",
       "Apps": [
         {
-          "Name": "Interaction_Server_Proxy",
-          "AppDir": null,
-          "AppPrefix": "Interaction_Server_Proxy",
+          "Name": "InteractionServer",
+          "AppDir": "D:\\Genesys\\logs\\InteractionServer",
+          "AppPrefix": "IXNServer",
           "IsWindows": true,
-          "Checked": false
+          "Checked": true
         },
         {
           "Name": "InteractionServer_Backup",
@@ -332,11 +332,11 @@
           "Checked": false
         },
         {
-          "Name": "InteractionServer",
-          "AppDir": "D:\\Genesys\\logs\\InteractionServer",
-          "AppPrefix": "IXNServer",
+          "Name": "Interaction_Server_Proxy",
+          "AppDir": null,
+          "AppPrefix": "Interaction_Server_Proxy",
           "IsWindows": true,
-          "Checked": true
+          "Checked": false
         }
       ]
     },
@@ -355,13 +355,6 @@
       "LoginProfile": "stisy7w3",
       "Apps": [
         {
-          "Name": "CHI_ResourceManager_Q2",
-          "AppDir": null,
-          "AppPrefix": "CHI_ResourceManager_Q2",
-          "IsWindows": true,
-          "Checked": false
-        },
-        {
           "Name": "CHI_PP_MCP_3",
           "AppDir": null,
           "AppPrefix": "CHI_PP_MCP_3",
@@ -369,11 +362,25 @@
           "Checked": false
         },
         {
+          "Name": "ASH_PP_MCP_2",
+          "AppDir": "/opt/genesys/logs/ash_mcp_2/",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
           "Name": "CHI_PP_MCP_1",
           "AppDir": null,
           "AppPrefix": "CHI_PP_MCP_1",
           "IsWindows": true,
           "Checked": false
+        },
+        {
+          "Name": "ASH_PP_MCP_3",
+          "AppDir": "/opt/genesys/logs/ash_mcp_3",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
         },
         {
           "Name": "ASH_ResourceManager_Q1",
@@ -390,25 +397,18 @@
           "Checked": false
         },
         {
-          "Name": "ASH_ResourceManager_Q2",
+          "Name": "ASH_PP_MCP_4",
+          "AppDir": "/opt/genesys/logs/ash_mcp_4",
+          "AppPrefix": "mcp",
+          "IsWindows": false,
+          "Checked": true
+        },
+        {
+          "Name": "CHI_PP_MCP_4",
           "AppDir": null,
-          "AppPrefix": "ASH_ResourceManager_Q2",
+          "AppPrefix": "CHI_PP_MCP_4",
           "IsWindows": true,
           "Checked": false
-        },
-        {
-          "Name": "ASH_PP_MCP_2",
-          "AppDir": "/opt/genesys/logs/ash_mcp_2/",
-          "AppPrefix": "mcp",
-          "IsWindows": false,
-          "Checked": true
-        },
-        {
-          "Name": "ASH_PP_MCP_3",
-          "AppDir": "/opt/genesys/logs/ash_mcp_3",
-          "AppPrefix": "mcp",
-          "IsWindows": false,
-          "Checked": true
         },
         {
           "Name": "CHI_PP_MCP_2",
@@ -418,11 +418,11 @@
           "Checked": false
         },
         {
-          "Name": "ASH_PP_MCP_4",
-          "AppDir": "/opt/genesys/logs/ash_mcp_4",
-          "AppPrefix": "mcp",
-          "IsWindows": false,
-          "Checked": true
+          "Name": "CHI_ResourceManager_Q2",
+          "AppDir": null,
+          "AppPrefix": "CHI_ResourceManager_Q2",
+          "IsWindows": true,
+          "Checked": false
         },
         {
           "Name": "ASH_PP_MCP_1",
@@ -432,9 +432,9 @@
           "Checked": true
         },
         {
-          "Name": "CHI_PP_MCP_4",
+          "Name": "ASH_ResourceManager_Q2",
           "AppDir": null,
-          "AppPrefix": "CHI_PP_MCP_4",
+          "AppPrefix": "ASH_ResourceManager_Q2",
           "IsWindows": true,
           "Checked": false
         }
@@ -462,37 +462,16 @@
           "Checked": false
         },
         {
-          "Name": "GP_WFM_Stat_Server",
+          "Name": "WFM_StatServer",
           "AppDir": null,
-          "AppPrefix": "GP_WFM_Stat_Server",
+          "AppPrefix": "WFM_StatServer",
           "IsWindows": true,
           "Checked": false
         },
         {
-          "Name": "WFM_StatServer_2",
+          "Name": "GSO_Routing_StatServer",
           "AppDir": null,
-          "AppPrefix": "WFM_StatServer_2",
-          "IsWindows": true,
-          "Checked": false
-        },
-        {
-          "Name": "PS_WFM_StatServer",
-          "AppDir": null,
-          "AppPrefix": "PS_WFM_StatServer",
-          "IsWindows": true,
-          "Checked": false
-        },
-        {
-          "Name": "ActiveSync_Stat_B",
-          "AppDir": null,
-          "AppPrefix": "ActiveSync_Stat_B",
-          "IsWindows": true,
-          "Checked": false
-        },
-        {
-          "Name": "ActiveSync_Stat_P",
-          "AppDir": null,
-          "AppPrefix": "ActiveSync_Stat_P",
+          "AppPrefix": "GSO_Routing_StatServer",
           "IsWindows": true,
           "Checked": false
         },
@@ -504,6 +483,13 @@
           "Checked": true
         },
         {
+          "Name": "OMA_PulseStatServer",
+          "AppDir": null,
+          "AppPrefix": "OMA_PulseStatServer",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
           "Name": "OMA_PluseStatServer_Backup",
           "AppDir": null,
           "AppPrefix": "OMA_PluseStatServer_Backup",
@@ -511,30 +497,37 @@
           "Checked": false
         },
         {
-          "Name": "WFM_StatServer",
+          "Name": "WFM_StatServer_2",
           "AppDir": null,
-          "AppPrefix": "WFM_StatServer",
+          "AppPrefix": "WFM_StatServer_2",
           "IsWindows": true,
           "Checked": false
         },
         {
-          "Name": "GSO_PulseStatServer",
+          "Name": "ActiveSync_Stat_B",
           "AppDir": null,
-          "AppPrefix": "GSO_PulseStatServer",
+          "AppPrefix": "ActiveSync_Stat_B",
           "IsWindows": true,
           "Checked": false
         },
         {
-          "Name": "Email StatServer",
-          "AppDir": "D:\\Genesys\\Logs\\EmailStatServer",
-          "AppPrefix": "EmailStatServer",
+          "Name": "FTW_PulseStatServer_Backup",
+          "AppDir": null,
+          "AppPrefix": "FTW_PulseStatServer_Backup",
           "IsWindows": true,
-          "Checked": true
+          "Checked": false
         },
         {
-          "Name": "GSO_Routing_StatServer",
+          "Name": "ActiveSync_Stat_P",
           "AppDir": null,
-          "AppPrefix": "GSO_Routing_StatServer",
+          "AppPrefix": "ActiveSync_Stat_P",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "GP_WFM_Stat_Server",
+          "AppDir": null,
+          "AppPrefix": "GP_WFM_Stat_Server",
           "IsWindows": true,
           "Checked": false
         },
@@ -546,11 +539,11 @@
           "Checked": false
         },
         {
-          "Name": "Email StatServer_Backup",
-          "AppDir": null,
-          "AppPrefix": "Email StatServer_Backup",
+          "Name": "Email StatServer",
+          "AppDir": "D:\\Genesys\\Logs\\EmailStatServer",
+          "AppPrefix": "EmailStatServer",
           "IsWindows": true,
-          "Checked": false
+          "Checked": true
         },
         {
           "Name": "FTW_Routing_StatServer",
@@ -560,16 +553,23 @@
           "Checked": false
         },
         {
-          "Name": "OMA_PulseStatServer",
+          "Name": "GSO_PulseStatServer",
           "AppDir": null,
-          "AppPrefix": "OMA_PulseStatServer",
+          "AppPrefix": "GSO_PulseStatServer",
           "IsWindows": true,
           "Checked": false
         },
         {
-          "Name": "FTW_PulseStatServer_Backup",
+          "Name": "PS_WFM_StatServer",
           "AppDir": null,
-          "AppPrefix": "FTW_PulseStatServer_Backup",
+          "AppPrefix": "PS_WFM_StatServer",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "Email StatServer_Backup",
+          "AppDir": null,
+          "AppPrefix": "Email StatServer_Backup",
           "IsWindows": true,
           "Checked": false
         }
@@ -590,9 +590,9 @@
       "LoginProfile": "stisy7w3",
       "Apps": [
         {
-          "Name": "GSO_ORS_Q2",
+          "Name": "FTW_ORS_Q1",
           "AppDir": "/opt/genesys/logs/ors",
-          "AppPrefix": "GSO_ORS_Q2",
+          "AppPrefix": "FTW_ORS_Q1",
           "IsWindows": false,
           "Checked": true
         },
@@ -604,16 +604,16 @@
           "Checked": true
         },
         {
-          "Name": "FTW_ORS_Q2",
+          "Name": "GSO_ORS_Q2",
           "AppDir": "/opt/genesys/logs/ors",
-          "AppPrefix": "FTW_ORS_Q2",
+          "AppPrefix": "GSO_ORS_Q2",
           "IsWindows": false,
           "Checked": true
         },
         {
-          "Name": "FTW_ORS_Q1",
+          "Name": "FTW_ORS_Q2",
           "AppDir": "/opt/genesys/logs/ors",
-          "AppPrefix": "FTW_ORS_Q1",
+          "AppPrefix": "FTW_ORS_Q2",
           "IsWindows": false,
           "Checked": true
         }
@@ -641,23 +641,9 @@
           "Checked": false
         },
         {
-          "Name": "ConfigProxy_GSO_Backup",
-          "AppDir": null,
-          "AppPrefix": "ConfigProxy_GSO_Backup",
-          "IsWindows": true,
-          "Checked": false
-        },
-        {
-          "Name": "ConfigProxy_FTW_Backup",
-          "AppDir": null,
-          "AppPrefix": "ConfigProxy_FTW_Backup",
-          "IsWindows": true,
-          "Checked": false
-        },
-        {
-          "Name": "ConfigProxy_GSO",
-          "AppDir": null,
-          "AppPrefix": "ConfigProxy_GSO",
+          "Name": "confserv",
+          "AppDir": "D:\\Logs\\ConfigServer",
+          "AppPrefix": "Confserv_85",
           "IsWindows": true,
           "Checked": false
         },
@@ -669,6 +655,13 @@
           "Checked": true
         },
         {
+          "Name": "ConfigProxy_FTW_Backup",
+          "AppDir": null,
+          "AppPrefix": "ConfigProxy_FTW_Backup",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
           "Name": "Confserv_backup",
           "AppDir": null,
           "AppPrefix": "Confserv_backup",
@@ -676,9 +669,9 @@
           "Checked": false
         },
         {
-          "Name": "confserv",
-          "AppDir": "D:\\Logs\\ConfigServer",
-          "AppPrefix": "Confserv_85",
+          "Name": "ConfigProxy_GSO_Backup",
+          "AppDir": null,
+          "AppPrefix": "ConfigProxy_GSO_Backup",
           "IsWindows": true,
           "Checked": false
         },
@@ -686,6 +679,13 @@
           "Name": "ICON_Config_FTW",
           "AppDir": null,
           "AppPrefix": "ICON_Config_FTW",
+          "IsWindows": true,
+          "Checked": false
+        },
+        {
+          "Name": "ConfigProxy_GSO",
+          "AppDir": null,
+          "AppPrefix": "ConfigProxy_GSO",
           "IsWindows": true,
           "Checked": false
         }
@@ -706,18 +706,18 @@
       "LoginProfile": "stisy7w3",
       "Apps": [
         {
+          "Name": "FTW_TServer",
+          "AppDir": "D:\\Genesys\\Log\\FTW_TServer",
+          "AppPrefix": "FTW_TServer",
+          "IsWindows": true,
+          "Checked": true
+        },
+        {
           "Name": "GSO_TServer_Backup",
           "AppDir": null,
           "AppPrefix": "GSO_TServer_Backup",
           "IsWindows": true,
           "Checked": false
-        },
-        {
-          "Name": "GSO_TServer",
-          "AppDir": "D:\\GCTI\\Logs\\GSO_TServer",
-          "AppPrefix": "GSO_TServer",
-          "IsWindows": true,
-          "Checked": true
         },
         {
           "Name": "CHI_TServer",
@@ -727,9 +727,9 @@
           "Checked": false
         },
         {
-          "Name": "FTW_TServer",
-          "AppDir": "D:\\Genesys\\Log\\FTW_TServer",
-          "AppPrefix": "FTW_TServer",
+          "Name": "GSO_TServer",
+          "AppDir": "D:\\GCTI\\Logs\\GSO_TServer",
+          "AppPrefix": "GSO_TServer",
           "IsWindows": true,
           "Checked": true
         },
@@ -807,6 +807,6 @@
   "Prod": true,
   "Hours": "3",
   "RangeStart": 1556262000000,
-  "RangeEnd": 1556336674000,
+  "RangeEnd": 1556336676000,
   "MaxThreads": 4
 }

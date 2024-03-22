@@ -8,26 +8,21 @@ package com.myutils.getlogs;
 import Utils.Pair;
 import Utils.ScreenInfo;
 import Utils.SystemClipboard;
-import com.myutils.logbrowser.inquirer.gui.TabResultDataModel;
-import com.myutils.logbrowser.inquirer.inquirer;
 import lombok.Getter;
 
-import static Utils.Util.matchFound;
-import static com.myutils.getlogs.EnterRegexDialog.RET_OK;
-import static com.myutils.getlogs.GetLogs.logger;
-
-import java.awt.Point;
-import java.awt.Rectangle;
+import javax.swing.*;
+import javax.swing.table.TableModel;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.HashSet;
 import java.util.regex.Pattern;
-import javax.swing.*;
 
+import static Utils.Util.matchFound;
+import static com.myutils.getlogs.EnterRegexDialog.RET_OK;
+import static com.myutils.getlogs.GetLogs.logger;
 import static javax.swing.JOptionPane.INFORMATION_MESSAGE;
-
-import javax.swing.table.TableModel;
 
 /**
  * @author ssydoruk
@@ -147,7 +142,7 @@ public abstract class JTablePopup extends JTable {
     abstract void callingPopup();
 
     void showFindDialog() {
-        ScreenInfo.setVisible(this, getFindDlg(), true);
+        ScreenInfo.setVisible(SwingUtilities.windowForComponent(this), getFindDlg(), true);
         if (getFindDlg().getReturnStatus() == RET_OK) {
             nextFind(getFindDlg().isDownChecked());
         }
@@ -155,7 +150,7 @@ public abstract class JTablePopup extends JTable {
     }
 
     void findAndSelect() {
-        ScreenInfo.setVisible(this, getFindDlg(), true);
+        ScreenInfo.setVisible(SwingUtilities.windowForComponent(this), getFindDlg(), true);
         if (getFindDlg().getReturnStatus() == RET_OK) {
 
             TableModel model = getModel();
@@ -183,7 +178,7 @@ public abstract class JTablePopup extends JTable {
     }
 
     protected EnterRegexDialog showFind() {
-         ScreenInfo.setVisible(this, getFindDlg(), true);
+         ScreenInfo.setVisible(SwingUtilities.windowForComponent(this), getFindDlg(), true);
 
         if (getFindDlg().getReturnStatus() == RET_OK) {
             return getFindDlg();

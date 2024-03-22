@@ -9,6 +9,7 @@ import Utils.*;
 import Utils.UnixProcess.*;
 import static Utils.Util.rSyncAddClause;
 import com.google.gson.*;
+import com.jidesoft.plaf.LookAndFeelFactory;
 import com.myutils.getlogs.LogFiles.LogFile;
 import java.io.*;
 import java.lang.reflect.*;
@@ -1105,6 +1106,7 @@ public class GetLogs {
         java.awt.EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
+                LookAndFeelFactory.installJideExtension();
 
                 SettingsForm dlg = new SettingsForm(ds, sGUIProfile);
                 dlg.getCe().setSettingsFile(sGUIProfile);
