@@ -532,7 +532,7 @@ public class GetLogs {
                 return;
             }
         } else {
-            theAppHost = new Pair(appHost, null);
+            theAppHost = new Pair<>(appHost, null);
         }
 
         StringBuilder logsDir = new StringBuilder();

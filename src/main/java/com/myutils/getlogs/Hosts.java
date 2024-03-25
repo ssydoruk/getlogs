@@ -11,13 +11,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.HashMap;
+
+import org.apache.commons.csv.*;
+
 
 /**
  *
  * @author stepansydoruk class contain hosts configuration as read from file.
  *
- * Lines in the file: host,app[,applicationDirectory]
+ *         Lines in the file: host,app[,applicationDirectory]
  *
  */
 class Hosts extends HashMap<String, HostAppdir> {
@@ -25,6 +29,16 @@ class Hosts extends HashMap<String, HostAppdir> {
     Hosts(String fileName) throws FileNotFoundException, IOException {
         File file = new File(fileName);
 
+        try (Reader r = new BufferedReader(new FileReader(fileName))) {
+            CSVParser parser = CSVParser.parse(r, CSVFormat.EXCEL.builder()
+            .setSkipHeaderRecord(true).setHeader()
+            .setQuote('\"').build());
+        
+            for (CSVRecord csvRecord : parser) {
+                put(csvRecord.get("application"), new HostAppdir(csvRecord.get("host"), csvRecord.get("logpath")));
+            }                
+        }
+        
         int cnt;
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             logger.debug("Reading host/app settings from file [" + fileName + "]");
