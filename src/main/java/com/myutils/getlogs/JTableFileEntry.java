@@ -69,7 +69,7 @@ class JTableFileEntry {
                 return file.getSize();
 
             case 6:
-                return String.format("%.2f", new Double(file.getSize()) / 1024 / 1024);
+                return String.format("%.2f", Double.valueOf(file.getSize()) / 1024 / 1024);
 
         }
         return null;

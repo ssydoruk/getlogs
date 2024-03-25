@@ -59,6 +59,8 @@ public class DownloadSettings {
     private String hours;
     private long rangeStart;
     private long rangeEnd;
+    
+    private AnsibleSettings ansible;
 
     private int maxThreads;
 
@@ -78,6 +80,10 @@ public class DownloadSettings {
         this.lfmtHostInstances = new ArrayList();
         this.appProfiles = new ArrayList<>();
         this.loginProfiles = new ArrayList<>();
+        this.ansible = new AnsibleSettings(
+                "./getfiles.py ls --inventory ${INV}/invUAT_all.yml --csvdir /Users/ssydoruk/work/getfiles/csv --files $FILES",
+                " ./getfiles.py csv --destdir $DESTDIR  --inventory ${INV}/invUAT_all.yml $CSVFILES", 
+                "./getfiles.py last --destdir $DESTDIR --inventory ${INV}/invUAT_all.yml --files $FILES");
         lfmt = true;
         prod = true;
         rangeStart = 0;

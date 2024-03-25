@@ -210,8 +210,8 @@ public final class CommandExecutor {
         );
     }
 
-	@Synchronized
-	private void cancelExecutor() {
+    @Synchronized
+    private void cancelExecutor() {
         logger.debug("Cancelling...");
         boolean terminatedOK = true;
         shutdownExecutor(helperExecutor, "helper executor");
@@ -438,16 +438,20 @@ public final class CommandExecutor {
             ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException, ConfigException {
 //        prepareZips(appProfile, ap, theAppHost, logsDir, null);
 
-        if (ap.isIsWindows()) {
-            return executeLSWin(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+        if (GetLogs.isbUseAnsible()) {
+            return executeLSAnsible(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         } else {
-            return executeLSLinux(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+            if (ap.isIsWindows()) {
+                return executeLSWin(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+            } else {
+                return executeLSLinux(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+            }
         }
 
     }
 
-	@Synchronized
-	private String connectWindowsShare(AppProfile appProfile, App ap) throws IncorrectPasswordException {
+    @Synchronized
+    private String connectWindowsShare(AppProfile appProfile, App ap) throws IncorrectPasswordException {
         Pair<String, String> winPath = getWinDrive(ap.getAppDir());
         String logPath = "\\\\" + ap.getHost() + "\\" + winPath.getKey();
         String ret = logPath + winPath.getValue();
@@ -1030,7 +1034,7 @@ public final class CommandExecutor {
                 .append(" -cz ").append(fileListForTar);
         try {
             ThreadedUnTarGZ stdoutReader = new ThreadedUnTarGZ(FilenameUtils.concat(ds.getOutputDir(), ap.getName()),
-                     ds.isZipDest());
+                    ds.isZipDest());
             stdoutReader.setProgressProc(new IProcessOutputRead() {
                 @Override
                 public void lineRead(String s) {
@@ -1280,12 +1284,16 @@ public final class CommandExecutor {
 
     private void executeDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
             ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
-        if (ap.isIsWindows()) {
-            executeWinDownload(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
-        } else if (GetLogs.isbIsSSHJava()) {
-            executeSSHDownload(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+        if (GetLogs.isbUseAnsible()) {
+            executeAnsibleDownload(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         } else {
-            executeRSync(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+            if (ap.isIsWindows()) {
+                executeWinDownload(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+            } else if (GetLogs.isbIsSSHJava()) {
+                executeSSHDownload(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+            } else {
+                executeRSync(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+            }
         }
     }
 
@@ -1962,6 +1970,16 @@ public final class CommandExecutor {
 
     }
 
+    private ArrayList<JTableFileEntry> executeLSAnsible(AppProfile appProfile, 
+            App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean lfmt, boolean lcaLog) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    private void executeAnsibleDownload(AppProfile appProfile, 
+            App ap, HostAppdir theAppHost, String logsDir, ArrayList<OSFile> fileNameClause, boolean lfmt, boolean lcaLog) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
     @FunctionalInterface
     interface IFileTransferAction {
 
@@ -2404,7 +2422,7 @@ public final class CommandExecutor {
                 setStartingLatch(startingLatch);
                 setStartingTask(() -> {
                     executor.execute(new CallbackThreadLatched(startingLatch, () -> {
-                        beforeActions.forEach(a->{
+                        beforeActions.forEach(a -> {
                             try {
                                 executeCommand(a);
                             } catch (IOException | InterruptedException ex) {

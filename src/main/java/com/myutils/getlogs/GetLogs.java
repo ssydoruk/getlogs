@@ -67,6 +67,7 @@ public class GetLogs {
     private static Option optArchives;
     private static Option optGUIProfile;
     private static Option optIsCloud;
+    private static Option optIsAnsible;
     private static Option optIsSSHJava;
     private static Option optListFiles;
     private static Option optUseRSync;
@@ -111,7 +112,12 @@ public class GetLogs {
     private static boolean bIgnoreZIP;
     private static boolean bSQLPragma;
     private static Option optParserThreads;
-    private static int iMaxThreads=0;
+    private static int iMaxThreads = 0;
+    private static boolean bUseAnsible = false;
+
+    public static boolean isbUseAnsible() {
+        return bUseAnsible;
+    }
 
     public static String getsXMLCfg() {
         return sXMLCfg;
@@ -202,6 +208,14 @@ public class GetLogs {
                 .longOpt("is-cloud")
                 .build();
         options.addOption(optIsCloud);
+
+        optIsAnsible = Option.builder()
+                .hasArg(false)
+                .required(false)
+                .desc("flag to use ansible as underlying tool")
+                .longOpt("useansible")
+                .build();
+        options.addOption(optIsAnsible);
 
         optIsSSHJava = Option.builder()
                 .hasArg(false)
@@ -357,7 +371,6 @@ public class GetLogs {
                 .build();
         options.addOption(optParserThreads);
 
-
         optAlias = Option.builder("a")
                 .hasArg(true)
                 .required(false)
@@ -470,18 +483,17 @@ public class GetLogs {
         sshOptions = (String) cmd.getParsedOptionValue(optSSHOptions.getLongOpt());
         sUserName = (String) cmd.getParsedOptionValue(optUserName.getLongOpt());
         bIsSSHJava = cmd.hasOption(optIsSSHJava.getLongOpt());
-        sXMLCfg= (String) cmd.getParsedOptionValue(optXMLCfg.getLongOpt());
+        sXMLCfg = (String) cmd.getParsedOptionValue(optXMLCfg.getLongOpt());
         String s = (String) cmd.getParsedOptionValue(optParserThreads.getLongOpt());
-        if(StringUtils.isNotEmpty(s)){
+        if (StringUtils.isNotEmpty(s)) {
             iMaxThreads = Integer.parseInt(s);
         }
-        sDBAlias= (String) cmd.getParsedOptionValue(optAlias.getLongOpt());
-        sDBName= (String) cmd.getParsedOptionValue(optDBName.getLongOpt());
-        sLogsBaseDir= (String) cmd.getParsedOptionValue(optLogsBaseDir.getLongOpt());
+        sDBAlias = (String) cmd.getParsedOptionValue(optAlias.getLongOpt());
+        sDBName = (String) cmd.getParsedOptionValue(optDBName.getLongOpt());
+        sLogsBaseDir = (String) cmd.getParsedOptionValue(optLogsBaseDir.getLongOpt());
         bTDiffParse = cmd.hasOption(optTDiffParse.getLongOpt());
         bIgnoreZIP = cmd.hasOption(optIgnoreZIP.getLongOpt());
         bSQLPragma = cmd.hasOption(optSQLPragma.getLongOpt());
-    
 
         sRSyncUserName = (String) cmd.getParsedOptionValue(optRSyncUserName.getLongOpt());
 
@@ -498,8 +510,6 @@ public class GetLogs {
 
         if (sGUIProfile != null && !sGUIProfile.isEmpty()) {
             processGUI(options);
-        } else {
-            processCMDLine(options, cmd);
         }
 
         logger.info("allDone");
@@ -523,7 +533,7 @@ public class GetLogs {
     }
 
     public static void processApp(String ap, Options options) throws IOException, InterruptedException {
-        Pair<String, String> theAppHost = null;
+        HostAppdir theAppHost = null;
 
         if (appHost == null || appHost.isEmpty()) {
             theAppHost = hosts.get(ap); // first for one application only
@@ -532,7 +542,7 @@ public class GetLogs {
                 return;
             }
         } else {
-            theAppHost = new Pair<>(appHost, null);
+            theAppHost = new HostAppdir(appHost, null);
         }
 
         StringBuilder logsDir = new StringBuilder();
@@ -562,19 +572,19 @@ public class GetLogs {
 
         switch (execCommand) {
             case GREP:
-                executeGrep(ap, theAppHost.getKey(), logsDir, fileNameClause);
+                executeGrep(ap, theAppHost.getHost(), logsDir, fileNameClause);
                 break;
 
             case GET:
-                executeGet(ap, theAppHost.getKey(), logsDir, fileNameClause, useRSync);
+                executeGet(ap, theAppHost.getHost(), logsDir, fileNameClause, useRSync);
                 break;
 
             case LS:
-                executeLS(ap, theAppHost.getKey(), logsDir, fileNameClause);
+                executeLS(ap, theAppHost.getHost(), logsDir, fileNameClause);
                 break;
 
             case GREPGET:
-                executeGrepGet(ap, theAppHost.getKey(), logsDir, fileNameClause);
+                executeGrepGet(ap, theAppHost.getHost(), logsDir, fileNameClause);
                 break;
 
         }
@@ -603,25 +613,25 @@ public class GetLogs {
             logger = LogManager.getLogger("logdownloader");
         } else {
 
-        if(0==1) {
-            ConfigurationBuilder<BuiltConfiguration> builder
-                    = ConfigurationBuilderFactory.newConfigurationBuilder();
+            if (0 == 1) {
+                ConfigurationBuilder<BuiltConfiguration> builder
+                        = ConfigurationBuilderFactory.newConfigurationBuilder();
 
-            builder.addProperty("LogFileName", sLoaderLog1);
+                builder.addProperty("LogFileName", sLoaderLog1);
 
-            AppenderComponentBuilder console
-                    = builder.newAppender("stdout", "Console");
+                AppenderComponentBuilder console
+                        = builder.newAppender("stdout", "Console");
 
-            ComponentBuilder triggeringPolicies = builder.newComponent("Policies")
-                    .addComponent(builder.newComponent("OnStartupTriggeringPolicy"))
-                    .addComponent(builder.newComponent("SizeBasedTriggeringPolicy")
-                            .addAttribute("size", "20M"));
+                ComponentBuilder triggeringPolicies = builder.newComponent("Policies")
+                        .addComponent(builder.newComponent("OnStartupTriggeringPolicy"))
+                        .addComponent(builder.newComponent("SizeBasedTriggeringPolicy")
+                                .addAttribute("size", "20M"));
 
-            AppenderComponentBuilder rollingFile
-                    = builder.newAppender("rolling", "RollingFile");
-            rollingFile.addAttribute("fileName", "${LogFileName}.log1");
-            rollingFile.addAttribute("filePattern", "${LogFileName}-%d{yyyyMMdd-HHmmss_SSS}.log1");
-            rollingFile.addComponent(triggeringPolicies);
+                AppenderComponentBuilder rollingFile
+                        = builder.newAppender("rolling", "RollingFile");
+                rollingFile.addAttribute("fileName", "${LogFileName}.log1");
+                rollingFile.addAttribute("filePattern", "${LogFileName}-%d{yyyyMMdd-HHmmss_SSS}.log1");
+                rollingFile.addComponent(triggeringPolicies);
 
 //        FilterComponentBuilder flow = builder.newFilter(
 //                "MarkerFilter",
@@ -629,28 +639,28 @@ public class GetLogs {
 //                Filter.Result.DENY);
 //        flow.addAttribute("marker", "FLOW");
 //        console.add(flow);
-            LayoutComponentBuilder standard
-                    = builder.newLayout("PatternLayout");
-            standard.addAttribute("pattern", "%d %5.5p %30.30C [%t] %m%n");
+                LayoutComponentBuilder standard
+                        = builder.newLayout("PatternLayout");
+                standard.addAttribute("pattern", "%d %5.5p %30.30C [%t] %m%n");
 
-            console.add(standard);
-            rollingFile.add(standard);
+                console.add(standard);
+                rollingFile.add(standard);
 
-            builder.add(console);
-            builder.add(rollingFile);
+                builder.add(console);
+                builder.add(rollingFile);
 //        Appender appe = MyCustomAppenderImpl.createAppender("appe1", null, null, null);
 //        AppenderComponentBuilder newAppender = builder.newAppender("appe", "appe1");
 //        builder.add(appe);
 
-            RootLoggerComponentBuilder rootLogger
-                    = builder.newRootLogger(level);
-            rootLogger.add(builder.newAppenderRef("stdout"));
-            rootLogger.add(builder.newAppenderRef("rolling"));
-            builder.add(rootLogger);
+                RootLoggerComponentBuilder rootLogger
+                        = builder.newRootLogger(level);
+                rootLogger.add(builder.newAppenderRef("stdout"));
+                rootLogger.add(builder.newAppenderRef("rolling"));
+                builder.add(rootLogger);
 
-            Configurator.initialize(builder.build());
+                Configurator.initialize(builder.build());
 //        System.out.println(builder.toXmlConfiguration());
-        }
+            }
             logger.info("log initialized");
         }
 //        LogWindow.initCustomLogger();
@@ -1113,75 +1123,6 @@ public class GetLogs {
                 dlg.doShow();
             }
         });
-    }
-
-    private static void processCMDLine(Options options, CommandLine cmd) throws IOException, InterruptedException, ParseException {
-        sArchives = (String) cmd.getParsedOptionValue(optArchives.getLongOpt());
-        if (sArchives != null && !sArchives.isEmpty()) {
-            logFiles = new LogFiles(sArchives);
-        }
-        apps = new ArrayList<>();
-        String[] split = appsOpt.split(",");
-        apps.addAll(Arrays.asList(split));
-
-        bIsCloud = cmd.hasOption(optIsCloud.getLongOpt());
-        bIsSSHJava = cmd.hasOption(optIsSSHJava.getLongOpt());
-
-        appHost = (String) cmd.getParsedOptionValue(optForceHost.getLongOpt());
-
-        dateSpec = (String) cmd.getParsedOptionValue(optDay.getOpt());
-        timeSpec = (String) cmd.getParsedOptionValue(optTime.getOpt());
-
-        execCmd = (String) cmd.getParsedOptionValue(optCmd.getOpt());
-
-        execCommand = checkCmdCommand(execCmd, options);
-
-        appsOpt = (String) cmd.getParsedOptionValue(optApp.getOpt());
-
-        listFiles = cmd.hasOption(optListFiles.getLongOpt());
-        useRSync = cmd.hasOption(optUseRSync.getLongOpt());
-
-        lfmtInstance = (String) cmd.getParsedOptionValue(optLFMTInstance.getLongOpt());
-        lfmtHost = (String) cmd.getParsedOptionValue(optIsLFMT.getOpt());
-
-        if ((lfmtInstance != null && !lfmtInstance.isEmpty()
-                && (lfmtHost == null || lfmtHost.isEmpty()))
-                || ((lfmtHost != null && !lfmtHost.isEmpty())
-                && (lfmtInstance == null || lfmtInstance.isEmpty()))) {
-            logger.error("If LFMT to be used, then both options " + optLFMTInstance.getLongOpt() + " and " + optIsLFMT.getLongOpt()
-                    + " are to be specified");
-            System.exit(1);
-        }
-
-        sGrep = (String) cmd.getParsedOptionValue(optGrep.getLongOpt());
-
-        //---------------------parameters processing done-----------------
-        if (logFiles != null) {
-            for (Map.Entry<String, ArrayList<LogFiles.LogFile>> object : logFiles.entrySet()) {
-                processLogFiles(object.getKey(), object.getValue());
-            }
-        } else {
-            DownloadSettings ds = new DownloadSettings();
-            AppProfile addProfile = ds.addProfile("default");
-            DownloadSettings.LFMTHostInstance theLFMT = new DownloadSettings.LFMTHostInstance(lfmtHost, lfmtInstance, "/Logs");
-            ds.setOutputDir(sLogDirectory);
-            ds.setProd((lfmtHost == null));
-            ds.setLfmt((lfmtHost != null));
-            ds.setCMDDate(dateSpec);
-            ds.setCMDTime(timeSpec);
-
-            addProfile.setIsGenesysName(!bIsCloud);
-            addProfile.setLFMT(theLFMT);
-            for (String app : apps) {
-                App theApp = addProfile.addApp(app, null);
-                theApp.setChecked(true);
-                processApp(app, options);
-            }
-            CommandExecutor ce = new CommandExecutor(false, ds);
-
-            ce.executeCmd(null);
-        }
-
     }
 
     static void exitHelp(String string) {

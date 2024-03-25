@@ -11,18 +11,42 @@ import Utils.Pair;
  *
  * @author stepan_sydoruk
  */
-public class HostAppdir extends Pair<String, String> {
+public class HostAppdir {
 
-    public HostAppdir(String key, String value) {
-        super(key, value);
+    private String host;
+    private String appDir;
+    private String becomeUser;
+    private String defaultRx;
+
+    public HostAppdir(String _host, String _appDir, String _becomeUser, String _defaultRx) {
+        this(_host, _appDir, _becomeUser);
+        defaultRx = _defaultRx;
+    }
+
+    public String getBecomeUser() {
+        return becomeUser;
+    }
+
+    public String getDefaultRx() {
+        return defaultRx;
+    }
+
+    public HostAppdir(String _host, String _appDir, String _becomeUser) {
+        this(_host, _appDir);
+        becomeUser = _becomeUser;
+    }
+
+    public HostAppdir(String _host, String _appDir) {
+        host = _host;
+        appDir = _appDir;
     }
 
     public String getHost() {
-        return getKey();
+        return host;
     }
 
     public String getAppDir() {
-        return getValue();
+        return appDir;
     }
 
     @Override
