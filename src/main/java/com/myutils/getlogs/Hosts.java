@@ -39,15 +39,12 @@ class Hosts extends HashMap<String, HostAppdir> {
                 LinkedHashMap<String, Object> load;
                 load = yaml.load(r);
                 load.forEach((type, apps) -> {
-                    ((LinkedHashMap<String, LinkedHashMap<String, Map>>) apps).get("hosts").forEach((app, vals) -> {
-                        put(app, new HostAppdir(vals.get("ansible_host").toString(), vals.get("dir").toString(),
-                                vals.get("ansible_become_user").toString(),
-                                vals.get("defaultrx").toString()
-                        ));
-                    });
+                   ((LinkedHashMap<String, LinkedHashMap<String, Map>>) apps).get("hosts").forEach((app, vals)-> {
+                       put(app, new HostAppdir(vals.get("ansible_host").toString(), vals.get("dir").toString()));
+                   });
                 });
             }
-
+            
         } else { // reading as csv
             try (Reader r = new BufferedReader(new FileReader(fileName))) {
                 CSVParser parser = CSVParser.parse(r, CSVFormat.EXCEL.builder()
