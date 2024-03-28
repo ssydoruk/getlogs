@@ -18,6 +18,12 @@ import org.apache.commons.lang3.StringUtils;
 public class DownloadSettings {
 
     private String outputDir;
+    private String csvDir;
+
+    public String getCsvDir() {
+        return csvDir;
+    }
+
     private SettingsPanel.TimeProfile timeProfile;
     private String dateSpec;
     private String timeSpec;
@@ -61,6 +67,10 @@ public class DownloadSettings {
     private long rangeEnd;
     
     private AnsibleSettings ansible;
+
+    public AnsibleSettings getAnsible() {
+        return ansible;
+    }
 
     private int maxThreads;
 

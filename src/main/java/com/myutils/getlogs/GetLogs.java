@@ -483,6 +483,7 @@ public class GetLogs {
         sshOptions = (String) cmd.getParsedOptionValue(optSSHOptions.getLongOpt());
         sUserName = (String) cmd.getParsedOptionValue(optUserName.getLongOpt());
         bIsSSHJava = cmd.hasOption(optIsSSHJava.getLongOpt());
+        bUseAnsible= cmd.hasOption(optIsAnsible.getLongOpt());
         sXMLCfg = (String) cmd.getParsedOptionValue(optXMLCfg.getLongOpt());
         String s = (String) cmd.getParsedOptionValue(optParserThreads.getLongOpt());
         if (StringUtils.isNotEmpty(s)) {

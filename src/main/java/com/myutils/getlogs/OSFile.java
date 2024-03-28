@@ -12,6 +12,10 @@ public class OSFile {
         this(fileName, size, null);
     }
 
+    public OSFile(String fileName) {
+        this(fileName, -1);
+    }
+
     public OSFile(String fileName, long size, FileTime creationTime) {
         this.fileName = fileName;
         this.size = size;
