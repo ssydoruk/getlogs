@@ -1874,7 +1874,7 @@ public final class CommandExecutor {
         sshParams.addAll(Arrays.asList(StringUtils.split(cmd)));
         procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, true, true));
         procSSH.setStdOutFilter(s -> {
-            return StringUtils.substringAfter(s, "� INFO �");
+            return StringUtils.substringAfter(s, "- INFO -");
         });
         procSSH.startProcess(true, true);
 
