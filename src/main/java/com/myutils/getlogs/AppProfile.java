@@ -28,6 +28,7 @@ public final class AppProfile {
     private String logDirectory;
     private String logFileNameBase;
     private String loginProfile;
+    
 
     public String getLoginProfile() {
         return loginProfile;

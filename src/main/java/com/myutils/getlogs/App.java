@@ -18,6 +18,24 @@ class App implements Comparable {
     private String appDir;
     private String appPrefix;
     private boolean isWindows;
+    private String becomeUser;
+    private String defaultRx;
+
+    public String getBecomeUser() {
+        return becomeUser;
+    }
+
+    public void setBecomeUser(String becomeUser) {
+        this.becomeUser = becomeUser;
+    }
+
+    public String getDefaultRx() {
+        return defaultRx;
+    }
+
+    public void setDefaultRx(String defaultRx) {
+        this.defaultRx = defaultRx;
+    }
 
     public boolean isIsWindows() {
         return isWindows;
