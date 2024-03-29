@@ -49,6 +49,9 @@ public class SettingsPanel extends javax.swing.JPanel {
     private SettingsForm dlg;
     private final String profileAllTitleBase;
     private int appIdx = -1;
+    private final JPanel jpRegexString;
+    private final JTextField tfEditRegex;
+    final SimpleDateFormat simpleDateFormat;
     
     public DownloadSettings getDs() {
         return ds;
@@ -61,6 +64,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         initComponents();
         dtRange = new TDateRange(true);
         jpRange.add(dtRange);
+        simpleDateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        
+        tfEditRegex = new JTextField();
+        jpRegexString = new JPanel();
+        jpRegexString.setLayout(new BoxLayout(jpRegexString, BoxLayout.LINE_AXIS));
+        jpRegexString.add(tfEditRegex);
         
         TitledBorder border = (TitledBorder) jpProfileBase.getBorder();
         profileTitleBase = border.getTitle();
@@ -1750,7 +1759,8 @@ public class SettingsPanel extends javax.swing.JPanel {
                 break;
             
             case REGEX_TODAY:
-                jpToAdd = jpRegEx;
+                jpToAdd = jpRegexString;
+                tfEditRegex.setText( simpleDateFormat.format(Calendar.getInstance().getTime())+"_\\d{3}");
                 break;
             
             case RANGE:
