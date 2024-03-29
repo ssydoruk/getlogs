@@ -69,6 +69,7 @@ import com.myutils.logbrowser.indexer.Main;
 import Utils.Pair;
 import Utils.UTCTimeRange;
 import Utils.UnixProcess.ExtProcess;
+import Utils.UnixProcess.ExtProcess.ExecutionResult;
 import Utils.UnixProcess.IDoneFileAction;
 import Utils.UnixProcess.IProcessOutputRead;
 import Utils.UnixProcess.RemoteExecutionResult;
@@ -984,7 +985,7 @@ public final class CommandExecutor {
         String[] split = StringUtils.split(key);
         Stream.of(split).forEach(s -> cmdParams.add(replacePostActionVars(s)));
         logMessage(Level.INFO, logPrefix + " Executing ["
-                + StringUtils.join(cmdParams, " ") + "]");
+                + StringUtils.join(cmdParams, " ") + "] +waitTermination:" + waitTermination);
         // logger.trace("executing: " + rsyncParams);
         ExtProcess proc = extProcessManager.addProcess(new ExtProcessFinishing(cmdParams, false, true, logPrefix));
         proc.startProcess(saveStdOut, saveStdErr);
@@ -994,7 +995,11 @@ public final class CommandExecutor {
             extProcessManager.doneProcess(proc);
             return executionResult;
         } else {
-            return new ExtProcess.ExecutionResult(0, null, null);
+            ExecutionResult procResult = new ExtProcess.ExecutionResult(0, null, null);
+            logger.debug(logPrefix + " process terminated without waiting for result, result: " + procResult.getExitCode());
+            extProcessManager.doneProcess(proc);
+
+            return procResult;
         }
 
     }
@@ -1290,7 +1295,7 @@ public final class CommandExecutor {
         }
         return null;
     }
- 
+
     private String getLocalFileName(String fileName, AppProfile appProfile, App ap) {
         Matcher matcher = Pattern.compile(mFileNameRX).matcher(fileName);
         if (matcher.find()) {
@@ -2570,7 +2575,8 @@ public final class CommandExecutor {
                     executor.execute(new CallbackThreadLatched(startingLatch, () -> {
                         beforeActions.forEach(a -> {
                             try {
-                                executeCommand(a);
+                                executeCommand(a, !StringUtils.startsWith(a, "nohup"));
+                                logger.info("------------------Task done");
                             } catch (IOException | InterruptedException ex) {
                                 Logger.getLogger(CommandExecutor.class.getName()).log(java.util.logging.Level.SEVERE,
                                         null, ex);
