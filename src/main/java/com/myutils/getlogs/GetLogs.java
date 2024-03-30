@@ -486,7 +486,14 @@ public class GetLogs {
 //        hosts = new Hosts(hostAppFile);
         hosts = new Hosts(inventory);
 
-        sLogDirectory = (String) cmd.getParsedOptionValue(optLogDirectory.getLongOpt());
+        HashMap<String, String> hh = new HashMap<>();
+        hh.put("key", "val");
+        hh.put("key1", "val1 dd");
+
+
+
+
+            sLogDirectory = (String) cmd.getParsedOptionValue(optLogDirectory.getLongOpt());
         if (sLogDirectory == null || sLogDirectory.isEmpty()) {
             sLogDirectory = ".";
         } else {
