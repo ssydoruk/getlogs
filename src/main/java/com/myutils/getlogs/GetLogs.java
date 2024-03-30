@@ -176,7 +176,7 @@ public class GetLogs {
     }
 
     public static void main(String[] args) throws Exception {
-// set the name of the application menu item
+        // set the name of the application menu item
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "WikiTeX");
 
         options = new Options();
@@ -483,27 +483,10 @@ public class GetLogs {
         }
 
         inventory = HostsInventory.load(new File(hostAppFile));
-//        hosts = new Hosts(hostAppFile);
+        // hosts = new Hosts(hostAppFile);
         hosts = new Hosts(inventory);
 
-        HashMap<String, String> hh = new HashMap<>();
-        hh.put("key", "val");
-        hh.put("key1", "val1 dd");
-
-
-        Gson gson = new GsonBuilder()
-                .serializeNulls()
-                .setDateFormat(DateFormat.LONG)
-//                .setFieldNamingPolicy(FieldNamingPolicy.)
-                .setVersion(1.0)
-                .create();
-
-        StringWriter sss = new StringWriter();
-            gson.toJson(hh, sss);
-            System.out.println(sss.getBuffer());
-System.exit(0);
-
-            sLogDirectory = (String) cmd.getParsedOptionValue(optLogDirectory.getLongOpt());
+        sLogDirectory = (String) cmd.getParsedOptionValue(optLogDirectory.getLongOpt());
         if (sLogDirectory == null || sLogDirectory.isEmpty()) {
             sLogDirectory = ".";
         } else {
@@ -532,11 +515,11 @@ System.exit(0);
 
         prodBaseDir = (String) cmd.getParsedOptionValue(optProdBaseDir.getLongOpt());
 
-//</editor-fold>
-        //--------------------------------------
+        // </editor-fold>
+        // --------------------------------------
         if (logger.isDebugEnabled()) {
             logger.debug("Current directory:" + getWD());
-//            Runtime.getRuntime().exec("ls -l");
+            // Runtime.getRuntime().exec("ls -l");
         }
 
         sGUIProfile = (String) cmd.getParsedOptionValue(optGUIProfile.getLongOpt());
@@ -609,33 +592,30 @@ System.exit(0);
         } else {
 
             if (0 == 1) {
-                ConfigurationBuilder<BuiltConfiguration> builder
-                        = ConfigurationBuilderFactory.newConfigurationBuilder();
+                ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory
+                        .newConfigurationBuilder();
 
                 builder.addProperty("LogFileName", sLoaderLog1);
 
-                AppenderComponentBuilder console
-                        = builder.newAppender("stdout", "Console");
+                AppenderComponentBuilder console = builder.newAppender("stdout", "Console");
 
                 ComponentBuilder triggeringPolicies = builder.newComponent("Policies")
                         .addComponent(builder.newComponent("OnStartupTriggeringPolicy"))
                         .addComponent(builder.newComponent("SizeBasedTriggeringPolicy")
                                 .addAttribute("size", "20M"));
 
-                AppenderComponentBuilder rollingFile
-                        = builder.newAppender("rolling", "RollingFile");
+                AppenderComponentBuilder rollingFile = builder.newAppender("rolling", "RollingFile");
                 rollingFile.addAttribute("fileName", "${LogFileName}.log1");
                 rollingFile.addAttribute("filePattern", "${LogFileName}-%d{yyyyMMdd-HHmmss_SSS}.log1");
                 rollingFile.addComponent(triggeringPolicies);
 
-//        FilterComponentBuilder flow = builder.newFilter(
-//                "MarkerFilter",
-//                Filter.Result.ACCEPT,
-//                Filter.Result.DENY);
-//        flow.addAttribute("marker", "FLOW");
-//        console.add(flow);
-                LayoutComponentBuilder standard
-                        = builder.newLayout("PatternLayout");
+                // FilterComponentBuilder flow = builder.newFilter(
+                // "MarkerFilter",
+                // Filter.Result.ACCEPT,
+                // Filter.Result.DENY);
+                // flow.addAttribute("marker", "FLOW");
+                // console.add(flow);
+                LayoutComponentBuilder standard = builder.newLayout("PatternLayout");
                 standard.addAttribute("pattern", "%d %5.5p %30.30C [%t] %m%n");
 
                 console.add(standard);
@@ -643,22 +623,22 @@ System.exit(0);
 
                 builder.add(console);
                 builder.add(rollingFile);
-//        Appender appe = MyCustomAppenderImpl.createAppender("appe1", null, null, null);
-//        AppenderComponentBuilder newAppender = builder.newAppender("appe", "appe1");
-//        builder.add(appe);
+                // Appender appe = MyCustomAppenderImpl.createAppender("appe1", null, null,
+                // null);
+                // AppenderComponentBuilder newAppender = builder.newAppender("appe", "appe1");
+                // builder.add(appe);
 
-                RootLoggerComponentBuilder rootLogger
-                        = builder.newRootLogger(level);
+                RootLoggerComponentBuilder rootLogger = builder.newRootLogger(level);
                 rootLogger.add(builder.newAppenderRef("stdout"));
                 rootLogger.add(builder.newAppenderRef("rolling"));
                 builder.add(rootLogger);
 
                 Configurator.initialize(builder.build());
-//        System.out.println(builder.toXmlConfiguration());
+                // System.out.println(builder.toXmlConfiguration());
             }
             logger.info("log initialized");
         }
-//        LogWindow.initCustomLogger();
+        // LogWindow.initCustomLogger();
 
     }
 
@@ -720,14 +700,15 @@ System.exit(0);
         return currentRelativePath.toAbsolutePath().toString();
     }
 
-    private static void executeGet(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause, boolean useRSync1) throws IOException, InterruptedException {
+    private static void executeGet(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause,
+            boolean useRSync1) throws IOException, InterruptedException {
         if (useRSync1) {
             executeRSync(ap, theAppHost, logsDir, rSyncAddClause(fileNameClause.toString()));
         } else {
             ArrayList<String> sshParams = new ArrayList<>();
             sshParams.add("ssh");
             if (sshOptions != null) {
-                sshParams.addAll(Arrays.asList(new String[]{"-l", sshOptions}));
+                sshParams.addAll(Arrays.asList(new String[] { "-l", sshOptions }));
             }
 
             if (lfmtHost != null) {
@@ -780,11 +761,12 @@ System.exit(0);
 
     }
 
-    private static void executeLS(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
+    private static void executeLS(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause)
+            throws IOException, InterruptedException {
         ArrayList<String> sshParams = new ArrayList<>();
         sshParams.add("ssh");
         if (sshOptions != null) {
-            sshParams.addAll(Arrays.asList(new String[]{"-l", sshOptions}));
+            sshParams.addAll(Arrays.asList(new String[] { "-l", sshOptions }));
         }
 
         sshParams.add(((lfmtHost != null)) ? lfmtHost : theAppHost);
@@ -818,47 +800,49 @@ System.exit(0);
 
     }
 
-    private static ArrayList<String> executeGrep(String ap, String appHost1, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
-//        ArrayList<String> sshParams = new ArrayList<>();
-//        sshParams.add("ssh");
-//        if (sshOptions != null) {
-//            sshParams.addAll(Arrays.asList(new String[]{"-l", sshOptions}));
-//        }
-//        sshParams.add(((lfmtHost != null)) ? lfmtHost : appHost1);
-//
-//        StringBuilder fileClause = new StringBuilder();
-////        fileClause.append("\\(");
-//
-//        if (fileNameClause.length() > 0) {
-//            fileClause.append(" -name ")
-//                    .append(fileNameClause);
-//        }
-//
-////        fileClause.append(" \\) ");
-//        StringBuilder sshCmd = new StringBuilder();
-//
-//        sshCmd.append("cd ").append(logsDir).append("; ");
-//        sshCmd.append("find -maxdepth 1 ")
-//                .append(ap)
-//                .append(" ")
-//                .append(fileClause);
-//        sshCmd.append(" ");
-////        sshCmd.append("\\( ")
-////                .append(" -iname *.log -execdir grep Trc {} \\; -true ");
-////        sshCmd.append("\\)");
-////        sshCmd.append(" -o ");
-//        ArrayList<String> matchedFiles = new ArrayList<>();
-//        for (Map.Entry<String, String> extUnp : extUnpacker.entrySet()) {
-//            for (String matchedFile : execGrep(extUnp.getKey(), extUnp.getValue(), sshParams, sshCmd, sGrep)) {
-//                if (matchedFile.startsWith(filePrefix)) {
-//                    matchedFiles.add(matchedFile.substring(filePrefix.length()));
-//                } else {
-//                    logger.error("Not file name: [" + matchedFile + "]Ï");
-//                }
-//            }
-//
-//        }
-//        return matchedFiles;
+    private static ArrayList<String> executeGrep(String ap, String appHost1, StringBuilder logsDir,
+            StringBuilder fileNameClause) throws IOException, InterruptedException {
+        // ArrayList<String> sshParams = new ArrayList<>();
+        // sshParams.add("ssh");
+        // if (sshOptions != null) {
+        // sshParams.addAll(Arrays.asList(new String[]{"-l", sshOptions}));
+        // }
+        // sshParams.add(((lfmtHost != null)) ? lfmtHost : appHost1);
+        //
+        // StringBuilder fileClause = new StringBuilder();
+        //// fileClause.append("\\(");
+        //
+        // if (fileNameClause.length() > 0) {
+        // fileClause.append(" -name ")
+        // .append(fileNameClause);
+        // }
+        //
+        //// fileClause.append(" \\) ");
+        // StringBuilder sshCmd = new StringBuilder();
+        //
+        // sshCmd.append("cd ").append(logsDir).append("; ");
+        // sshCmd.append("find -maxdepth 1 ")
+        // .append(ap)
+        // .append(" ")
+        // .append(fileClause);
+        // sshCmd.append(" ");
+        //// sshCmd.append("\\( ")
+        //// .append(" -iname *.log -execdir grep Trc {} \\; -true ");
+        //// sshCmd.append("\\)");
+        //// sshCmd.append(" -o ");
+        // ArrayList<String> matchedFiles = new ArrayList<>();
+        // for (Map.Entry<String, String> extUnp : extUnpacker.entrySet()) {
+        // for (String matchedFile : execGrep(extUnp.getKey(), extUnp.getValue(),
+        // sshParams, sshCmd, sGrep)) {
+        // if (matchedFile.startsWith(filePrefix)) {
+        // matchedFiles.add(matchedFile.substring(filePrefix.length()));
+        // } else {
+        // logger.error("Not file name: [" + matchedFile + "]Ï");
+        // }
+        // }
+        //
+        // }
+        // return matchedFiles;
         return null;
     }
 
@@ -870,25 +854,27 @@ System.exit(0);
     }
 
     public static ArrayList<OSFile> execGrep(String ext, String unp, ArrayList<String> sshParams, StringBuilder sshCmd,
-                                             String regex) throws IOException, InterruptedException {
-//        StringBuilder grepCmd = new StringBuilder();
-//        grepCmd.append(sshCmd)
-//                .append(" -iname ").append(ext)
-//                .append(" | xargs bash -c '")
-//                //                .append("echo bash is here; echo params: $*; ")
-//                .append("for f in $*; do if ")
-//                .append(unp)
-//                .append("| egrep -q \"").append(regex).append("\"; then echo ").append(filePrefix).append("${f}; fi; done'" + "");
-//        ArrayList<String> paramsRun = new ArrayList<>(sshParams);
-//        paramsRun.add(grepCmd.toString());
-//        ExtProcess procSSH = new ExtProcess(paramsRun);
-//
-//        procSSH.startProcess(true, true);
-//        return procSSH.getSTDOut();
+            String regex) throws IOException, InterruptedException {
+        // StringBuilder grepCmd = new StringBuilder();
+        // grepCmd.append(sshCmd)
+        // .append(" -iname ").append(ext)
+        // .append(" | xargs bash -c '")
+        // // .append("echo bash is here; echo params: $*; ")
+        // .append("for f in $*; do if ")
+        // .append(unp)
+        // .append("| egrep -q \"").append(regex).append("\"; then echo
+        // ").append(filePrefix).append("${f}; fi; done'" + "");
+        // ArrayList<String> paramsRun = new ArrayList<>(sshParams);
+        // paramsRun.add(grepCmd.toString());
+        // ExtProcess procSSH = new ExtProcess(paramsRun);
+        //
+        // procSSH.startProcess(true, true);
+        // return procSSH.getSTDOut();
         return null;
     }
 
-    private static void executeGrepGet(String ap, String theAppHost, StringBuilder logsDir, StringBuilder fileNameClause) throws IOException, InterruptedException {
+    private static void executeGrepGet(String ap, String theAppHost, StringBuilder logsDir,
+            StringBuilder fileNameClause) throws IOException, InterruptedException {
         ArrayList<String> executeGrep = executeGrep(ap, theAppHost, logsDir, fileNameClause);
         ArrayList<String> rSyncFiles = new ArrayList<>();
         for (String fileName : executeGrep) {
@@ -898,7 +884,8 @@ System.exit(0);
         executeRSync(ap, theAppHost, logsDir, rSyncFiles);
     }
 
-    private static void executeRSync(String ap, String theAppHost, StringBuilder logsDir, ArrayList<String> fileNameClause) throws IOException, InterruptedException {
+    private static void executeRSync(String ap, String theAppHost, StringBuilder logsDir,
+            ArrayList<String> fileNameClause) throws IOException, InterruptedException {
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
         rsyncParams.add("-avz");
@@ -923,22 +910,23 @@ System.exit(0);
         procRSync.waitFor();
     }
 
-    private static void processLogFiles(String app, ArrayList<LogFile> listLogFiles) throws IOException, InterruptedException {
+    private static void processLogFiles(String app, ArrayList<LogFile> listLogFiles)
+            throws IOException, InterruptedException {
         if (!listLogFiles.isEmpty()) {
             ArrayList<String> rsyncParams = new ArrayList<>();
             rsyncParams.add("/usr/local/bin/rsync");
-//            rsyncParams.add("--dry-run");
+            // rsyncParams.add("--dry-run");
             rsyncParams.add("-avz");
             rsyncParams.add("-e");
             rsyncParams.add("ssh");
-//        rsyncParams.add("--files-from");
-//        rsyncParams.add(sArchives);
-//        rsyncParams.add("-f");
-//        rsyncParams.add("- **");
+            // rsyncParams.add("--files-from");
+            // rsyncParams.add(sArchives);
+            // rsyncParams.add("-f");
+            // rsyncParams.add("- **");
             StringBuilder buf = new StringBuilder();
             buf.append(sshOptions).append("@").append((lfmtHost != null ? lfmtHost : "")).append(":")
-                    .append(listLogFiles.get(0).getLfmtName()) //                .append(" :").append(logFiles.get(1));
-            //                .append("/*")
+                    .append(listLogFiles.get(0).getLfmtName()) // .append(" :").append(logFiles.get(1));
+            // .append("/*")
             ;
             rsyncParams.add(buf.toString());
 
@@ -1016,7 +1004,7 @@ System.exit(0);
 
         StringBuilder ret = new StringBuilder();
         Matcher m;
-//        int digitsSpecified = countDigits(dateSpec);
+        // int digitsSpecified = countDigits(dateSpec);
         int pos = 0;
         int datePos = 0;
         if (tp == SettingsPanel.TimeProfile.REGEX && dateSpec1 != null && !dateSpec1.isEmpty()) {
@@ -1056,7 +1044,7 @@ System.exit(0);
         }
         ret.append("*.log*");
         logger.debug(ret);
-//        System.exit(0);
+        // System.exit(0);
         return ret.toString();
 
     }
@@ -1065,11 +1053,12 @@ System.exit(0);
         return (datePos == 4 || datePos == 6);
     }
 
-    private static void processGUI(Options options) throws IOException, InterruptedException, InvocationTargetException {
+    private static void processGUI(Options options)
+            throws IOException, InterruptedException, InvocationTargetException {
         File f = new File(sGUIProfile);
         DownloadSettings ds = null;
         if (f.exists()) {
-//                Gson gson = new Gson();
+            // Gson gson = new Gson();
 
             Gson gson = new GsonBuilder()
                     .enableComplexMapKeySerialization()
@@ -1104,8 +1093,8 @@ System.exit(0);
         try {
             UIManager.setLookAndFeel(
                     UIManager.getCrossPlatformLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-                 UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                | UnsupportedLookAndFeelException ex) {
             logger.fatal("Cannot load look and feel", ex);
         }
 

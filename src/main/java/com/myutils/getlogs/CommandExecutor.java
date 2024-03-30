@@ -63,6 +63,8 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.mina.util.Base64;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.jidesoft.dialog.StandardDialog;
 import com.myutils.logbrowser.common.ExecutionEnvironment;
 import com.myutils.logbrowser.indexer.Main;
@@ -2068,7 +2070,13 @@ public final class CommandExecutor {
 
         tsk.execute();
 
+       
     }
+
+    private static final Pattern cliCracker = Pattern
+    .compile(
+       "[^\\s]*\"(\\\\+\"|[^\"])*?\"|[^\\s]*'(\\\\+'|[^'])*?'|(\\\\\\s|[^\\s])+",
+       Pattern.MULTILINE);
 
     private ArrayList<JTableFileEntry> executeLSAnsible(AppProfile appProfile,
             App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT,
@@ -2080,16 +2088,35 @@ public final class CommandExecutor {
         File tmpYml = File.createTempFile("tmp", ".yml", Paths.get(GetLogs.getTmpDir()).toFile());
 
         try {
+            HashMap<String, Object> hh = new HashMap<>();
+            hh.put("destdir", ds.getOutputDir());
 
-            cmd = StringUtils.replace(cmd, "${FILES}",
-                    (ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES) ? "--files " + ds.getHours()
-                            : "");
+            if(ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES) 
+                hh.put("lastfiles", ds.getHours().toString());
+
+            ArrayList<String> hostList = new ArrayList<>(1);
+            hostList.add(ap.getName());
+            hh.put("target_hosts", hostList);
+
             HostsInventory h = new HostsInventory();
             h.addHost(ap.getName(), theAppHost);
             h.dump(tmpYml);
             cmd = StringUtils.replace(cmd, "${INVENTORY}", tmpYml.getAbsolutePath());
-            sshParams.addAll(Arrays.asList(StringUtils.split(cmd)));
-            sshParams.add(ap.getName());
+
+            Gson gson = new GsonBuilder()
+                    .serializeNulls()
+                    .setVersion(1.0)
+                    .create();
+            StringWriter sss = new StringWriter();
+            gson.toJson(hh, sss);
+
+            cmd = StringUtils.replace(cmd, "${VARS}", "-e \""+sss.toString()+"\"");
+            
+            Matcher m=cliCracker.matcher(cmd);
+            while(m.find()){
+                sshParams.add(m.group(0));
+                logger.info(m.group(0));
+            }
             procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, true, true));
             procSSH.setStdOutFilter(s -> {
                 return (StringUtils.defaultIfEmpty(StringUtils.substringAfter(s, "— INFO —"), s));
