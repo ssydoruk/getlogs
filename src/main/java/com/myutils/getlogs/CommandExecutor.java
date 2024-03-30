@@ -364,7 +364,7 @@ public final class CommandExecutor {
     }
 
     protected SavedSearchStorage getStorage(AppProfile appProfile, App ap, HostAppdir theAppHost,
-                                            String logsDir, boolean lfmt, boolean lcaLog) {
+            String logsDir, boolean lfmt, boolean lcaLog) {
         SavedSearchStorage _ret = new SavedSearchStorage(appProfile, ap, theAppHost, logsDir, lfmt, lcaLog);
 
         synchronized (savedSearch) {
@@ -385,7 +385,7 @@ public final class CommandExecutor {
     }
 
     private String remoteSSHCmd(AppProfile appProfile, App ap, String logsDir, ArrayList<String> fileNameClause,
-                                boolean lcaLog, boolean isLFMT) {
+            boolean lcaLog, boolean isLFMT) {
         StringBuilder sshCmd = new StringBuilder();
 
         // this is to play with permissions.
@@ -450,7 +450,7 @@ public final class CommandExecutor {
     }
 
     private ArrayList<JTableFileEntry> executeLS(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-                                                 ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog)
+            ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog)
             throws IOException, InterruptedException, ConfigException {
         // prepareZips(appProfile, ap, theAppHost, logsDir, null);
 
@@ -580,7 +580,7 @@ public final class CommandExecutor {
      *
      * @param logDir
      * @return Pair of [1st letter to lower case with $ attached], [Path without
-     * dir]
+     *         dir]
      */
     private Pair<String, String> getWinDrive(String logDir) {
         if (StringUtils.isNotEmpty(logDir) && logDir.length() > 1
@@ -594,7 +594,7 @@ public final class CommandExecutor {
     }
 
     private ArrayList<JTableFileEntry> executeLSWin(AppProfile appProfile, App ap, HostAppdir theAppHost,
-                                                    String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog)
+            String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog)
             throws IOException, InterruptedException {
 
         String logPath = null;
@@ -639,7 +639,7 @@ public final class CommandExecutor {
 
                         if (entryNameSuffix.getKey().isEmpty()
                                 || (entryNameSuffix.getKey().equals(".")
-                                || fileName.contains(ap.getName().toLowerCase()))
+                                        || fileName.contains(ap.getName().toLowerCase()))
                                 || (fileName.contains(entryNameSuffix.getKey().toLowerCase()))) {
                             if (rxDateTime == null || rxDateTime.reset(fileName).find()) {
                                 BasicFileAttributes basicFileAttributes = Files.readAttributes(f.toPath(),
@@ -707,7 +707,7 @@ public final class CommandExecutor {
     }
 
     private ArrayList<JTableFileEntry> executeLSLinux(AppProfile appProfile, App ap, HostAppdir theAppHost,
-                                                      String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog)
+            String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog)
             throws ConfigException, IOException, InterruptedException {
 
         String remoteCmd = remoteSSHCmd(appProfile, ap, logsDir, fileNameClause, lcaLog, isLFMT);
@@ -794,9 +794,9 @@ public final class CommandExecutor {
                             }
                         }
                         logger.debug("file [" + fileName + "] range: " + timeRange.toString()
-                                // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
-                                // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
-                                // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
+                        // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
+                        // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
+                        // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
                                 + " shouldadd: " + shouldAdd);
                         if (shouldAdd) {
                             lsFiles.add(new JTableFileEntry(appProfile,
@@ -856,7 +856,7 @@ public final class CommandExecutor {
             }
             try {
                 ExtProcess.ExecutionResult cmdOuts = executeCommand(
-                        StringUtils.join(new String[]{ds.getStatusScript(), StringUtils.join(appNames, " ")}, " "),
+                        StringUtils.join(new String[] { ds.getStatusScript(), StringUtils.join(appNames, " ") }, " "),
                         true, true, true);
                 logger.log(Level.INFO, StringUtils.join(cmdOuts));
                 if (cmdOuts != null) {
@@ -970,18 +970,18 @@ public final class CommandExecutor {
     }
 
     private ExtProcess.ExecutionResult executeCommand(String key, boolean saveStdOut,
-                                                      boolean saveStdErr, AppProfile appProfile, App ap) throws IOException, InterruptedException {
+            boolean saveStdErr, AppProfile appProfile, App ap) throws IOException, InterruptedException {
         return executeCommand(key, saveStdOut, saveStdErr, getLogPrefix(appProfile, ap), true);
     }
 
     private ExtProcess.ExecutionResult executeCommand(String key, boolean saveStdOut,
-                                                      boolean saveStdErr, boolean waitTermination) throws IOException, InterruptedException {
+            boolean saveStdErr, boolean waitTermination) throws IOException, InterruptedException {
         return executeCommand(key, saveStdOut, saveStdErr, "", waitTermination);
     }
 
     private ExtProcess.ExecutionResult executeCommand(String key, boolean saveStdOut,
-                                                      boolean saveStdErr, String logPrefix,
-                                                      boolean waitTermination) throws IOException, InterruptedException {
+            boolean saveStdErr, String logPrefix,
+            boolean waitTermination) throws IOException, InterruptedException {
         ArrayList<String> cmdParams = new ArrayList<>();
         String[] split = StringUtils.split(key);
         Stream.of(split).forEach(s -> cmdParams.add(replacePostActionVars(s)));
@@ -997,7 +997,8 @@ public final class CommandExecutor {
             return executionResult;
         } else {
             ExecutionResult procResult = new ExtProcess.ExecutionResult(0, null, null);
-            logger.debug(logPrefix + " process terminated without waiting for result, result: " + procResult.getExitCode());
+            logger.debug(
+                    logPrefix + " process terminated without waiting for result, result: " + procResult.getExitCode());
             extProcessManager.doneProcess(proc);
 
             return procResult;
@@ -1018,7 +1019,7 @@ public final class CommandExecutor {
     }
 
     private void executeSSHDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-                                    ArrayList<OSFile> filesList, boolean isLFMT, boolean lcaLog) throws InterruptedException {
+            ArrayList<OSFile> filesList, boolean isLFMT, boolean lcaLog) throws InterruptedException {
         ArrayList<OSFile> filesToGet = new ArrayList<>();
         String outDir = FilenameUtils.concat(getDs().getOutputDir(), ap.getName());
         for (OSFile file : filesList) {
@@ -1091,7 +1092,7 @@ public final class CommandExecutor {
     }
 
     private void fileTransfer(OSFile file, String outDir,
-                              AppProfile appProfile, App ap, IFileTransferAction action) throws InterruptedException {
+            AppProfile appProfile, App ap, IFileTransferAction action) throws InterruptedException {
         File srcFile = new File(file.getFileName());
         final File destFile = Paths.get(outDir, srcFile.getParent(), srcFile.getName()).toFile();
         Path destPath = destFile.toPath();
@@ -1132,7 +1133,7 @@ public final class CommandExecutor {
      * @throws InterruptedException
      */
     private boolean executeWinDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-                                       ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) throws InterruptedException {
+            ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) throws InterruptedException {
 
         // preparing list of zip files and list of files to archive
         ArrayList<String> filesToArchive = new ArrayList<>(fileNameClause.size());
@@ -1246,7 +1247,7 @@ public final class CommandExecutor {
     }
 
     private ExtProcess.ExecutionResult prepareZips(AppProfile appProfile, App ap, HostAppdir theAppHost,
-                                                   String destLogsDir, ArrayList<String> fileNames) throws IOException, InterruptedException, ConfigException {
+            String destLogsDir, ArrayList<String> fileNames) throws IOException, InterruptedException, ConfigException {
         ArrayList<String> filesToGet = new ArrayList<>();
         for (int i = 0; i < fileNames.size(); i++) {
             filesToGet.add(fileNames.get(i));
@@ -1314,7 +1315,7 @@ public final class CommandExecutor {
     }
 
     private void executeDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-                                 ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+            ArrayList<OSFile> fileNameClause, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
         if (GetLogs.isbUseAnsible()) {
             ansibleDownload(appProfile, ap, theAppHost, logsDir, fileNameClause);
         } else {
@@ -1345,7 +1346,7 @@ public final class CommandExecutor {
      * @throws InterruptedException
      */
     private void executeRSync(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-                              ArrayList<OSFile> fileNames, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
+            ArrayList<OSFile> fileNames, boolean isLFMT, boolean lcaLog) throws IOException, InterruptedException {
 
         ArrayList<String> rsyncParams = new ArrayList<>();
         rsyncParams.add("rsync");
@@ -1856,7 +1857,7 @@ public final class CommandExecutor {
     }
 
     private void ansibleDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
-                                 ArrayList<OSFile> files) throws IOException, InterruptedException {
+            ArrayList<OSFile> files) throws IOException, InterruptedException {
         File tmpFile = File.createTempFile("tmp", ".csv", Paths.get(ds.getCsvDir()).toFile());
 
         try (Writer wr = new BufferedWriter(new FileWriter(tmpFile))) {
@@ -2070,8 +2071,8 @@ public final class CommandExecutor {
     }
 
     private ArrayList<JTableFileEntry> executeLSAnsible(AppProfile appProfile,
-                                                        App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT,
-                                                        boolean lcaLog) throws IOException, InterruptedException {
+            App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT,
+            boolean lcaLog) throws IOException, InterruptedException {
 
         ExtProcess procSSH;
         ArrayList<String> sshParams = new ArrayList<>();
@@ -2080,9 +2081,9 @@ public final class CommandExecutor {
 
         try {
 
-            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES) {
-                cmd = StringUtils.replace(cmd, "${FILES}", "--files " + ds.getHours());
-            }
+            cmd = StringUtils.replace(cmd, "${FILES}",
+                    (ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES) ? "--files " + ds.getHours()
+                            : "");
             HostsInventory h = new HostsInventory();
             h.addHost(ap.getName(), theAppHost);
             h.dump(tmpYml);
@@ -2138,8 +2139,8 @@ public final class CommandExecutor {
     }
 
     private void executeAnsibleDownload(AppProfile appProfile,
-                                        App ap, HostAppdir theAppHost, String logsDir, ArrayList<OSFile> fileNameClause, boolean lfmt,
-                                        boolean lcaLog) {
+            App ap, HostAppdir theAppHost, String logsDir, ArrayList<OSFile> fileNameClause, boolean lfmt,
+            boolean lcaLog) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from
         // nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
@@ -2343,7 +2344,7 @@ public final class CommandExecutor {
         }
 
         private QueryTask(CommandExecutor aThis, CountDownLatch latch, ISubTask subTask, CountDownLatch finishLatch,
-                          ISubTask finishingTask) {
+                ISubTask finishingTask) {
             this(aThis, latch, subTask);
             setFinishingAction(finishingTask, finishLatch);
         }
@@ -2605,11 +2606,11 @@ public final class CommandExecutor {
         private void addParsingFinalize() {
             CountDownLatch finalLatch = new CountDownLatch(1);
             setFinishingAction(() -> {
-                        if (indexer != null) {
-                            indexer.finishParsing();
-                        }
-                        finalLatch.countDown();
-                    },
+                if (indexer != null) {
+                    indexer.finishParsing();
+                }
+                finalLatch.countDown();
+            },
                     finalLatch);
         }
 
@@ -2655,7 +2656,7 @@ public final class CommandExecutor {
                 try {
                     task.task();
                 } catch (Exception e) {
-//                    logMessage(Level.INFO, "Exception while executing: "+e.getMessage());
+                    // logMessage(Level.INFO, "Exception while executing: "+e.getMessage());
                     logMessage("Exception while executing: ", e);
                 }
                 // logger.debug("Thread " + Thread.currentThread() + " done task");
