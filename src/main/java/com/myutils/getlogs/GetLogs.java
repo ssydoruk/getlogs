@@ -491,7 +491,17 @@ public class GetLogs {
         hh.put("key1", "val1 dd");
 
 
+        Gson gson = new GsonBuilder()
+                .serializeNulls()
+                .setDateFormat(DateFormat.LONG)
+//                .setFieldNamingPolicy(FieldNamingPolicy.)
+                .setVersion(1.0)
+                .create();
 
+        StringWriter sss = new StringWriter();
+            gson.toJson(hh, sss);
+            System.out.println(sss.getBuffer());
+System.exit(0);
 
             sLogDirectory = (String) cmd.getParsedOptionValue(optLogDirectory.getLongOpt());
         if (sLogDirectory == null || sLogDirectory.isEmpty()) {
