@@ -6,6 +6,7 @@
 package com.myutils.getlogs;
 
 import static com.myutils.getlogs.GetLogs.logger;
+import com.myutils.getlogs.ansible.HostsInventory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -13,6 +14,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.io.FilenameUtils;
@@ -62,6 +64,36 @@ class Hosts extends HashMap<String, HostAppdir> {
         }
 
         logger.debug("Read " + size() + " records");
+    }
+
+    Hosts(HostsInventory inventory) {
+        for (Entry<String, LinkedHashMap> entry : inventory.entrySet()) {
+            String hostType = entry.getKey();
+            LinkedHashMap<String, LinkedHashMap> host = entry.getValue();
+            LinkedHashMap<String, LinkedHashMap> hosts = host.get("hosts");
+            for (Entry<String, LinkedHashMap> hostEntry : hosts.entrySet()) {
+                String hostName = hostEntry.getKey();
+                LinkedHashMap<String, String> vals = hostEntry.getValue();
+                put(hostName,
+                        new HostAppdir(
+                                vals.get("ansible_host").toString(),
+                                vals.get("dir").toString(),
+                                vals.get("ansible_become_user").toString(),
+                                vals.get("defaultrx").toString(),
+                                hostType));
+                             
+                
+            }
+//            for (HostEntry host : hosts) {
+//                put(host.getKey(),
+//                        new HostAppdir(
+//                                host.getValue().getAnsible_host(),
+//                                host.getValue().getDir(),
+//                                host.getValue().getAnsible_become_user(),
+//                                host.getValue().getDefaultrx()));                
+//            }
+            
+        }
     }
 
     /**

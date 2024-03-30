@@ -7,10 +7,14 @@ package com.myutils.getlogs;
 
 import Utils.*;
 import Utils.UnixProcess.*;
+
 import static Utils.Util.rSyncAddClause;
+
 import com.google.gson.*;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import com.myutils.getlogs.LogFiles.LogFile;
+import com.myutils.getlogs.ansible.HostsInventory;
+
 import java.io.*;
 import java.lang.reflect.*;
 import java.nio.file.*;
@@ -18,6 +22,7 @@ import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 import javax.swing.*;
+
 import org.apache.commons.cli.*;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
@@ -114,6 +119,13 @@ public class GetLogs {
     private static Option optParserThreads;
     private static int iMaxThreads = 0;
     private static boolean bUseAnsible = false;
+    private static HostsInventory inventory;
+
+    public static String getTmpDir() {
+        return tmpDir;
+    }
+
+    private static String tmpDir;
 
     public static boolean isbUseAnsible() {
         return bUseAnsible;
@@ -434,10 +446,11 @@ public class GetLogs {
             showHelpExit(e.getMessage(), options);
         }
 
-//<editor-fold defaultstate="collapsed" desc="common options">
         if (cmd.hasOption(optHelp.getLongOpt())) {
             showHelpExit(options);
         }
+
+        tmpDir = setLogbrowserDir(getStringOrDef(cmd, optLogBrowserDir, "."));
 
         sLoaderLog = (String) cmd.getParsedOptionValue(optLoaderLog.getLongOpt());
         initLogger((String) cmd.getParsedOptionValue(optLogLevel.getOpt()), sLoaderLog);
@@ -469,7 +482,9 @@ public class GetLogs {
             showHelpExit("Option " + optHosts.getOpt() + " (" + optHosts.getLongOpt() + ") is mandatory", options);
         }
 
-        hosts = new Hosts(hostAppFile);
+        inventory = HostsInventory.load(new File(hostAppFile));
+//        hosts = new Hosts(hostAppFile);
+        hosts = new Hosts(inventory);
 
         sLogDirectory = (String) cmd.getParsedOptionValue(optLogDirectory.getLongOpt());
         if (sLogDirectory == null || sLogDirectory.isEmpty()) {
@@ -483,7 +498,7 @@ public class GetLogs {
         sshOptions = (String) cmd.getParsedOptionValue(optSSHOptions.getLongOpt());
         sUserName = (String) cmd.getParsedOptionValue(optUserName.getLongOpt());
         bIsSSHJava = cmd.hasOption(optIsSSHJava.getLongOpt());
-        bUseAnsible= cmd.hasOption(optIsAnsible.getLongOpt());
+        bUseAnsible = cmd.hasOption(optIsAnsible.getLongOpt());
         sXMLCfg = (String) cmd.getParsedOptionValue(optXMLCfg.getLongOpt());
         String s = (String) cmd.getParsedOptionValue(optParserThreads.getLongOpt());
         if (StringUtils.isNotEmpty(s)) {
@@ -525,71 +540,33 @@ public class GetLogs {
         }
     }
 
+    static public String setLogbrowserDir(String _dir) {
+        if (StringUtils.isNotEmpty(_dir))
+            return Paths.get(_dir).toAbsolutePath().normalize().toString();
+        return ".";
+    }
+
+    static String getStringOrDef(CommandLine cmd, Option opt, String def) {
+        String ret = null;
+        try {
+            if (StringUtils.isNotEmpty(opt.getLongOpt())) {
+                ret = (String) cmd.getParsedOptionValue(opt.getLongOpt());
+            }
+            if (StringUtils.isEmpty(ret) && StringUtils.isNotEmpty(opt.getOpt())) {
+                ret = (String) cmd.getParsedOptionValue(opt.getOpt());
+            }
+        } catch (ParseException ex) {
+            System.out.println(ex);
+        }
+        return (StringUtils.isNotBlank(ret)) ? ret : def;
+    }
+
     public static String getsUserName() {
         return sUserName;
     }
 
     public static String getsRSyncUserName() {
         return sRSyncUserName;
-    }
-
-    public static void processApp(String ap, Options options) throws IOException, InterruptedException {
-        HostAppdir theAppHost = null;
-
-        if (appHost == null || appHost.isEmpty()) {
-            theAppHost = hosts.get(ap); // first for one application only
-            if (theAppHost == null) {
-                System.out.println("Host for app [" + ap + "] not found; exiting");
-                return;
-            }
-        } else {
-            theAppHost = new HostAppdir(appHost, null);
-        }
-
-        StringBuilder logsDir = new StringBuilder();
-
-        if (lfmtHost != null) {
-            logsDir.append("/Logs/")
-                    .append(lfmtInstance).append("/")
-                    .append(lfmtInstance).append("_cls/")
-                    .append(theAppHost) //                    .append("/")
-                    //                    .append(ap)
-                    ;
-        } else {
-            logsDir.append("/AppLog/GCTI");
-
-        }
-
-        logger.debug("logsDir clause: [" + logsDir + "]");
-
-        if (dateSpec != null && !dateSpec.isEmpty() && !regDateTimeSpec.matcher(dateSpec).matches()) {
-            showHelpExit("Date is specified but the format is incorrect", options);
-        }
-        if (timeSpec != null && !timeSpec.isEmpty() && !regDateTimeSpec.matcher(timeSpec).matches()) {
-            showHelpExit("Time is specified but the format is incorrect", options);
-        }
-
-        StringBuilder fileNameClause = getFileNameClause(options);
-
-        switch (execCommand) {
-            case GREP:
-                executeGrep(ap, theAppHost.getHost(), logsDir, fileNameClause);
-                break;
-
-            case GET:
-                executeGet(ap, theAppHost.getHost(), logsDir, fileNameClause, useRSync);
-                break;
-
-            case LS:
-                executeLS(ap, theAppHost.getHost(), logsDir, fileNameClause);
-                break;
-
-            case GREPGET:
-                executeGrepGet(ap, theAppHost.getHost(), logsDir, fileNameClause);
-                break;
-
-        }
-
     }
 
     public static Logger getLogger() {
@@ -876,7 +853,7 @@ public class GetLogs {
     }
 
     public static ArrayList<OSFile> execGrep(String ext, String unp, ArrayList<String> sshParams, StringBuilder sshCmd,
-            String regex) throws IOException, InterruptedException {
+                                             String regex) throws IOException, InterruptedException {
 //        StringBuilder grepCmd = new StringBuilder();
 //        grepCmd.append(sshCmd)
 //                .append(" -iname ").append(ext)
@@ -944,8 +921,8 @@ public class GetLogs {
             StringBuilder buf = new StringBuilder();
             buf.append(sshOptions).append("@").append((lfmtHost != null ? lfmtHost : "")).append(":")
                     .append(listLogFiles.get(0).getLfmtName()) //                .append(" :").append(logFiles.get(1));
-                    //                .append("/*")
-                    ;
+            //                .append("/*")
+            ;
             rsyncParams.add(buf.toString());
 
             for (int i = 1; i < listLogFiles.size(); i++) {
@@ -1110,7 +1087,8 @@ public class GetLogs {
         try {
             UIManager.setLookAndFeel(
                     UIManager.getCrossPlatformLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+                 UnsupportedLookAndFeelException ex) {
             logger.fatal("Cannot load look and feel", ex);
         }
 

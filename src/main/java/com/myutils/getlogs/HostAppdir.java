@@ -17,10 +17,20 @@ public class HostAppdir {
     private String appDir;
     private String becomeUser;
     private String defaultRx;
+    private String appType;
+
+    public String getAppType() {
+        return appType;
+    }
 
     public HostAppdir(String _host, String _appDir, String _becomeUser, String _defaultRx) {
         this(_host, _appDir, _becomeUser);
         defaultRx = _defaultRx;
+    }
+    
+    public HostAppdir(String _host, String _appDir, String _becomeUser, String _defaultRx, String _appType) {
+        this(_host, _appDir, _becomeUser, _defaultRx);
+        appType = _appType;
     }
 
     public String getBecomeUser() {
