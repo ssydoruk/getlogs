@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.*;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import com.myutils.getlogs.HostAppdir;
@@ -40,25 +41,29 @@ public class HostsInventory extends LinkedHashMap<String, LinkedHashMap> {
         }
     }
 
-    LinkedHashMap<String, LinkedHashMap> getMap(LinkedHashMap<String, LinkedHashMap> map, String key, int capacity){
+    LinkedHashMap<String, LinkedHashMap> getMap(LinkedHashMap<String, LinkedHashMap> map, String key, int capacity) {
         if (map.containsKey(key))
             return map.get(key);
         else {
-            LinkedHashMap<String, LinkedHashMap>  ret = new LinkedHashMap<>(capacity);
+            LinkedHashMap<String, LinkedHashMap> ret = new LinkedHashMap<>(capacity);
             map.put(key, ret);
             return ret;
         }
     }
 
-    public void addHost(String s, HostAppdir appDir) {
+    public void addHost(String s, HostAppdir appDir, HashMap<String, Object> hh) {
         LinkedHashMap<String, LinkedHashMap> typeHosts = getMap(this, appDir.getAppType(), 1);
         LinkedHashMap<String, LinkedHashMap> hostsHosts = getMap(typeHosts, "hosts", 1);
-        if(!hostsHosts.containsKey(s)){
-            LinkedHashMap<String, String> hostProperties = new LinkedHashMap<>(4);
+        if (!hostsHosts.containsKey(s)) {
+            LinkedHashMap<String, Object> hostProperties = new LinkedHashMap<>(4 + ((hh != null) ? hh.size() : 0));
             hostProperties.put("ansible_host", appDir.getHost());
             hostProperties.put("dir", appDir.getAppDir());
             hostProperties.put("ansible_become_user", appDir.getBecomeUser());
             hostProperties.put("defaultrx", appDir.getDefaultRx());
+            if (hh != null)
+                hh.forEach((key, val) -> {
+                    hostProperties.put(key, val);
+                });
             hostsHosts.put(s, hostProperties);
         }
     }

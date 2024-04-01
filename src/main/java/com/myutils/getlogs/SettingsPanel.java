@@ -1726,6 +1726,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         ds.setTimeRange(dtRange.getTimeRangeAlways());
         ds.setCMDDate(tfDateRegex.getText());
         ds.setCMDTime(tfTimeRegex.getText());
+        ds.setDate_time_rx(tfEditRegex.getText());
         ds.setStatusScript(jtfStatusScript.getText());
         
         Gson gson = new GsonBuilder()
@@ -1766,6 +1767,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             case RANGE:
                 jpToAdd = jpRange;
                 break;
+
             case VALUE_FILES:
                 jpToAdd = jpLastFiles;
                 break;

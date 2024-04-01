@@ -13,14 +13,10 @@ import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -50,11 +47,8 @@ import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
 import com.myutils.getlogs.ansible.HostsInventory;
-import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -62,9 +56,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.mina.util.Base64;
+import org.apache.tools.ant.BuildException;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.jidesoft.dialog.StandardDialog;
 import com.myutils.logbrowser.common.ExecutionEnvironment;
 import com.myutils.logbrowser.indexer.Main;
@@ -1860,47 +1853,83 @@ public final class CommandExecutor {
 
     private void ansibleDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
             ArrayList<OSFile> files) throws IOException, InterruptedException {
+
         File tmpFile = File.createTempFile("tmp", ".csv", Paths.get(ds.getCsvDir()).toFile());
+        File tmpYml = File.createTempFile("tmp", ".yml", Paths.get(GetLogs.getTmpDir()).toFile());
+        try {
 
-        try (Writer wr = new BufferedWriter(new FileWriter(tmpFile))) {
-            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-                    .setDelimiter(',')
-                    .setHeader("host", "source")
-                    .build();
+            try (Writer wr = new BufferedWriter(new FileWriter(tmpFile))) {
+                CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+                        .setDelimiter(',')
+                        .setHeader("host", "source")
+                        .build();
 
-            try (final CSVPrinter printer = new CSVPrinter(wr, csvFormat)) {
-                for (OSFile osFile : files) {
-                    printer.printRecord(ap.getHost(), osFile.getFileName());
+                try (final CSVPrinter printer = new CSVPrinter(wr, csvFormat)) {
+                    for (OSFile osFile : files) {
+                        printer.printRecord(ap.getHost(), osFile.getFileName());
+                    }
                 }
             }
-        }
 
-        ExtProcess procSSH;
-        ArrayList<String> sshParams = new ArrayList<>();
-        String cmd = ds.getAnsible().getGetCSV();
-        cmd = StringUtils.replace(cmd, "$CSVFILES", tmpFile.getAbsolutePath());
-        cmd = StringUtils.replace(cmd, "$DESTDIR", ds.getOutputDir());
-        sshParams.addAll(Arrays.asList(StringUtils.split(cmd)));
-        procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, true, true));
-        procSSH.setStdOutFilter(s -> {
-            return (StringUtils.defaultIfEmpty(StringUtils.substringAfter(s, "— INFO —"), s));
-        });
-        procSSH.startProcess(true, true);
+            HashMap<String, Object> hh = new HashMap<>();
+            hh.put("destdir", ds.getOutputDir());
 
-        int executionResult = procSSH.waitFor();
-        ArrayList<String> stderr = procSSH.getErrBuf();
-        ArrayList<String> stdout = procSSH.getSTDOut();
-        logger.debug("process terminated, result: " + executionResult);
-        extProcessManager.doneProcess(procSSH);
+            hh.put("webport", "8082");
+            hh.put("csv_dir", "/Users/ssydoruk/work/getfiles/csv");
 
-        if (executionResult != 0) {
-            logMessage("LS failed, error code: " + executionResult, appProfile, ap);
-            if (stderr != null && !stderr.isEmpty()) {
-                logMessage(Level.ERROR, StringUtils.join(stderr, " | "), appProfile, ap);
+            ArrayList<String> hostList = new ArrayList<>(1);
+            hostList.add(ap.getName());
+            hh.put("target_hosts", hostList);
+
+            ArrayList<String> filesList = new ArrayList<>(files.size());
+            for (OSFile f : files) {
+                filesList.add(f.getFileName());
             }
-        } else {
-            logger.info("ok");
+            hh.put("files", filesList);
+
+            dumpInventory(tmpYml, ap.getName(), theAppHost, hh);
+
+            ExtProcess procSSH;
+            ArrayList<String> sshParams = new ArrayList<>();
+            String cmd = ds.getAnsible().getGetCmd();
+            cmd = StringUtils.replace(cmd, "${CSVFILES}", tmpFile.getAbsolutePath());
+            cmd = StringUtils.replace(cmd, "${DESTDIR}", ds.getOutputDir());
+
+            cmd = StringUtils.replace(cmd, "${INVENTORY}", tmpYml.getAbsolutePath());
+
+            Matcher m = cliCracker.matcher(cmd);
+            while (m.find()) {
+                sshParams.add(m.group(0));
+            }
+
+            procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, true, true));
+            procSSH.setStdOutFilter(s -> {
+                return (StringUtils.defaultIfEmpty(StringUtils.substringAfter(s, "— INFO —"), s));
+            });
+            procSSH.startProcess(true, true);
+
+            int executionResult = procSSH.waitFor();
+            ArrayList<String> stderr = procSSH.getErrBuf();
+            ArrayList<String> stdout = procSSH.getSTDOut();
+            logger.debug("process terminated, result: " + executionResult);
+            extProcessManager.doneProcess(procSSH);
+
+            if (executionResult != 0) {
+                logMessage("LS failed, error code: " + executionResult, appProfile, ap);
+                if (stderr != null && !stderr.isEmpty()) {
+                    logMessage(Level.ERROR, StringUtils.join(stderr, " | "), appProfile, ap);
+                }
+            } else {
+                logger.info("ok");
+            }
+        } finally {
+            // FileUtils.deleteQuietly(tmpYml);
+            // FileUtils.deleteQuietly(tmpFile);
         }
+    }
+
+    private void dumpInventory(File tmpYml, String name, HostAppdir theAppHost) throws IOException {
+        dumpInventory(tmpYml, name, theAppHost, null);
     }
 
     private void ansibleDownload(HashMap<SavedSearchStorage, ArrayList<OSFile>> r) throws Exception {
@@ -2070,13 +2099,151 @@ public final class CommandExecutor {
 
         tsk.execute();
 
-       
+    }
+
+    /**
+     * [code borrowed from ant.jar]
+     * Crack a command line.
+     * 
+     * @param toProcess the command line to process.
+     * @return the command line broken into strings.
+     *         An empty or null toProcess parameter results in a zero sized array.
+     */
+    public static String[] translateCommandline1(String toProcess) {
+        if (toProcess == null || toProcess.length() == 0) {
+            // no command? no string
+            return new String[0];
+        }
+        // parse with a simple finite state machine
+
+        final int normal = 0;
+        final int inQuote = 1;
+        final int inDoubleQuote = 2;
+        int state = normal;
+        final StringTokenizer tok = new StringTokenizer(toProcess, "\"\' ", true);
+        final ArrayList<String> result = new ArrayList<String>();
+        final StringBuilder current = new StringBuilder();
+        boolean lastTokenHasBeenQuoted = false;
+
+        while (tok.hasMoreTokens()) {
+            String nextTok = tok.nextToken();
+            switch (state) {
+                case inQuote:
+                    if ("\'".equals(nextTok)) {
+                        lastTokenHasBeenQuoted = true;
+                        state = normal;
+                    } else {
+                        current.append(nextTok);
+                    }
+                    break;
+                case inDoubleQuote:
+                    if ("\"".equals(nextTok)) {
+                        lastTokenHasBeenQuoted = true;
+                        state = normal;
+                    } else {
+                        current.append(nextTok);
+                    }
+                    break;
+                default:
+                    if ("\'".equals(nextTok)) {
+                        state = inQuote;
+                    } else if ("\"".equals(nextTok)) {
+                        state = inDoubleQuote;
+                    } else if (" ".equals(nextTok)) {
+                        if (lastTokenHasBeenQuoted || current.length() != 0) {
+                            result.add(current.toString());
+                            current.setLength(0);
+                        }
+                    } else {
+                        current.append(nextTok);
+                    }
+                    lastTokenHasBeenQuoted = false;
+                    break;
+            }
+        }
+        if (lastTokenHasBeenQuoted || current.length() != 0) {
+            result.add(current.toString());
+        }
+        if (state == inQuote || state == inDoubleQuote) {
+            throw new RuntimeException("unbalanced quotes in " + toProcess);
+        }
+        return result.toArray(new String[result.size()]);
+    }
+
+    /**
+     * Crack a command line.
+     * 
+     * @param toProcess the command line to process.
+     * @return the command line broken into strings.
+     *         An empty or null toProcess parameter results in a zero sized array.
+     */
+    public static String[] translateCommandline(String toProcess) {
+        if (toProcess == null || toProcess.isEmpty()) {
+            // no command? no string
+            return new String[0];
+        }
+        // parse with a simple finite state machine
+
+        final int normal = 0;
+        final int inQuote = 1;
+        final int inDoubleQuote = 2;
+        int state = normal;
+        final StringTokenizer tok = new StringTokenizer(toProcess, "\"' ", true);
+        final ArrayList<String> result = new ArrayList<>();
+        final StringBuilder current = new StringBuilder();
+        boolean lastTokenHasBeenQuoted = false;
+
+        while (tok.hasMoreTokens()) {
+            String nextTok = tok.nextToken();
+            switch (state) {
+                case inQuote:
+                    if ("'".equals(nextTok)) {
+                        lastTokenHasBeenQuoted = true;
+                        state = normal;
+                    } else {
+                        current.append(nextTok);
+                    }
+                    break;
+                case inDoubleQuote:
+                    if ("\"".equals(nextTok)) {
+                        lastTokenHasBeenQuoted = true;
+                        state = normal;
+                    } else {
+                        current.append(nextTok);
+                    }
+                    break;
+                default:
+                    if ("'".equals(nextTok)) {
+                        state = inQuote;
+                    } else if ("\"".equals(nextTok)) {
+                        state = inDoubleQuote;
+                    } else if (" ".equals(nextTok)) {
+                        if (lastTokenHasBeenQuoted || current.length() > 0) {
+                            result.add(current.toString());
+                            current.setLength(0);
+                        }
+                    } else {
+                        current.append(nextTok);
+                    }
+                    lastTokenHasBeenQuoted = false;
+                    break;
+            }
+        }
+        if (lastTokenHasBeenQuoted || current.length() > 0) {
+            result.add(current.toString());
+        }
+        if (state == inQuote || state == inDoubleQuote) {
+            throw new BuildException("unbalanced quotes in " + toProcess);
+        }
+        return result.toArray(new String[0]);
     }
 
     private static final Pattern cliCracker = Pattern
-    .compile(
-       "[^\\s]*\"(\\\\+\"|[^\"])*?\"|[^\\s]*'(\\\\+'|[^'])*?'|(\\\\\\s|[^\\s])+",
-       Pattern.MULTILINE);
+            .compile(
+                    "[^\\s]*\"(\\\\+\"|[^\"])*?\"|[^\\s]*'(\\\\+'|[^'])*?'|(\\\\\\s|[^\\s])+",
+                    Pattern.MULTILINE);
+
+    private static final Pattern doubleQuote = Pattern.compile("(?<!\\\\)\"");
 
     private ArrayList<JTableFileEntry> executeLSAnsible(AppProfile appProfile,
             App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT,
@@ -2091,31 +2258,28 @@ public final class CommandExecutor {
             HashMap<String, Object> hh = new HashMap<>();
             hh.put("destdir", ds.getOutputDir());
 
-            if(ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES) 
+            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES)
                 hh.put("lastfiles", ds.getHours().toString());
+            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX_TODAY){
+
+                ArrayList<String> findrx= new ArrayList<>();
+                findrx.add(getAppRegex(ap.getAppPrefix(), ds.getDate_time_rx()));
+                hh.put("findrx", findrx);
+            }
+
+            hh.put("webport", "8082");
+            hh.put("csv_dir", "/Users/ssydoruk/work/getfiles/csv");
 
             ArrayList<String> hostList = new ArrayList<>(1);
             hostList.add(ap.getName());
             hh.put("target_hosts", hostList);
 
-            HostsInventory h = new HostsInventory();
-            h.addHost(ap.getName(), theAppHost);
-            h.dump(tmpYml);
+            dumpInventory(tmpYml, ap.getName(), theAppHost, hh);
             cmd = StringUtils.replace(cmd, "${INVENTORY}", tmpYml.getAbsolutePath());
 
-            Gson gson = new GsonBuilder()
-                    .serializeNulls()
-                    .setVersion(1.0)
-                    .create();
-            StringWriter sss = new StringWriter();
-            gson.toJson(hh, sss);
-
-            cmd = StringUtils.replace(cmd, "${VARS}", "-e \""+sss.toString()+"\"");
-            
-            Matcher m=cliCracker.matcher(cmd);
-            while(m.find()){
+            Matcher m = cliCracker.matcher(cmd);
+            while (m.find()) {
                 sshParams.add(m.group(0));
-                logger.info(m.group(0));
             }
             procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, true, true));
             procSSH.setStdOutFilter(s -> {
@@ -2160,16 +2324,21 @@ public final class CommandExecutor {
                 return lsFiles;
             }
         } finally {
-            FileUtils.deleteQuietly(tmpYml);
+            // FileUtils.deleteQuietly(tmpYml);
         }
         return null;
     }
 
-    private void executeAnsibleDownload(AppProfile appProfile,
-            App ap, HostAppdir theAppHost, String logsDir, ArrayList<OSFile> fileNameClause, boolean lfmt,
-            boolean lcaLog) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from
-        // nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private String getAppRegex(String appPrefix, String date_time_rx) {
+        return StringUtils.join(".*/",appPrefix, "\\.", date_time_rx, "\\.+");
+    }
+
+    private void dumpInventory(File tmpYml, String name, HostAppdir theAppHost, HashMap<String, Object> hh)
+            throws IOException {
+        HostsInventory h = new HostsInventory();
+        h.addHost(name, theAppHost, hh);
+        h.dump(tmpYml);
+
     }
 
     @FunctionalInterface

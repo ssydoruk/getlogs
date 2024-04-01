@@ -32,6 +32,15 @@ public class DownloadSettings {
     private boolean useRSync;
     private boolean appLogs;
     private boolean zipDest;
+    private String date_time_rx;
+    public String getDate_time_rx() {
+        return date_time_rx;
+    }
+
+    public void setDate_time_rx(String date_time_rx) {
+        this.date_time_rx = date_time_rx;
+    }
+
     private boolean parserWhileDownload;
 
     public boolean isParserWhileDownload() {
