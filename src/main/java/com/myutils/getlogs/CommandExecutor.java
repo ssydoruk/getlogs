@@ -304,8 +304,8 @@ public final class CommandExecutor {
             }
 
             logsDir.append("/").append(h) // .append("/")
-            // .append(ap)
-            ;
+                    // .append(ap)
+                    ;
         } else {
             logsDir.append(GetLogs.getProdBaseDir());
 
@@ -433,9 +433,7 @@ public final class CommandExecutor {
         // though
         // sshCmd.append(" -execdir chmod g+r,a+r {} \\; -print | sort -r");
         sshCmd.append(" -print | sort -r");
-        if (ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES) {
-            sshCmd.append(" | head -").append(ds.getHours());
-        }
+        sshCmd.append(" | head -").append(ds.getMaxFiles());
 
         sshCmd.append("| xargs stat -c \\\"%n %s\\\" ; done");
 
@@ -450,12 +448,12 @@ public final class CommandExecutor {
         // prepareZips(appProfile, ap, theAppHost, logsDir, null);
 
         if (GetLogs.isbUseAnsible()) {
-            return executeLSAnsible(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+            return lsAnsible(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
         } else {
             if (ap.isIsWindows()) {
-                return executeLSWin(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+                return lsWin(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
             } else {
-                return executeLSLinux(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
+                return lsLinux(appProfile, ap, theAppHost, logsDir, fileNameClause, isLFMT, lcaLog);
             }
         }
 
@@ -575,7 +573,7 @@ public final class CommandExecutor {
      *
      * @param logDir
      * @return Pair of [1st letter to lower case with $ attached], [Path without
-     *         dir]
+     * dir]
      */
     private Pair<String, String> getWinDrive(String logDir) {
         if (StringUtils.isNotEmpty(logDir) && logDir.length() > 1
@@ -588,7 +586,7 @@ public final class CommandExecutor {
         }
     }
 
-    private ArrayList<JTableFileEntry> executeLSWin(AppProfile appProfile, App ap, HostAppdir theAppHost,
+    private ArrayList<JTableFileEntry> lsWin(AppProfile appProfile, App ap, HostAppdir theAppHost,
             String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog)
             throws IOException, InterruptedException {
 
@@ -623,7 +621,7 @@ public final class CommandExecutor {
             }
 
             Matcher rxDateTime = null;
-            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX) {
+            if (ds.getRxType() == RegexType.ShellRegex) {
                 rxDateTime = Pattern.compile(getFileRegexMatch(ds.getDateSpec(), ds.getTimeSpec())).matcher("");
             }
             for (File f : FileUtils.listFiles(new File(logPath), null, true)) {
@@ -634,7 +632,7 @@ public final class CommandExecutor {
 
                         if (entryNameSuffix.getKey().isEmpty()
                                 || (entryNameSuffix.getKey().equals(".")
-                                        || fileName.contains(ap.getName().toLowerCase()))
+                                || fileName.contains(ap.getName().toLowerCase()))
                                 || (fileName.contains(entryNameSuffix.getKey().toLowerCase()))) {
                             if (rxDateTime == null || rxDateTime.reset(fileName).find()) {
                                 BasicFileAttributes basicFileAttributes = Files.readAttributes(f.toPath(),
@@ -653,7 +651,7 @@ public final class CommandExecutor {
                     .sort((OSFile o1, OSFile o2) -> o2.getCreationTime().compareTo(o1.getCreationTime())));
 
             ArrayList<JTableFileEntry> lsFiles = new ArrayList<JTableFileEntry>();
-            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES) {
+            if (ds.getRxType() == RegexType.Default) {
                 int cnt = 0;
                 int max = Integer.parseInt(ds.getHours());
                 if (max <= 0) {
@@ -668,7 +666,7 @@ public final class CommandExecutor {
                                 getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog), f));
                     }
                 }
-            } else if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX) {
+            } else if (ds.getRxType() == RegexType.ShellRegex) {
                 for (ArrayList<OSFile> files : nameSuffixes.values()) {
                     for (OSFile f : files) {
                         lsFiles.add(new JTableFileEntry(appProfile,
@@ -701,7 +699,7 @@ public final class CommandExecutor {
         return rx.toString();
     }
 
-    private ArrayList<JTableFileEntry> executeLSLinux(AppProfile appProfile, App ap, HostAppdir theAppHost,
+    private ArrayList<JTableFileEntry> lsLinux(AppProfile appProfile, App ap, HostAppdir theAppHost,
             String logsDir, ArrayList<String> fileNameClause, boolean isLFMT, boolean lcaLog)
             throws ConfigException, IOException, InterruptedException {
 
@@ -763,7 +761,7 @@ public final class CommandExecutor {
                     String[] split = StringUtils.split(stdoutLine);
                     String fileName = split[0];
                     long fileSize = Long.parseLong(split[1]);
-                    if (ds.getTimeProfile() == SettingsPanel.TimeProfile.RANGE) {
+                    if (ds.getRxType() == RegexType.ShellRegex) {
                         Pair<Long, String> utcTime = appProfile.getFileNameTime(fileName);
                         boolean shouldAdd = true;
                         UTCTimeRange timeRange = ds.getTimeRange();
@@ -789,9 +787,9 @@ public final class CommandExecutor {
                             }
                         }
                         logger.debug("file [" + fileName + "] range: " + timeRange.toString()
-                        // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
-                        // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
-                        // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
+                                // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
+                                // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
+                                // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
                                 + " shouldadd: " + shouldAdd);
                         if (shouldAdd) {
                             lsFiles.add(new JTableFileEntry(appProfile,
@@ -851,7 +849,7 @@ public final class CommandExecutor {
             }
             try {
                 ExtProcess.ExecutionResult cmdOuts = executeCommand(
-                        StringUtils.join(new String[] { ds.getStatusScript(), StringUtils.join(appNames, " ") }, " "),
+                        StringUtils.join(new String[]{ds.getStatusScript(), StringUtils.join(appNames, " ")}, " "),
                         true, true, true);
                 logger.log(Level.INFO, StringUtils.join(cmdOuts));
                 if (cmdOuts != null) {
@@ -1334,7 +1332,7 @@ public final class CommandExecutor {
      * @param ap
      * @param theAppHost
      * @param logsDir
-     * @param fileNames  - expected to contain only list of file names, no path
+     * @param fileNames - expected to contain only list of file names, no path
      * @param isLFMT
      * @param lcaLog
      * @throws IOException
@@ -1511,7 +1509,7 @@ public final class CommandExecutor {
         }
 
         fileNameClause.append(backSlash).append(".");
-        if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX && ds.getDateSpec() != null
+        if (ds.getRxType() == RegexType.ShellRegex && ds.getDateSpec() != null
                 && !ds.getDateSpec().isEmpty()) {
             fileNameClause.append(GetLogs.expandPattern(ds.getDateSpec(), 8));
         } else {
@@ -1519,7 +1517,7 @@ public final class CommandExecutor {
         }
         fileNameClause.append("_");
 
-        if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX && ds.getTimeSpec() != null
+        if (ds.getRxType() == RegexType.ShellRegex && ds.getTimeSpec() != null
                 && !ds.getTimeSpec().isEmpty()) {
             fileNameClause.append(GetLogs.expandPattern(ds.getTimeSpec(), 6));
         } else {
@@ -1550,7 +1548,7 @@ public final class CommandExecutor {
                         } else {
                             String datePattern = null;
                             String timePattern = null;
-                            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX) {
+                            if (ds.getRxType() == RegexType.ShellRegex) {
                                 datePattern = ds.getDateSpec();
                                 timePattern = ds.getTimeSpec();
                             }
@@ -1951,30 +1949,29 @@ public final class CommandExecutor {
         }
     }
 
-    private String sshNameClause(ArrayList<OSFile> fileNameClause) {
-        if (fileNameClause != null && !fileNameClause.isEmpty()) {
-            StringBuilder ret1 = new StringBuilder();
-            if (fileNameClause.size() > 1) {
-                ret1.append(("\\( "));
-            }
-            for (int i = 0; i < fileNameClause.size(); i++) {
-                String s = fileNameClause.get(i).getFileName();
-                if (i > 0) {
-                    ret1.append(" -o ");
-                }
-                ret1.append("-name ").append(s);
-
-            }
-            if (fileNameClause.size() > 1) {
-                ret1.append((" \\)"));
-            }
-            return ret1.toString();
-        } else {
-            return null;
-        }
-
-    }
-
+//    private String sshNameClause(ArrayList<OSFile> fileNameClause) {
+//        if (fileNameClause != null && !fileNameClause.isEmpty()) {
+//            StringBuilder ret1 = new StringBuilder();
+//            if (fileNameClause.size() > 1) {
+//                ret1.append(("\\( "));
+//            }
+//            for (int i = 0; i < fileNameClause.size(); i++) {
+//                String s = fileNameClause.get(i).getFileName();
+//                if (i > 0) {
+//                    ret1.append(" -o ");
+//                }
+//                ret1.append("-name ").append(s);
+//
+//            }
+//            if (fileNameClause.size() > 1) {
+//                ret1.append((" \\)"));
+//            }
+//            return ret1.toString();
+//        } else {
+//            return null;
+//        }
+//
+//    }
     private void logMessage(String str, Exception e, AppProfile appProfile, App ap) {
         logMessage(getLogPrefix(appProfile, ap) + str, e);
     }
@@ -2012,7 +2009,7 @@ public final class CommandExecutor {
         } else {
             fileNameClause.append("*cloud*").append("-");
         }
-        fileNameClause.append(GetLogs.cloudDatePattern(ds.getDateSpec(), ds.getTimeSpec(), ds.getTimeProfile()));
+//        fileNameClause.append(GetLogs.cloudDatePattern(ds.getDateSpec(), ds.getTimeSpec(), ds.getTimeProfile()));
         ArrayList<String> ret1 = new ArrayList<>();
         ret1.add(fileNameClause.toString());
         ret1.add("*cloud.log*");
@@ -2102,12 +2099,11 @@ public final class CommandExecutor {
     }
 
     /**
-     * [code borrowed from ant.jar]
-     * Crack a command line.
-     * 
+     * [code borrowed from ant.jar] Crack a command line.
+     *
      * @param toProcess the command line to process.
-     * @return the command line broken into strings.
-     *         An empty or null toProcess parameter results in a zero sized array.
+     * @return the command line broken into strings. An empty or null toProcess
+     * parameter results in a zero sized array.
      */
     public static String[] translateCommandline1(String toProcess) {
         if (toProcess == null || toProcess.length() == 0) {
@@ -2172,10 +2168,10 @@ public final class CommandExecutor {
 
     /**
      * Crack a command line.
-     * 
+     *
      * @param toProcess the command line to process.
-     * @return the command line broken into strings.
-     *         An empty or null toProcess parameter results in a zero sized array.
+     * @return the command line broken into strings. An empty or null toProcess
+     * parameter results in a zero sized array.
      */
     public static String[] translateCommandline(String toProcess) {
         if (toProcess == null || toProcess.isEmpty()) {
@@ -2245,7 +2241,7 @@ public final class CommandExecutor {
 
     private static final Pattern doubleQuote = Pattern.compile("(?<!\\\\)\"");
 
-    private ArrayList<JTableFileEntry> executeLSAnsible(AppProfile appProfile,
+    private ArrayList<JTableFileEntry> lsAnsible(AppProfile appProfile,
             App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT,
             boolean lcaLog) throws IOException, InterruptedException {
 
@@ -2258,15 +2254,19 @@ public final class CommandExecutor {
             HashMap<String, Object> hh = new HashMap<>();
             hh.put("destdir", ds.getOutputDir());
 
-            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.VALUE_FILES)
-                hh.put("lastfiles", ds.getHours().toString());
-            if (ds.getTimeProfile() == SettingsPanel.TimeProfile.REGEX_TODAY){
+            hh.put("lastfiles", ds.getMaxFiles());
 
-                ArrayList<String> findrx= new ArrayList<>();
-                findrx.add(getAppRegex(ap.getAppPrefix(), ds.getDate_time_rx()));
-                hh.put("findrx", findrx);
+            switch (ds.getRxType()) {
+                case Any:
+                    break;
+
+                case ShellRegex:
+                    ArrayList<String> findrx = new ArrayList<>();
+                    findrx.add(getAppRegex(ap.getAppPrefix(), ds.getDate_time_rx()));
+                    hh.put("findrx", findrx);
+                    break;
+
             }
-
             hh.put("webport", "8082");
             hh.put("csv_dir", "/Users/ssydoruk/work/getfiles/csv");
 
@@ -2330,7 +2330,7 @@ public final class CommandExecutor {
     }
 
     private String getAppRegex(String appPrefix, String date_time_rx) {
-        return StringUtils.join(".*/",appPrefix, "\\.", date_time_rx, "\\.+");
+        return StringUtils.join(".*/", appPrefix, "\\.", date_time_rx, "\\.+");
     }
 
     private void dumpInventory(File tmpYml, String name, HostAppdir theAppHost, HashMap<String, Object> hh)

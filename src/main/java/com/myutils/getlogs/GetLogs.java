@@ -541,8 +541,9 @@ public class GetLogs {
     }
 
     static public String setLogbrowserDir(String _dir) {
-        if (StringUtils.isNotEmpty(_dir))
+        if (StringUtils.isNotEmpty(_dir)) {
             return Paths.get(_dir).toAbsolutePath().normalize().toString();
+        }
         return ".";
     }
 
@@ -708,7 +709,7 @@ public class GetLogs {
             ArrayList<String> sshParams = new ArrayList<>();
             sshParams.add("ssh");
             if (sshOptions != null) {
-                sshParams.addAll(Arrays.asList(new String[] { "-l", sshOptions }));
+                sshParams.addAll(Arrays.asList(new String[]{"-l", sshOptions}));
             }
 
             if (lfmtHost != null) {
@@ -766,7 +767,7 @@ public class GetLogs {
         ArrayList<String> sshParams = new ArrayList<>();
         sshParams.add("ssh");
         if (sshOptions != null) {
-            sshParams.addAll(Arrays.asList(new String[] { "-l", sshOptions }));
+            sshParams.addAll(Arrays.asList(new String[]{"-l", sshOptions}));
         }
 
         sshParams.add(((lfmtHost != null)) ? lfmtHost : theAppHost);
@@ -908,145 +909,6 @@ public class GetLogs {
         ExtProcess procRSync = new ExtProcess(rsyncParams);
         procRSync.startProcess();
         procRSync.waitFor();
-    }
-
-    private static void processLogFiles(String app, ArrayList<LogFile> listLogFiles)
-            throws IOException, InterruptedException {
-        if (!listLogFiles.isEmpty()) {
-            ArrayList<String> rsyncParams = new ArrayList<>();
-            rsyncParams.add("/usr/local/bin/rsync");
-            // rsyncParams.add("--dry-run");
-            rsyncParams.add("-avz");
-            rsyncParams.add("-e");
-            rsyncParams.add("ssh");
-            // rsyncParams.add("--files-from");
-            // rsyncParams.add(sArchives);
-            // rsyncParams.add("-f");
-            // rsyncParams.add("- **");
-            StringBuilder buf = new StringBuilder();
-            buf.append(sshOptions).append("@").append((lfmtHost != null ? lfmtHost : "")).append(":")
-                    .append(listLogFiles.get(0).getLfmtName()) // .append(" :").append(logFiles.get(1));
-            // .append("/*")
-            ;
-            rsyncParams.add(buf.toString());
-
-            for (int i = 1; i < listLogFiles.size(); i++) {
-                buf = new StringBuilder();
-                buf.append(":").append(listLogFiles.get(i).getLfmtName());
-                rsyncParams.add(buf.toString());
-            }
-
-            buf = new StringBuilder();
-            buf.append(sLogDirectory).append(File.separator).append(app);
-
-            rsyncParams.add(buf.toString());
-
-            ExtProcess procRSync = new ExtProcess(rsyncParams);
-            procRSync.startProcess();
-            procRSync.waitFor();
-        }
-    }
-
-    private static StringBuilder getFileNameClause(Options options) {
-        StringBuilder fileNameClause = new StringBuilder();
-
-        if (bIsCloud) {
-            if (!useRSync) {
-                String backSlash = "\\";
-                fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
-            } else {
-                fileNameClause.append("*cloud*").append("-");
-            }
-            if (!regDateTimeSpec.matcher(dateSpec).matches()) {
-                showHelpExit("Date is specified but the format is incorrect", options);
-            } else {
-                fileNameClause.append(cloudDatePattern(dateSpec, timeSpec, SettingsPanel.TimeProfile.REGEX));
-            }
-
-        } else {
-            String backSlash = "";
-            if (!useRSync) {
-                backSlash = "\\";
-            }
-            fileNameClause.append("").append(backSlash).append("*").append(backSlash).append(".");
-            if (dateSpec != null && !dateSpec.isEmpty()) {
-                if (!regDateTimeSpec.matcher(dateSpec).matches()) {
-                    showHelpExit("Date is specified but the format is incorrect", options);
-                } else {
-                    fileNameClause.append(expandPattern(dateSpec, 8));
-                }
-            } else {
-                fileNameClause.append(StringUtils.repeat("[0-9]", 8));
-            }
-            fileNameClause.append("_");
-
-            if (timeSpec != null && !timeSpec.isEmpty()) {
-
-                if (!regDateTimeSpec.matcher(timeSpec).matches()) {
-                    showHelpExit("Time is specified but the format is incorrect", options);
-                } else {
-                    fileNameClause.append(expandPattern(timeSpec, 6));
-                }
-            } else {
-                fileNameClause.append(StringUtils.repeat("[0-9]", 6));
-            }
-            fileNameClause.append("_");
-
-            fileNameClause.append(StringUtils.repeat("[0-9]", 3))
-                    .append("").append(backSlash).append(".").append(backSlash).append("*");
-
-        }
-        logger.debug("fileName clause: [" + fileNameClause + "]");
-        return fileNameClause;
-    }
-
-    public static String cloudDatePattern(String dateSpec1, String timeSpec1, SettingsPanel.TimeProfile tp) {
-
-        StringBuilder ret = new StringBuilder();
-        Matcher m;
-        // int digitsSpecified = countDigits(dateSpec);
-        int pos = 0;
-        int datePos = 0;
-        if (tp == SettingsPanel.TimeProfile.REGEX && dateSpec1 != null && !dateSpec1.isEmpty()) {
-            while ((m = regRegDigits.matcher(dateSpec1)).find(pos)) {
-                if (shouldAddDash(datePos)) {
-                    ret.append("-");
-                }
-                ret.append(m.group(1));
-                datePos++;
-                pos = m.end();
-            }
-        }
-        while (datePos < 8) {
-            if (shouldAddDash(datePos)) {
-                ret.append("-");
-            }
-            ret.append("[0-9]");
-            datePos++;
-        }
-        if (tp == SettingsPanel.TimeProfile.REGEX && timeSpec1 != null && !timeSpec1.isEmpty()) {
-            ret.append("-");
-            pos = 0;
-            datePos = 0;
-            while ((m = regRegDigits.matcher(timeSpec1)).find(pos)) {
-                ret.append(m.group(1));
-                pos = m.end();
-                datePos++;
-                if (pos > 1) {
-                    break;
-                }
-            }
-            if (datePos == 1) {
-                ret.append("[0-9]");
-            }
-        } else {
-            ret.append("-");
-        }
-        ret.append("*.log*");
-        logger.debug(ret);
-        // System.exit(0);
-        return ret.toString();
-
     }
 
     private static boolean shouldAddDash(int datePos) {

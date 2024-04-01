@@ -19,12 +19,47 @@ public class DownloadSettings {
 
     private String outputDir;
     private String csvDir;
+    private int maxFiles;
+    private RegexType rxType;
+    private String findAnyDir;
+    private String findAnyRx;
 
+    public String getFindAnyDir() {
+        return findAnyDir;
+    }
+
+    public void setFindAnyDir(String findAnyDir) {
+        this.findAnyDir = findAnyDir;
+    }
+
+    public String getFindAnyRx() {
+        return findAnyRx;
+    }
+
+    public void setFindAnyRx(String findAnyRx) {
+        this.findAnyRx = findAnyRx;
+    }
+
+    public RegexType getRxType() {
+        return rxType;
+    }
+
+    public void setRxType(RegexType rxType) {
+        this.rxType = rxType;
+    }
+    
+    public int getMaxFiles() {
+        return maxFiles > 0? maxFiles:1;
+    }
+
+    public void setMaxFiles(int maxFiles) {
+        this.maxFiles = maxFiles;
+    }
+    
     public String getCsvDir() {
         return csvDir;
     }
 
-    private SettingsPanel.TimeProfile timeProfile;
     private String dateSpec;
     private String timeSpec;
     private GetCommand actionCommand;
@@ -339,18 +374,6 @@ public class DownloadSettings {
 
     String getOutputDir() {
         return outputDir;
-    }
-
-    void setTimeProfile(SettingsPanel.TimeProfile _timeProfile) {
-        timeProfile = _timeProfile;
-    }
-
-    public SettingsPanel.TimeProfile getTimeProfile() {
-        SettingsPanel.TimeProfile ret1 = timeProfile;
-        if (ret1 == null) {
-            ret1 = SettingsPanel.TimeProfile.VALUE_HOURS;
-        }
-        return ret1;
     }
 
     UTCTimeRange getTimeRange() {
