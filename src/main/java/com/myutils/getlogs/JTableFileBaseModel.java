@@ -40,14 +40,20 @@ abstract class JTableFileBaseModel<EntryType> extends AbstractTableModel {
 
     }
 
-    private void addRow(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog) {
-//        tabRows.add(new CommandExecutor.JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, searchFile, logsDir, lfmt, lcaLog), searchFile));
+    private void addRow(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir,
+            boolean lfmt, boolean lcaLog) {
+        // tabRows.add(new CommandExecutor.JTableFileEntry(appProfile,
+        // getStorage(appProfile, ap, theAppHost, searchFile, logsDir, lfmt, lcaLog),
+        // searchFile));
 
     }
 
-    private void addRow(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir, boolean lfmt, boolean lcaLog,
+    private void addRow(AppProfile appProfile, App ap, String theAppHost, String searchFile, String logsDir,
+            boolean lfmt, boolean lcaLog,
             String errorMessage) {
-//        tabRows.add(new CommandExecutor.JTableFileEntry(appProfile, getStorage(appProfile, ap, theAppHost, searchFile, logsDir, lfmt, lcaLog), searchFile));
+        // tabRows.add(new CommandExecutor.JTableFileEntry(appProfile,
+        // getStorage(appProfile, ap, theAppHost, searchFile, logsDir, lfmt, lcaLog),
+        // searchFile));
 
     }
 
@@ -63,7 +69,7 @@ abstract class JTableFileBaseModel<EntryType> extends AbstractTableModel {
     }
 
     public EntryType get(int i) {
-        return (EntryType) tabRows.get(i);
+        return (i < getRowCount() && i>=0) ? (EntryType) tabRows.get(i) : null;
     }
 
     void clear() {

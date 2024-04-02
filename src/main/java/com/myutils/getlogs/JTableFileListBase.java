@@ -35,7 +35,7 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
     private final TableCellRenderer savedHeaderRenderer;
     TableRowSorter<TableModel> sorter = null;
 
-    public JTableFileListBase(JTableFileBaseModel mod) {
+    public JTableFileListBase(JTableFileBaseModel<EntryType> mod) {
         super();
         savedHeaderRenderer = getTableHeader().getDefaultRenderer();
         setModel(mod);
@@ -73,7 +73,7 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
 
     @Override
     void theMousePressed(MouseEvent e) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

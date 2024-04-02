@@ -281,12 +281,13 @@ public abstract class JTablePopup extends JTable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-//                Point popupPoint = SwingUtilities.convertPoint((Component) e.getSource(), new Point(0, 0), tab);
+            //    Point popupPoint = SwingUtilities.convertPoint((Component) e.getSource(), new Point(0, 0), tab);
                 Point popupPoint = e.getPoint();
 //                 SwingUtilities.convertPointFromScreen(popupPoint, tab);
 //                inquirer.logger.debug("convert: " + e.getPoint() + " to " + popupPoint);
                 int row = tab.rowAtPoint(e.getPoint());
                 int col = tab.columnAtPoint(popupPoint);
+                logger.debug("popup, row: "+row+" col:"+col);
                 setPopupCol(col);
                 setPopupRow(row);
 //                if (inquirer.logger.isDebugEnabled()) {
@@ -324,12 +325,12 @@ public abstract class JTablePopup extends JTable {
     }
 
     private void theMousePressed1(MouseEvent e) {
-//        logger.debug("click at " + e.getPoint() + (e.isPopupTrigger() ? " popup!" : ""));
+       logger.debug("click at " + e.getPoint() + (e.isPopupTrigger() ? " popup!" : ""));
 
-//        if (e.isPopupTrigger()) {
-//            popupMenuWillBecomeVisible(e, this);
-//            theMousePressed(e);
-//        }
+       if (e.isPopupTrigger()) {
+           popupMenuWillBecomeVisible(e, this);
+           theMousePressed(e);
+       }
     }
 
     private void theMouseRelesed(MouseEvent e) {

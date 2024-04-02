@@ -23,7 +23,7 @@ class JTablePopupMenu extends JPopupMenu {
 
     JTablePopupMenu(JTablePopup aThis) {
         tab = aThis;
-//        addPopupMenuListener(new PopupListener());
+    //    addPopupMenuListener(new PopupListener());
 
     }
 
