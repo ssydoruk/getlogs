@@ -1846,7 +1846,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             ds.setRxType(RegexType.Default);
         } else if (rbDateTime.isSelected()) {
             ds.setRxType(RegexType.ShellRegex);
-        } else if (rbDateTime.isSelected()) {
+        } else if (rbSearchAny.isSelected()) {
             ds.setRxType(RegexType.Any);
         }
 

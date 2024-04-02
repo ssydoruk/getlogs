@@ -52,11 +52,13 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.mina.util.Base64;
 import org.apache.tools.ant.BuildException;
+import org.json.JSONArray;
 
 import com.jidesoft.dialog.StandardDialog;
 import com.myutils.logbrowser.common.ExecutionEnvironment;
@@ -304,8 +306,8 @@ public final class CommandExecutor {
             }
 
             logsDir.append("/").append(h) // .append("/")
-                    // .append(ap)
-                    ;
+            // .append(ap)
+            ;
         } else {
             logsDir.append(GetLogs.getProdBaseDir());
 
@@ -573,7 +575,7 @@ public final class CommandExecutor {
      *
      * @param logDir
      * @return Pair of [1st letter to lower case with $ attached], [Path without
-     * dir]
+     *         dir]
      */
     private Pair<String, String> getWinDrive(String logDir) {
         if (StringUtils.isNotEmpty(logDir) && logDir.length() > 1
@@ -632,7 +634,7 @@ public final class CommandExecutor {
 
                         if (entryNameSuffix.getKey().isEmpty()
                                 || (entryNameSuffix.getKey().equals(".")
-                                || fileName.contains(ap.getName().toLowerCase()))
+                                        || fileName.contains(ap.getName().toLowerCase()))
                                 || (fileName.contains(entryNameSuffix.getKey().toLowerCase()))) {
                             if (rxDateTime == null || rxDateTime.reset(fileName).find()) {
                                 BasicFileAttributes basicFileAttributes = Files.readAttributes(f.toPath(),
@@ -787,9 +789,9 @@ public final class CommandExecutor {
                             }
                         }
                         logger.debug("file [" + fileName + "] range: " + timeRange.toString()
-                                // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
-                                // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
-                                // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
+                        // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
+                        // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
+                        // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
                                 + " shouldadd: " + shouldAdd);
                         if (shouldAdd) {
                             lsFiles.add(new JTableFileEntry(appProfile,
@@ -849,7 +851,7 @@ public final class CommandExecutor {
             }
             try {
                 ExtProcess.ExecutionResult cmdOuts = executeCommand(
-                        StringUtils.join(new String[]{ds.getStatusScript(), StringUtils.join(appNames, " ")}, " "),
+                        StringUtils.join(new String[] { ds.getStatusScript(), StringUtils.join(appNames, " ") }, " "),
                         true, true, true);
                 logger.log(Level.INFO, StringUtils.join(cmdOuts));
                 if (cmdOuts != null) {
@@ -1332,7 +1334,7 @@ public final class CommandExecutor {
      * @param ap
      * @param theAppHost
      * @param logsDir
-     * @param fileNames - expected to contain only list of file names, no path
+     * @param fileNames  - expected to contain only list of file names, no path
      * @param isLFMT
      * @param lcaLog
      * @throws IOException
@@ -1949,29 +1951,29 @@ public final class CommandExecutor {
         }
     }
 
-//    private String sshNameClause(ArrayList<OSFile> fileNameClause) {
-//        if (fileNameClause != null && !fileNameClause.isEmpty()) {
-//            StringBuilder ret1 = new StringBuilder();
-//            if (fileNameClause.size() > 1) {
-//                ret1.append(("\\( "));
-//            }
-//            for (int i = 0; i < fileNameClause.size(); i++) {
-//                String s = fileNameClause.get(i).getFileName();
-//                if (i > 0) {
-//                    ret1.append(" -o ");
-//                }
-//                ret1.append("-name ").append(s);
-//
-//            }
-//            if (fileNameClause.size() > 1) {
-//                ret1.append((" \\)"));
-//            }
-//            return ret1.toString();
-//        } else {
-//            return null;
-//        }
-//
-//    }
+    // private String sshNameClause(ArrayList<OSFile> fileNameClause) {
+    // if (fileNameClause != null && !fileNameClause.isEmpty()) {
+    // StringBuilder ret1 = new StringBuilder();
+    // if (fileNameClause.size() > 1) {
+    // ret1.append(("\\( "));
+    // }
+    // for (int i = 0; i < fileNameClause.size(); i++) {
+    // String s = fileNameClause.get(i).getFileName();
+    // if (i > 0) {
+    // ret1.append(" -o ");
+    // }
+    // ret1.append("-name ").append(s);
+    //
+    // }
+    // if (fileNameClause.size() > 1) {
+    // ret1.append((" \\)"));
+    // }
+    // return ret1.toString();
+    // } else {
+    // return null;
+    // }
+    //
+    // }
     private void logMessage(String str, Exception e, AppProfile appProfile, App ap) {
         logMessage(getLogPrefix(appProfile, ap) + str, e);
     }
@@ -2009,7 +2011,8 @@ public final class CommandExecutor {
         } else {
             fileNameClause.append("*cloud*").append("-");
         }
-//        fileNameClause.append(GetLogs.cloudDatePattern(ds.getDateSpec(), ds.getTimeSpec(), ds.getTimeProfile()));
+        // fileNameClause.append(GetLogs.cloudDatePattern(ds.getDateSpec(),
+        // ds.getTimeSpec(), ds.getTimeProfile()));
         ArrayList<String> ret1 = new ArrayList<>();
         ret1.add(fileNameClause.toString());
         ret1.add("*cloud.log*");
@@ -2103,7 +2106,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     * parameter results in a zero sized array.
+     *         parameter results in a zero sized array.
      */
     public static String[] translateCommandline1(String toProcess) {
         if (toProcess == null || toProcess.length() == 0) {
@@ -2171,7 +2174,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     * parameter results in a zero sized array.
+     *         parameter results in a zero sized array.
      */
     public static String[] translateCommandline(String toProcess) {
         if (toProcess == null || toProcess.isEmpty()) {
@@ -2239,7 +2242,7 @@ public final class CommandExecutor {
                     "[^\\s]*\"(\\\\+\"|[^\"])*?\"|[^\\s]*'(\\\\+'|[^'])*?'|(\\\\\\s|[^\\s])+",
                     Pattern.MULTILINE);
 
-    private static final Pattern doubleQuote = Pattern.compile("(?<!\\\\)\"");
+    private static final Pattern unquotedStar = Pattern.compile("(?<!\\\\)\\*");
 
     private ArrayList<JTableFileEntry> lsAnsible(AppProfile appProfile,
             App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT,
@@ -2258,11 +2261,15 @@ public final class CommandExecutor {
 
             switch (ds.getRxType()) {
                 case Any:
+                    hh.put("dir", ds.getFindAnyDir());
+                    ArrayList<String> findrxAny = new ArrayList<>();
+                    findrxAny.add(RegExUtils.replaceAll(ds.getFindAnyRx(), unquotedStar, "\\*"));
+                    hh.put("findrx", findrxAny);
                     break;
 
                 case ShellRegex:
                     ArrayList<String> findrx = new ArrayList<>();
-                    findrx.add(getAppRegex(ap.getAppPrefix(), ds.getDate_time_rx()));
+                    findrx.add(getAppRegex(ap.getAppPrefix(), ds.getDateSpec(), ds.getTimeSpec()));
                     hh.put("findrx", findrx);
                     break;
 
@@ -2304,11 +2311,28 @@ public final class CommandExecutor {
                 for (String stdoutLine : stdout) {
                     String s = StringUtils.substringAfter(stdoutLine, "$$$filesfound$$$");
                     if (StringUtils.isNotEmpty(s)) {
-                        for (String f : StringUtils.splitByWholeSeparator(StringUtils.remove(s.trim(), "\""), "\\n")) {
-                            if (StringUtils.isNotEmpty(f)) {
+
+                        try {
+                            // assume for just in case, that we used stdout_lines
+                            JSONArray jsonarray = new JSONArray(s);
+                            for (int i = 0; i < jsonarray.length(); i++) {
+                                jsonarray.get(i);
                                 lsFiles.add(new JTableFileEntry(appProfile,
                                         getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog),
-                                        new OSFile(f)));
+                                        new OSFile(jsonarray.get(i).toString())));
+                            }
+                        } catch (Exception e) {
+                            logger.error("error parsing", e);
+                        }
+                        // if failed to parse stdout_lines
+                        if (lsFiles.size() == 0) {
+                            for (String f : StringUtils.splitByWholeSeparator(StringUtils.remove(s.trim(), "\""),
+                                    "\\n")) {
+                                if (StringUtils.isNotEmpty(f)) {
+                                    lsFiles.add(new JTableFileEntry(appProfile,
+                                            getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog),
+                                            new OSFile(f)));
+                                }
                             }
                         }
                     }
@@ -2329,8 +2353,9 @@ public final class CommandExecutor {
         return null;
     }
 
-    private String getAppRegex(String appPrefix, String date_time_rx) {
-        return StringUtils.join(".*/", appPrefix, "\\.", date_time_rx, "\\.+");
+    private String getAppRegex(String appPrefix, String dateRx, String timeRx) {
+        return StringUtils.join(".*/", appPrefix, "[^\\/]*",
+                "\\.", dateRx, "[0-9]*", "_", timeRx, "[0-9]*", "_", "\\.+");
     }
 
     private void dumpInventory(File tmpYml, String name, HostAppdir theAppHost, HashMap<String, Object> hh)
