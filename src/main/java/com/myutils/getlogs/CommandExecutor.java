@@ -1854,8 +1854,8 @@ public final class CommandExecutor {
     private void ansibleDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
             ArrayList<OSFile> files) throws IOException, InterruptedException {
 
-        File tmpFile = File.createTempFile("tmp", ".csv", Paths.get(ds.getCsvDir()).toFile());
-        File tmpYml = File.createTempFile("tmp", ".yml", Paths.get(GetLogs.getTmpDir()).toFile());
+        File tmpFile = File.createTempFile("tmp", ".csv", Paths.get(StringUtils.defaultIfBlank(ds.getCsvDir(), ".")).toFile());
+        File tmpYml = File.createTempFile("tmp", ".yml", Paths.get(StringUtils.defaultIfBlank(GetLogs.getTmpDir(), ".")).toFile());
         try {
 
             try (Writer wr = new BufferedWriter(new FileWriter(tmpFile))) {
