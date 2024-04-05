@@ -1923,8 +1923,8 @@ public final class CommandExecutor {
                 logger.info("ok");
             }
         } finally {
-            // FileUtils.deleteQuietly(tmpYml);
-            // FileUtils.deleteQuietly(tmpFile);
+            FileUtils.deleteQuietly(tmpYml);
+            FileUtils.deleteQuietly(tmpFile);
         }
     }
 
