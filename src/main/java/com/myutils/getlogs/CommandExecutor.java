@@ -1854,8 +1854,10 @@ public final class CommandExecutor {
     private void ansibleDownload(AppProfile appProfile, App ap, HostAppdir theAppHost, String logsDir,
             ArrayList<OSFile> files) throws IOException, InterruptedException {
 
-        File tmpFile = File.createTempFile("tmp", ".csv", Paths.get(StringUtils.defaultIfBlank(ds.getCsvDir(), ".")).toFile());
-        File tmpYml = File.createTempFile("tmp", ".yml", Paths.get(StringUtils.defaultIfBlank(GetLogs.getTmpDir(), ".")).toFile());
+        File tmpFile = File.createTempFile("tmp", ".csv",
+                Paths.get(StringUtils.defaultIfBlank(ds.getCsvDir(), ".")).toFile());
+        File tmpYml = File.createTempFile("tmp", ".yml",
+                Paths.get(StringUtils.defaultIfBlank(GetLogs.getTmpDir(), ".")).toFile());
         try {
 
             try (Writer wr = new BufferedWriter(new FileWriter(tmpFile))) {
@@ -2310,16 +2312,18 @@ public final class CommandExecutor {
 
                 for (String stdoutLine : stdout) {
                     String s = StringUtils.substringAfter(stdoutLine, "$$$filesfound$$$");
-                    if (StringUtils.isNotEmpty(s)) {
+                    if (StringUtils.isNotEmpty(s) && !StringUtils.startsWith(s, "[]")) {
 
                         try {
                             // assume for just in case, that we used stdout_lines
                             JSONArray jsonarray = new JSONArray(s);
                             for (int i = 0; i < jsonarray.length(); i++) {
-                                jsonarray.get(i);
-                                lsFiles.add(new JTableFileEntry(appProfile,
-                                        getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog),
-                                        new OSFile(jsonarray.get(i).toString())));
+                                String fName = jsonarray.get(i).toString();
+                                if (StringUtils.isNotBlank(fName)) {
+                                    lsFiles.add(new JTableFileEntry(appProfile,
+                                            getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog),
+                                            new OSFile(fName)));
+                                }
                             }
                         } catch (Exception e) {
                             logger.error("error parsing", e);
@@ -2328,7 +2332,7 @@ public final class CommandExecutor {
                         if (lsFiles.size() == 0) {
                             for (String f : StringUtils.splitByWholeSeparator(StringUtils.remove(s.trim(), "\""),
                                     "\\n")) {
-                                if (StringUtils.isNotEmpty(f)) {
+                                if (StringUtils.isNotBlank(f)) {
                                     lsFiles.add(new JTableFileEntry(appProfile,
                                             getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog),
                                             new OSFile(f)));
