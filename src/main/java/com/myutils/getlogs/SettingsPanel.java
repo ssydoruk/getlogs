@@ -576,6 +576,16 @@ public class SettingsPanel extends javax.swing.JPanel {
         jtfAppLogDirectory.setText((appIdx >= 0)
                 ? ((App) lmApps.getElementAt(appIdx)).getAppDir()
                 : "");
+        tfAnsibleBecomeUser.setEnabled(appIdx >= 0);
+        tfAnsibleBecomeUser.setText((appIdx >= 0)
+                ? ((App) lmApps.getElementAt(appIdx)).getBecomeUser()
+                : "");
+
+        tfDefaultRX.setEnabled(appIdx >= 0);
+        tfDefaultRX.setText((appIdx >= 0)
+                ? ((App) lmApps.getElementAt(appIdx)).getDefaultRx()
+                : "");
+
         if (appIdx >= 0) {
             if (((App) lmApps.getElementAt(appIdx)).isIsWindows()) {
                 jrbOSWindows.setSelected(true);
@@ -1841,7 +1851,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         ds.setFindAnyDir(tfFindAnyDirectory.getText());
         ds.setFindAnyRx(tfFindAnyRegex.getText());
-        
+
         if (rbDefaultMask.isSelected()) {
             ds.setRxType(RegexType.Default);
         } else if (rbDateTime.isSelected()) {
