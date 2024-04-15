@@ -2286,6 +2286,12 @@ public final class CommandExecutor {
                 }
                     break;
 
+                case Default: {
+                    hostInventory.addHost(ap.getName(), theAppHost, getHH(ap, null, null));
+
+                }
+                    break;
+
             }
             hostInventory.dump(tmpYml);
             cmd = StringUtils.replace(cmd, "${INVENTORY}", tmpYml.getAbsolutePath());
@@ -2356,7 +2362,7 @@ public final class CommandExecutor {
                 return lsFiles;
             }
         } finally {
-            FileUtils.deleteQuietly(tmpYml);
+            // FileUtils.deleteQuietly(tmpYml);
         }
         return null;
     }
@@ -2409,14 +2415,16 @@ public final class CommandExecutor {
 
     }
 
-    private HashMap<String, Object> getHH(App ap, ArrayList<String> findrxAny, String findAnyDir) {
+    private HashMap<String, Object> getHH(App ap, ArrayList<String> findRx, String log_dir) {
         LinkedHashMap<String, Object> hh = new LinkedHashMap<>();
         hh.put("destdir", ds.getOutputDir());
 
         hh.put("lastfiles", ds.getMaxFiles());
 
-        hh.put("dir", findAnyDir);
-        hh.put("findrx", findrxAny);
+        if(StringUtils.isNotBlank(log_dir))
+            hh.put("dir", log_dir);
+        if(findRx!=null && !findRx.isEmpty())
+            hh.put("findrx", findRx);
 
         hh.put("webport", "8082");
         hh.put("csv_dir", "/Users/ssydoruk/work/getfiles/csv");
