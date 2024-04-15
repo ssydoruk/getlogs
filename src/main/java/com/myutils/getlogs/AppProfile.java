@@ -124,13 +124,18 @@ public final class AppProfile {
         apps.add(ret);
         return ret;
     }
+    
+    App addApp(String appName, HostAppdir appParams, String baseLogDirectory) {
+        App ret = new App(appName, appParams, baseLogDirectory);
+        apps.add(ret);
+        return ret;
+    }
 
     void removeApp(App app) {
         boolean ret = apps.remove(app);
         if (!ret) {
             System.out.println("not removed: " + app);
         }
-
     }
 
     public void checkLFMT(ArrayList<DownloadSettings.LFMTHostInstance> lfmtHostInstances) {

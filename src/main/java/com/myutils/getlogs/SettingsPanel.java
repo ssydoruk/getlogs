@@ -586,6 +586,11 @@ public class SettingsPanel extends javax.swing.JPanel {
                 ? ((App) lmApps.getElementAt(appIdx)).getDefaultRx()
                 : "");
 
+        tfArchiveDir.setEnabled(appIdx >= 0);
+        tfArchiveDir.setText((appIdx >= 0)
+                ? ((App) lmApps.getElementAt(appIdx)).getArchiveDir()
+                : "");
+
         if (appIdx >= 0) {
             if (((App) lmApps.getElementAt(appIdx)).isIsWindows()) {
                 jrbOSWindows.setSelected(true);
@@ -698,12 +703,15 @@ public class SettingsPanel extends javax.swing.JPanel {
         rbCloudLogs = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
+        jPanel42 = new javax.swing.JPanel();
         jlbLogDirectory = new javax.swing.JLabel();
         jtfLogDirectory = new javax.swing.JTextField();
         jPanel12 = new javax.swing.JPanel();
+        jPanel43 = new javax.swing.JPanel();
         jlbFileNameBase = new javax.swing.JLabel();
         jtfFileNameBase = new javax.swing.JTextField();
         jPanel31 = new javax.swing.JPanel();
+        jPanel44 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         cbLoginProfile = new javax.swing.JComboBox<>();
         btEditLoginProfile = new javax.swing.JButton();
@@ -716,23 +724,30 @@ public class SettingsPanel extends javax.swing.JPanel {
         jbAppDelete = new javax.swing.JButton();
         jPanel14 = new javax.swing.JPanel();
         jpAppProperties = new javax.swing.JPanel();
-        jPanel28 = new javax.swing.JPanel();
-        jlbAppLogDirectory = new javax.swing.JLabel();
-        jtfAppLogDirectory = new javax.swing.JTextField();
-        jPanel29 = new javax.swing.JPanel();
-        jlbAppFileNameBase = new javax.swing.JLabel();
-        jtfAppFileNameBase = new javax.swing.JTextField();
-        jPanel36 = new javax.swing.JPanel();
-        jlbAppLogDirectory1 = new javax.swing.JLabel();
-        tfAnsibleBecomeUser = new javax.swing.JTextField();
-        jPanel37 = new javax.swing.JPanel();
-        jlbAppLogDirectory2 = new javax.swing.JLabel();
-        tfDefaultRX = new javax.swing.JTextField();
         jPanel30 = new javax.swing.JPanel();
         jrbOSLinux = new javax.swing.JRadioButton();
         jrbOSWindows = new javax.swing.JRadioButton();
-        jPanel34 = new javax.swing.JPanel();
+        jPanel35 = new javax.swing.JPanel();
+        jPanel28 = new javax.swing.JPanel();
         jPanel33 = new javax.swing.JPanel();
+        jlbAppLogDirectory = new javax.swing.JLabel();
+        jtfAppLogDirectory = new javax.swing.JTextField();
+        jPanel29 = new javax.swing.JPanel();
+        jPanel34 = new javax.swing.JPanel();
+        jlbAppFileNameBase = new javax.swing.JLabel();
+        jtfAppFileNameBase = new javax.swing.JTextField();
+        jPanel36 = new javax.swing.JPanel();
+        jPanel40 = new javax.swing.JPanel();
+        jlbAppLogDirectory1 = new javax.swing.JLabel();
+        tfAnsibleBecomeUser = new javax.swing.JTextField();
+        jPanel37 = new javax.swing.JPanel();
+        jPanel41 = new javax.swing.JPanel();
+        jlbAppLogDirectory2 = new javax.swing.JLabel();
+        tfDefaultRX = new javax.swing.JTextField();
+        jPanel51 = new javax.swing.JPanel();
+        jPanel52 = new javax.swing.JPanel();
+        lbArchiveDir = new javax.swing.JLabel();
+        tfArchiveDir = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         cbProdLog = new javax.swing.JCheckBox();
@@ -754,9 +769,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         jpCommandParams = new javax.swing.JPanel();
         jPanel16 = new javax.swing.JPanel();
         jPanel23 = new javax.swing.JPanel();
+        jPanel49 = new javax.swing.JPanel();
         lCommand = new javax.swing.JLabel();
         cbCommand = new javax.swing.JComboBox();
         jPanel32 = new javax.swing.JPanel();
+        jPanel50 = new javax.swing.JPanel();
         jlbLogDirectory1 = new javax.swing.JLabel();
         jsMaxThreads = new javax.swing.JSpinner();
         jPanel18 = new javax.swing.JPanel();
@@ -764,10 +781,13 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel22 = new javax.swing.JPanel();
         cbUseRSync = new javax.swing.JCheckBox();
         jPanel21 = new javax.swing.JPanel();
+        jPanel46 = new javax.swing.JPanel();
         lGrepText = new javax.swing.JLabel();
         tfGrepText = new javax.swing.JTextField();
         jpDownloadParams = new javax.swing.JPanel();
         jPanel24 = new javax.swing.JPanel();
+        jPanel45 = new javax.swing.JPanel();
+        jPanel47 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jtfOutputDir = new javax.swing.JTextField();
         jbSelectDirectory = new javax.swing.JButton();
@@ -775,6 +795,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         pAfterActions = new javax.swing.JPanel();
         jpStatusScript = new javax.swing.JPanel();
         jPanel27 = new javax.swing.JPanel();
+        jPanel48 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         jtfStatusScript = new javax.swing.JTextField();
         jbSelectScript = new javax.swing.JButton();
@@ -927,19 +948,33 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel4.setLayout(new java.awt.GridLayout());
+
+        jPanel42.setLayout(new javax.swing.BoxLayout(jPanel42, javax.swing.BoxLayout.LINE_AXIS));
 
         jlbLogDirectory.setText("Log files directory");
-        jPanel4.add(jlbLogDirectory);
-        jPanel4.add(jtfLogDirectory);
+        jPanel42.add(jlbLogDirectory);
+
+        jtfLogDirectory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jtfLogDirectoryActionPerformed(evt);
+            }
+        });
+        jPanel42.add(jtfLogDirectory);
+
+        jPanel4.add(jPanel42);
 
         jPanel3.add(jPanel4);
 
-        jPanel12.setLayout(new javax.swing.BoxLayout(jPanel12, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel12.setLayout(new java.awt.GridLayout());
+
+        jPanel43.setLayout(new javax.swing.BoxLayout(jPanel43, javax.swing.BoxLayout.LINE_AXIS));
 
         jlbFileNameBase.setText("Log files name base");
-        jPanel12.add(jlbFileNameBase);
-        jPanel12.add(jtfFileNameBase);
+        jPanel43.add(jlbFileNameBase);
+        jPanel43.add(jtfFileNameBase);
+
+        jPanel12.add(jPanel43);
 
         jPanel3.add(jPanel12);
 
@@ -947,17 +982,19 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpProfileProperties.add(jPanel1);
 
-        jPanel31.setLayout(new javax.swing.BoxLayout(jPanel31, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel31.setLayout(new java.awt.GridLayout());
+
+        jPanel44.setLayout(new javax.swing.BoxLayout(jPanel44, javax.swing.BoxLayout.LINE_AXIS));
 
         jLabel1.setText("Login profile");
-        jPanel31.add(jLabel1);
+        jPanel44.add(jLabel1);
 
         cbLoginProfile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 cbLoginProfileItemStateChanged(evt);
             }
         });
-        jPanel31.add(cbLoginProfile);
+        jPanel44.add(cbLoginProfile);
 
         btEditLoginProfile.setText("...");
         btEditLoginProfile.addActionListener(new java.awt.event.ActionListener() {
@@ -965,7 +1002,9 @@ public class SettingsPanel extends javax.swing.JPanel {
                 btEditLoginProfileActionPerformed(evt);
             }
         });
-        jPanel31.add(btEditLoginProfile);
+        jPanel44.add(btEditLoginProfile);
+
+        jPanel31.add(jPanel44);
 
         jpProfileProperties.add(jPanel31);
 
@@ -1014,62 +1053,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpAppProperties.setLayout(new javax.swing.BoxLayout(jpAppProperties, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel28.setLayout(new java.awt.GridLayout(1, 0));
-
-        jlbAppLogDirectory.setText("Log files directory");
-        jPanel28.add(jlbAppLogDirectory);
-
-        jtfAppLogDirectory.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                jtfAppLogDirectoryFocusLost(evt);
-            }
-        });
-        jPanel28.add(jtfAppLogDirectory);
-
-        jpAppProperties.add(jPanel28);
-
-        jPanel29.setLayout(new java.awt.GridLayout(1, 0));
-
-        jlbAppFileNameBase.setText("Log files name base");
-        jPanel29.add(jlbAppFileNameBase);
-
-        jtfAppFileNameBase.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                jtfAppFileNameBaseFocusLost(evt);
-            }
-        });
-        jPanel29.add(jtfAppFileNameBase);
-
-        jpAppProperties.add(jPanel29);
-
-        jPanel36.setLayout(new java.awt.GridLayout(1, 0));
-
-        jlbAppLogDirectory1.setText("ansible become user");
-        jPanel36.add(jlbAppLogDirectory1);
-
-        tfAnsibleBecomeUser.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                tfAnsibleBecomeUserFocusLost(evt);
-            }
-        });
-        jPanel36.add(tfAnsibleBecomeUser);
-
-        jpAppProperties.add(jPanel36);
-
-        jPanel37.setLayout(new java.awt.GridLayout(1, 0));
-
-        jlbAppLogDirectory2.setText("default rx");
-        jPanel37.add(jlbAppLogDirectory2);
-
-        tfDefaultRX.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                tfDefaultRXFocusLost(evt);
-            }
-        });
-        jPanel37.add(tfDefaultRX);
-
-        jpAppProperties.add(jPanel37);
-
         jPanel30.setLayout(new javax.swing.BoxLayout(jPanel30, javax.swing.BoxLayout.LINE_AXIS));
 
         bgOS.add(jrbOSLinux);
@@ -1093,15 +1076,108 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpAppProperties.add(jPanel30);
 
+        jPanel35.setLayout(new javax.swing.BoxLayout(jPanel35, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jPanel28.setLayout(new java.awt.GridLayout());
+
+        jPanel33.setLayout(new javax.swing.BoxLayout(jPanel33, javax.swing.BoxLayout.LINE_AXIS));
+
+        jlbAppLogDirectory.setText("Log files directory");
+        jPanel33.add(jlbAppLogDirectory);
+
+        jtfAppLogDirectory.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                jtfAppLogDirectoryFocusLost(evt);
+            }
+        });
+        jPanel33.add(jtfAppLogDirectory);
+
+        jPanel28.add(jPanel33);
+
+        jPanel35.add(jPanel28);
+
+        jPanel29.setLayout(new java.awt.GridLayout());
+
+        jPanel34.setLayout(new javax.swing.BoxLayout(jPanel34, javax.swing.BoxLayout.LINE_AXIS));
+
+        jlbAppFileNameBase.setText("Log files name base");
+        jPanel34.add(jlbAppFileNameBase);
+
+        jtfAppFileNameBase.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                jtfAppFileNameBaseFocusLost(evt);
+            }
+        });
+        jPanel34.add(jtfAppFileNameBase);
+
+        jPanel29.add(jPanel34);
+
+        jPanel35.add(jPanel29);
+
+        jPanel36.setLayout(new java.awt.GridLayout());
+
+        jPanel40.setLayout(new javax.swing.BoxLayout(jPanel40, javax.swing.BoxLayout.LINE_AXIS));
+
+        jlbAppLogDirectory1.setText("Become user");
+        jPanel40.add(jlbAppLogDirectory1);
+
+        tfAnsibleBecomeUser.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tfAnsibleBecomeUserFocusLost(evt);
+            }
+        });
+        tfAnsibleBecomeUser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tfAnsibleBecomeUserActionPerformed(evt);
+            }
+        });
+        jPanel40.add(tfAnsibleBecomeUser);
+
+        jPanel36.add(jPanel40);
+
+        jPanel35.add(jPanel36);
+
+        jPanel37.setLayout(new java.awt.GridLayout());
+
+        jPanel41.setLayout(new javax.swing.BoxLayout(jPanel41, javax.swing.BoxLayout.LINE_AXIS));
+
+        jlbAppLogDirectory2.setText("Default rx");
+        jPanel41.add(jlbAppLogDirectory2);
+
+        tfDefaultRX.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tfDefaultRXFocusLost(evt);
+            }
+        });
+        jPanel41.add(tfDefaultRX);
+
+        jPanel37.add(jPanel41);
+
+        jPanel35.add(jPanel37);
+
+        jPanel51.setLayout(new java.awt.GridLayout());
+
+        jPanel52.setLayout(new javax.swing.BoxLayout(jPanel52, javax.swing.BoxLayout.LINE_AXIS));
+
+        lbArchiveDir.setText("Archive directory");
+        jPanel52.add(lbArchiveDir);
+
+        tfArchiveDir.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tfArchiveDirFocusLost(evt);
+            }
+        });
+        jPanel52.add(tfArchiveDir);
+
+        jPanel51.add(jPanel52);
+
+        jPanel35.add(jPanel51);
+
+        jpAppProperties.add(jPanel35);
+
         jpAppsBase.add(jpAppProperties);
 
-        jPanel34.setLayout(new java.awt.BorderLayout());
-        jpAppsBase.add(jPanel34);
-
         jpAllProfiles.add(jpAppsBase);
-
-        jPanel33.setLayout(new java.awt.BorderLayout());
-        jpAllProfiles.add(jPanel33);
 
         add(jpAllProfiles);
 
@@ -1213,10 +1289,12 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel16.setLayout(new javax.swing.BoxLayout(jPanel16, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel23.setLayout(new javax.swing.BoxLayout(jPanel23, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel23.setLayout(new java.awt.GridLayout());
+
+        jPanel49.setLayout(new javax.swing.BoxLayout(jPanel49, javax.swing.BoxLayout.LINE_AXIS));
 
         lCommand.setText("Command");
-        jPanel23.add(lCommand);
+        jPanel49.add(lCommand);
 
         cbCommand.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cbCommand.addActionListener(new java.awt.event.ActionListener() {
@@ -1224,15 +1302,21 @@ public class SettingsPanel extends javax.swing.JPanel {
                 cbCommandActionPerformed(evt);
             }
         });
-        jPanel23.add(cbCommand);
+        jPanel49.add(cbCommand);
+
+        jPanel23.add(jPanel49);
 
         jPanel16.add(jPanel23);
 
-        jPanel32.setLayout(new javax.swing.BoxLayout(jPanel32, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel32.setLayout(new java.awt.GridLayout());
+
+        jPanel50.setLayout(new javax.swing.BoxLayout(jPanel50, javax.swing.BoxLayout.LINE_AXIS));
 
         jlbLogDirectory1.setText("Max threads");
-        jPanel32.add(jlbLogDirectory1);
-        jPanel32.add(jsMaxThreads);
+        jPanel50.add(jlbLogDirectory1);
+        jPanel50.add(jsMaxThreads);
+
+        jPanel32.add(jPanel50);
 
         jPanel16.add(jPanel32);
 
@@ -1251,11 +1335,15 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel18.add(jPanel20);
 
-        jPanel21.setLayout(new javax.swing.BoxLayout(jPanel21, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel21.setLayout(new java.awt.GridLayout());
+
+        jPanel46.setLayout(new javax.swing.BoxLayout(jPanel46, javax.swing.BoxLayout.LINE_AXIS));
 
         lGrepText.setText("text to grep");
-        jPanel21.add(lGrepText);
-        jPanel21.add(tfGrepText);
+        jPanel46.add(lGrepText);
+        jPanel46.add(tfGrepText);
+
+        jPanel21.add(jPanel46);
 
         jPanel18.add(jPanel21);
 
@@ -1265,11 +1353,15 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpDownloadParams.setLayout(new javax.swing.BoxLayout(jpDownloadParams, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel24.setLayout(new javax.swing.BoxLayout(jPanel24, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel24.setLayout(new java.awt.GridLayout());
+
+        jPanel45.setLayout(new java.awt.GridLayout());
+
+        jPanel47.setLayout(new javax.swing.BoxLayout(jPanel47, javax.swing.BoxLayout.LINE_AXIS));
 
         jLabel2.setText("Output directory");
-        jPanel24.add(jLabel2);
-        jPanel24.add(jtfOutputDir);
+        jPanel47.add(jLabel2);
+        jPanel47.add(jtfOutputDir);
 
         jbSelectDirectory.setText("...");
         jbSelectDirectory.addActionListener(new java.awt.event.ActionListener() {
@@ -1277,7 +1369,11 @@ public class SettingsPanel extends javax.swing.JPanel {
                 jbSelectDirectoryActionPerformed(evt);
             }
         });
-        jPanel24.add(jbSelectDirectory);
+        jPanel47.add(jbSelectDirectory);
+
+        jPanel45.add(jPanel47);
+
+        jPanel24.add(jPanel45);
 
         jpDownloadParams.add(jPanel24);
 
@@ -1293,11 +1389,13 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpStatusScript.setLayout(new javax.swing.BoxLayout(jpStatusScript, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel27.setLayout(new javax.swing.BoxLayout(jPanel27, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel27.setLayout(new java.awt.GridLayout());
+
+        jPanel48.setLayout(new javax.swing.BoxLayout(jPanel48, javax.swing.BoxLayout.LINE_AXIS));
 
         jLabel4.setText("App status script");
-        jPanel27.add(jLabel4);
-        jPanel27.add(jtfStatusScript);
+        jPanel48.add(jLabel4);
+        jPanel48.add(jtfStatusScript);
 
         jbSelectScript.setText("...");
         jbSelectScript.addActionListener(new java.awt.event.ActionListener() {
@@ -1305,7 +1403,9 @@ public class SettingsPanel extends javax.swing.JPanel {
                 jbSelectScriptActionPerformed(evt);
             }
         });
-        jPanel27.add(jbSelectScript);
+        jPanel48.add(jbSelectScript);
+
+        jPanel27.add(jPanel48);
 
         jpStatusScript.add(jPanel27);
 
@@ -1443,7 +1543,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 for (int selectedRow : selectedRows) {
                     String app = (String) infoTableModel.getValueAt(selectedRow, 0);
 
-                    App addApp = profile.addApp(app, GetLogs.getHosts().getAppDir(app));
+                    App addApp = profile.addApp(app, GetLogs.getHosts().lookupHost(app), profile.getLogDirectory());
 //                lmApps.addElement(addApp);
 //                selValues.add((String) infoTableModel.getValueAt(selectedRow, 0));
                 }
@@ -1579,7 +1679,13 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_tfAnsibleBecomeUserFocusLost
 
     private void tfDefaultRXFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfDefaultRXFocusLost
-        // TODO add your handling code here:
+
+        JTextField fld = (JTextField) evt.getSource();
+        if (fld.isEnabled() && appIdx >= 0) {//single app selected
+            ((App) clbApps.getModel().getElementAt(appIdx)).setDefaultRx(fld.getText()
+            );
+        }
+
     }//GEN-LAST:event_tfDefaultRXFocusLost
 
     private void rbDefaultMaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbDefaultMaskActionPerformed
@@ -1606,6 +1712,29 @@ public class SettingsPanel extends javax.swing.JPanel {
         setRxType(regexType.Any);
 
     }//GEN-LAST:event_rbSearchAnyActionPerformed
+
+    private void tfArchiveDirFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfArchiveDirFocusLost
+
+        JTextField fld = (JTextField) evt.getSource();
+        if (fld.isEnabled() && appIdx >= 0) {//single app selected
+            ((App) clbApps.getModel().getElementAt(appIdx)).setArchiveDir(fld.getText()
+            );
+        }
+
+    }//GEN-LAST:event_tfArchiveDirFocusLost
+
+    private void jtfLogDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfLogDirectoryActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jtfLogDirectoryActionPerformed
+
+    private void tfAnsibleBecomeUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfAnsibleBecomeUserActionPerformed
+        JTextField fld = (JTextField) evt.getSource();
+        if (fld.isEnabled() && appIdx >= 0) {//single app selected
+            ((App) clbApps.getModel().getElementAt(appIdx)).setBecomeUser(fld.getText()
+            );
+        }
+
+    }//GEN-LAST:event_tfAnsibleBecomeUserActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;
@@ -1655,12 +1784,26 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel32;
     private javax.swing.JPanel jPanel33;
     private javax.swing.JPanel jPanel34;
+    private javax.swing.JPanel jPanel35;
     private javax.swing.JPanel jPanel36;
     private javax.swing.JPanel jPanel37;
     private javax.swing.JPanel jPanel38;
     private javax.swing.JPanel jPanel39;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel40;
+    private javax.swing.JPanel jPanel41;
+    private javax.swing.JPanel jPanel42;
+    private javax.swing.JPanel jPanel43;
+    private javax.swing.JPanel jPanel44;
+    private javax.swing.JPanel jPanel45;
+    private javax.swing.JPanel jPanel46;
+    private javax.swing.JPanel jPanel47;
+    private javax.swing.JPanel jPanel48;
+    private javax.swing.JPanel jPanel49;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel50;
+    private javax.swing.JPanel jPanel51;
+    private javax.swing.JPanel jPanel52;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
@@ -1707,6 +1850,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JTextField jtfStatusScript;
     private javax.swing.JLabel lCommand;
     private javax.swing.JLabel lGrepText;
+    private javax.swing.JLabel lbArchiveDir;
     private javax.swing.JLabel lbDateRegex;
     private javax.swing.JLabel lbTimeRegex;
     private javax.swing.JPanel pAfterActions;
@@ -1719,6 +1863,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton rbSearchAny;
     private javax.swing.JSpinner spMaxFiles;
     private javax.swing.JTextField tfAnsibleBecomeUser;
+    private javax.swing.JTextField tfArchiveDir;
     private javax.swing.JTextField tfDateRegex;
     private javax.swing.JTextField tfDefaultRX;
     private javax.swing.JTextField tfFindAnyDirectory;
