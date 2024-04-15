@@ -7,11 +7,13 @@ package com.myutils.getlogs;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.xbill.DNS.*;
 import org.xbill.DNS.Record;
 import org.xbill.DNS.lookup.LookupSession;
+import org.xbill.DNS.spi.DNSJavaNameService;
 
 /**
  *
@@ -21,32 +23,49 @@ public class NewClass {
 
     public static void main(String[] args) throws Exception {
 
-        Record queryRecord = Record.newRecord(Name.fromString("dnsjava.org."), org.xbill.DNS.Type.A, DClass.IN);
-        Message queryMessage = Message.newQuery(queryRecord);
-        Resolver r = new SimpleResolver("8.8.8.8");
-        r.sendAsync(queryMessage)
-                .whenComplete(
-                        (answer, ex) -> {
-                            if (ex == null) {
-                                System.out.println(answer);
-                            } else {
-                                ex.printStackTrace();
-                            }
-                        })
-                .toCompletableFuture()
-                .get();
+        // Lookup lookup = new Lookup("rn-voicep-lapp28.corp.apple.com",
+        // org.xbill.DNS.Type.ANY);
+        // Resolver resolver = new SimpleResolver();
+        // lookup.setResolver(resolver);
+        // lookup.setCache(null);
+        // Record[] records = lookup.run();
+        // if (lookup.getResult() == Lookup.SUCCESSFUL) {
+        // String responseMessage = null;
+        // String listingType = null;
+        // for (int i = 0; i < records.length; i++) {
+        // if (records[i] instanceof TXTRecord) {
+        // TXTRecord txt = (TXTRecord) records[i];
+        // for (Iterator j = txt.getStrings().iterator(); j.hasNext();) {
+        // responseMessage += (String) j.next();
+        // }
+        // } else if (records[i] instanceof ARecord) {
+        // listingType = ((ARecord) records[i]).getAddress().getHostAddress();
+        // }
+        // }
+        // System.err.println("Found!");
+        // System.err.println("Response Message: " + responseMessage);
+        // System.err.println("Listing Type: " + listingType);
+        // } else if (lookup.getResult() == Lookup.HOST_NOT_FOUND) {
+        // System.err.println("Not found.");
+        // } else {
+        // System.err.println("Error!");
+        // }
 
         List<InetAddress> hostIPs = new ArrayList<>();
         try {
-            Lookup lookup = new Lookup("www.google.com");
-            Resolver resolver = new SimpleResolver("www.google.com");
-            lookup.setResolver(resolver);
-            Record[] records = lookup.run();
-            if (records == null) {
+            Lookup lookup1 = new Lookup("rn-voicep-lapp28.corp.apple.com", org.xbill.DNS.Type.CNAME);
+            Resolver resolver1 = new SimpleResolver();
+            lookup1.setResolver(resolver1);
+            Record[] records1 = lookup1.run();
+            if (records1 == null) {
                 System.out.println("null");
             }
-            for (Record record : records) {
-                hostIPs.add(((ARecord) record).getAddress());
+            for (Record record : records1) {
+                if (record instanceof CNAMERecord) {
+                    CNAMERecord r = (CNAMERecord) record;
+                    System.out.println(r.getName() + " " + r.getTarget());
+                }
+                // hostIPs.add(((ARecord) record).getAddress());
             }
         } catch (TextParseException ex) {
             System.out.println(ex);

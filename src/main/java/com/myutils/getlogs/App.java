@@ -28,7 +28,9 @@ class App implements Comparable {
         this(appName, appParams.getAppDir());
         setBecomeUser(appParams.getBecomeUser());
         setDefaultRx(appParams.getDefaultRx());
-        String archDir = Paths.get(baseLogDirectory, appParams.getBecomeUser(), "${HOSTNAME}", "logs", appName).toString();
+        String archDir = Paths
+                .get(baseLogDirectory, appParams.getBecomeUser(), "sharedmount", "${HOSTNAME}", "logs", appName)
+                .toString();
         setArchiveDir((isWindows)
                 ? FilenameUtils.separatorsToWindows(archDir)
                 : FilenameUtils.separatorsToUnix(archDir));
@@ -73,6 +75,7 @@ class App implements Comparable {
     public void setAppPrefix(String appPrefix) {
         this.appPrefix = appPrefix;
     }
+
     private boolean checked;
 
     public App(App app) {
@@ -123,10 +126,11 @@ class App implements Comparable {
 
     @Override
     public String toString() {
-//            System.out.println("--"+name);
+        // System.out.println("--"+name);
         try {
             if (GetLogs.isHostsVisible()) {
-                return name + " @ " + GetLogs.getHosts().lookupHost(name); //To change body of generated methods, choose Tools | Templates.
+                return name + " @ " + GetLogs.getHosts().lookupHost(name); // To change body of generated methods,
+                                                                           // choose Tools | Templates.
             } else {
                 return name;
             }

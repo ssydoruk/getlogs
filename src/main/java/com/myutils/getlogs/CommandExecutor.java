@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -74,6 +76,11 @@ import Utils.UnixProcess.RemoteExecutionResult;
 import Utils.UnixProcess.SSHClientWrapper;
 import Utils.UnixProcess.ThreadedUnTarGZ;
 import lombok.Synchronized;
+
+import org.xbill.DNS.CNAMERecord;
+import org.xbill.DNS.Lookup;
+import org.xbill.DNS.Name;
+import org.xbill.DNS.TextParseException;
 import org.xbill.DNS.lookup.LookupSession;
 
 /**
@@ -307,8 +314,8 @@ public final class CommandExecutor {
             }
 
             logsDir.append("/").append(h) // .append("/")
-                    // .append(ap)
-                    ;
+            // .append(ap)
+            ;
         } else {
             logsDir.append(GetLogs.getProdBaseDir());
 
@@ -576,7 +583,7 @@ public final class CommandExecutor {
      *
      * @param logDir
      * @return Pair of [1st letter to lower case with $ attached], [Path without
-     * dir]
+     *         dir]
      */
     private Pair<String, String> getWinDrive(String logDir) {
         if (StringUtils.isNotEmpty(logDir) && logDir.length() > 1
@@ -635,7 +642,7 @@ public final class CommandExecutor {
 
                         if (entryNameSuffix.getKey().isEmpty()
                                 || (entryNameSuffix.getKey().equals(".")
-                                || fileName.contains(ap.getName().toLowerCase()))
+                                        || fileName.contains(ap.getName().toLowerCase()))
                                 || (fileName.contains(entryNameSuffix.getKey().toLowerCase()))) {
                             if (rxDateTime == null || rxDateTime.reset(fileName).find()) {
                                 BasicFileAttributes basicFileAttributes = Files.readAttributes(f.toPath(),
@@ -790,9 +797,9 @@ public final class CommandExecutor {
                             }
                         }
                         logger.debug("file [" + fileName + "] range: " + timeRange.toString()
-                                // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
-                                // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
-                                // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
+                        // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
+                        // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
+                        // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
                                 + " shouldadd: " + shouldAdd);
                         if (shouldAdd) {
                             lsFiles.add(new JTableFileEntry(appProfile,
@@ -852,7 +859,7 @@ public final class CommandExecutor {
             }
             try {
                 ExtProcess.ExecutionResult cmdOuts = executeCommand(
-                        StringUtils.join(new String[]{ds.getStatusScript(), StringUtils.join(appNames, " ")}, " "),
+                        StringUtils.join(new String[] { ds.getStatusScript(), StringUtils.join(appNames, " ") }, " "),
                         true, true, true);
                 logger.log(Level.INFO, StringUtils.join(cmdOuts));
                 if (cmdOuts != null) {
@@ -1335,7 +1342,7 @@ public final class CommandExecutor {
      * @param ap
      * @param theAppHost
      * @param logsDir
-     * @param fileNames - expected to contain only list of file names, no path
+     * @param fileNames  - expected to contain only list of file names, no path
      * @param isLFMT
      * @param lcaLog
      * @throws IOException
@@ -2109,7 +2116,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     * parameter results in a zero sized array.
+     *         parameter results in a zero sized array.
      */
     public static String[] translateCommandline1(String toProcess) {
         if (toProcess == null || toProcess.length() == 0) {
@@ -2177,7 +2184,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     * parameter results in a zero sized array.
+     *         parameter results in a zero sized array.
      */
     public static String[] translateCommandline(String toProcess) {
         if (toProcess == null || toProcess.isEmpty()) {
@@ -2266,16 +2273,18 @@ public final class CommandExecutor {
                     findrxAny.add(RegExUtils.replaceAll(ds.getFindAnyRx(), unquotedStar, "\\*"));
                     hostInventory.addHost(ap.getName(), theAppHost, getHH(ap, findrxAny, ds.getFindAnyDir()));
                 }
-                break;
+                    break;
 
                 case ShellRegex: {
-                    ArrayList<String> findrx = new ArrayList<>();
-                    findrx.add(getAppRegex(ap.getAppPrefix(), ds.getDateSpec(), ds.getTimeSpec()));
-                    hostInventory.addHost(ap.getName() + "_STD", theAppHost, getHH(ap, findrx, ap.getAppDir()));
-                    String archiveDir = StringUtils.replace(ap.getArchiveDir(), "${HOSTNAME}", ap.getHost());
-                    hostInventory.addHost(ap.getName() + "_1", theAppHost, getHH(ap, findrx, archiveDir));
+                    for (String theHost : getAllHostNames(theAppHost.getHost())) {
+                        ArrayList<String> findrx = new ArrayList<>();
+                        findrx.add(getAppRegex(ap.getAppPrefix(), ds.getDateSpec(), ds.getTimeSpec()));
+                        String archiveDir = StringUtils.replace(ap.getArchiveDir(), "${HOSTNAME}", theHost);
+                        hostInventory.addHost(theHost, theAppHost, getHH(ap, findrx, archiveDir));
+
+                    }
                 }
-                break;
+                    break;
 
             }
             hostInventory.dump(tmpYml);
@@ -2352,6 +2361,41 @@ public final class CommandExecutor {
         return null;
     }
 
+    private List<String> getAllHostNames(String host) {
+        ArrayList<String> ret = new ArrayList<>();
+        try {
+            Lookup lookup1 = new Lookup(host, org.xbill.DNS.Type.CNAME);
+            org.xbill.DNS.Resolver resolver1 = new org.xbill.DNS.SimpleResolver();
+            lookup1.setResolver(resolver1);
+            org.xbill.DNS.Record[] records1 = lookup1.run();
+            if (records1 == null) {
+                logger.error("Empty response from DNS");
+                ret.add(host);
+            } else
+                for (org.xbill.DNS.Record record : records1) {
+                    if (record instanceof CNAMERecord) {
+                        CNAMERecord r = (CNAMERecord) record;
+                        addNotEmptyHostName(ret, r.getName());
+                        addNotEmptyHostName(ret, r.getAdditionalName());
+                        addNotEmptyHostName(ret, r.getTarget());
+                    }
+                }
+        } catch (TextParseException | UnknownHostException e) {
+            logger.error("Failed to do DNS lookup", e);
+            ret.add(host);
+        }
+
+        return ret;
+    }
+
+    private void addNotEmptyHostName(ArrayList<String> arr, Name name) {
+        if (name != null) {
+            String theName = name.toString(true);
+            if (StringUtils.isNotBlank(theName))
+                arr.add(theName);
+        }
+    }
+
     private String getAppRegex(String appPrefix, String dateRx, String timeRx) {
         return StringUtils.join(".*/", appPrefix, "[^\\/]*",
                 "\\.", dateRx, "[0-9]*", "_", timeRx, "[0-9]*", "_", "\\.+");
@@ -2366,7 +2410,7 @@ public final class CommandExecutor {
     }
 
     private HashMap<String, Object> getHH(App ap, ArrayList<String> findrxAny, String findAnyDir) {
-        HashMap<String, Object> hh = new HashMap<>();
+        LinkedHashMap<String, Object> hh = new LinkedHashMap<>();
         hh.put("destdir", ds.getOutputDir());
 
         hh.put("lastfiles", ds.getMaxFiles());
