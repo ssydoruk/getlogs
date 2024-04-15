@@ -74,6 +74,7 @@ import Utils.UnixProcess.RemoteExecutionResult;
 import Utils.UnixProcess.SSHClientWrapper;
 import Utils.UnixProcess.ThreadedUnTarGZ;
 import lombok.Synchronized;
+import org.xbill.DNS.lookup.LookupSession;
 
 /**
  * @author stepan_sydoruk
@@ -306,8 +307,8 @@ public final class CommandExecutor {
             }
 
             logsDir.append("/").append(h) // .append("/")
-            // .append(ap)
-            ;
+                    // .append(ap)
+                    ;
         } else {
             logsDir.append(GetLogs.getProdBaseDir());
 
@@ -575,7 +576,7 @@ public final class CommandExecutor {
      *
      * @param logDir
      * @return Pair of [1st letter to lower case with $ attached], [Path without
-     *         dir]
+     * dir]
      */
     private Pair<String, String> getWinDrive(String logDir) {
         if (StringUtils.isNotEmpty(logDir) && logDir.length() > 1
@@ -634,7 +635,7 @@ public final class CommandExecutor {
 
                         if (entryNameSuffix.getKey().isEmpty()
                                 || (entryNameSuffix.getKey().equals(".")
-                                        || fileName.contains(ap.getName().toLowerCase()))
+                                || fileName.contains(ap.getName().toLowerCase()))
                                 || (fileName.contains(entryNameSuffix.getKey().toLowerCase()))) {
                             if (rxDateTime == null || rxDateTime.reset(fileName).find()) {
                                 BasicFileAttributes basicFileAttributes = Files.readAttributes(f.toPath(),
@@ -789,9 +790,9 @@ public final class CommandExecutor {
                             }
                         }
                         logger.debug("file [" + fileName + "] range: " + timeRange.toString()
-                        // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
-                        // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
-                        // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
+                                // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
+                                // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
+                                // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
                                 + " shouldadd: " + shouldAdd);
                         if (shouldAdd) {
                             lsFiles.add(new JTableFileEntry(appProfile,
@@ -851,7 +852,7 @@ public final class CommandExecutor {
             }
             try {
                 ExtProcess.ExecutionResult cmdOuts = executeCommand(
-                        StringUtils.join(new String[] { ds.getStatusScript(), StringUtils.join(appNames, " ") }, " "),
+                        StringUtils.join(new String[]{ds.getStatusScript(), StringUtils.join(appNames, " ")}, " "),
                         true, true, true);
                 logger.log(Level.INFO, StringUtils.join(cmdOuts));
                 if (cmdOuts != null) {
@@ -1334,7 +1335,7 @@ public final class CommandExecutor {
      * @param ap
      * @param theAppHost
      * @param logsDir
-     * @param fileNames  - expected to contain only list of file names, no path
+     * @param fileNames - expected to contain only list of file names, no path
      * @param isLFMT
      * @param lcaLog
      * @throws IOException
@@ -2108,7 +2109,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     *         parameter results in a zero sized array.
+     * parameter results in a zero sized array.
      */
     public static String[] translateCommandline1(String toProcess) {
         if (toProcess == null || toProcess.length() == 0) {
@@ -2176,7 +2177,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     *         parameter results in a zero sized array.
+     * parameter results in a zero sized array.
      */
     public static String[] translateCommandline(String toProcess) {
         if (toProcess == null || toProcess.isEmpty()) {
@@ -2256,34 +2257,28 @@ public final class CommandExecutor {
         File tmpYml = File.createTempFile("tmp", ".yml", Paths.get(GetLogs.getTmpDir()).toFile());
 
         try {
-            HashMap<String, Object> hh = new HashMap<>();
-            hh.put("destdir", ds.getOutputDir());
 
-            hh.put("lastfiles", ds.getMaxFiles());
+            HostsInventory hostInventory = new HostsInventory();
 
             switch (ds.getRxType()) {
-                case Any:
-                    hh.put("dir", ds.getFindAnyDir());
+                case Any: {
                     ArrayList<String> findrxAny = new ArrayList<>();
                     findrxAny.add(RegExUtils.replaceAll(ds.getFindAnyRx(), unquotedStar, "\\*"));
-                    hh.put("findrx", findrxAny);
-                    break;
+                    hostInventory.addHost(ap.getName(), theAppHost, getHH(ap, findrxAny, ds.getFindAnyDir()));
+                }
+                break;
 
-                case ShellRegex:
+                case ShellRegex: {
                     ArrayList<String> findrx = new ArrayList<>();
                     findrx.add(getAppRegex(ap.getAppPrefix(), ds.getDateSpec(), ds.getTimeSpec()));
-                    hh.put("findrx", findrx);
-                    break;
+                    hostInventory.addHost(ap.getName() + "_STD", theAppHost, getHH(ap, findrx, ap.getAppDir()));
+                    String archiveDir = StringUtils.replace(ap.getArchiveDir(), "${HOSTNAME}", ap.getHost());
+                    hostInventory.addHost(ap.getName() + "_1", theAppHost, getHH(ap, findrx, archiveDir));
+                }
+                break;
 
             }
-            hh.put("webport", "8082");
-            hh.put("csv_dir", "/Users/ssydoruk/work/getfiles/csv");
-
-            ArrayList<String> hostList = new ArrayList<>(1);
-            hostList.add(ap.getName());
-            hh.put("target_hosts", hostList);
-
-            dumpInventory(tmpYml, ap.getName(), theAppHost, hh);
+            hostInventory.dump(tmpYml);
             cmd = StringUtils.replace(cmd, "${INVENTORY}", tmpYml.getAbsolutePath());
 
             Matcher m = cliCracker.matcher(cmd);
@@ -2368,6 +2363,25 @@ public final class CommandExecutor {
         h.addHost(name, theAppHost, hh);
         h.dump(tmpYml);
 
+    }
+
+    private HashMap<String, Object> getHH(App ap, ArrayList<String> findrxAny, String findAnyDir) {
+        HashMap<String, Object> hh = new HashMap<>();
+        hh.put("destdir", ds.getOutputDir());
+
+        hh.put("lastfiles", ds.getMaxFiles());
+
+        hh.put("dir", findAnyDir);
+        hh.put("findrx", findrxAny);
+
+        hh.put("webport", "8082");
+        hh.put("csv_dir", "/Users/ssydoruk/work/getfiles/csv");
+        hh.put("ansible_become_user", ap.getBecomeUser());
+
+        ArrayList<String> hostList = new ArrayList<>(1);
+        hostList.add(ap.getName());
+        hh.put("target_hosts", hostList);
+        return hh;
     }
 
     @FunctionalInterface
