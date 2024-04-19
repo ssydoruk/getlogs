@@ -2362,7 +2362,7 @@ public final class CommandExecutor {
                 return lsFiles;
             }
         } finally {
-            // FileUtils.deleteQuietly(tmpYml);
+            FileUtils.deleteQuietly(tmpYml);
         }
         return null;
     }
