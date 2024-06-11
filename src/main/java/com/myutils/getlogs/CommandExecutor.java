@@ -58,6 +58,7 @@ import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.logging.log4j.Level;
+import org.apache.mina.filter.logging.LogLevel;
 import org.apache.mina.util.Base64;
 import org.apache.tools.ant.BuildException;
 import org.json.JSONArray;
@@ -2254,6 +2255,14 @@ public final class CommandExecutor {
 
     private static final Pattern unquotedStar = Pattern.compile("(?<!\\\\)\\*");
 
+    private ArrayList<String> fillRxs(String... rxStrings) {
+        ArrayList<String> findrx = new ArrayList<>();
+        for (String s : rxStrings) {
+            findrx.add(s);
+        }
+        return findrx;
+    }
+
     private ArrayList<JTableFileEntry> lsAnsible(AppProfile appProfile,
             App ap, HostAppdir theAppHost, String logsDir, ArrayList<String> fileNameClause, boolean isLFMT,
             boolean lcaLog) throws IOException, InterruptedException {
@@ -2277,10 +2286,19 @@ public final class CommandExecutor {
 
                 case ShellRegex: {
                     for (String theHost : getAllHostNames(theAppHost.getHost())) {
-                        ArrayList<String> findrx = new ArrayList<>();
-                        findrx.add(getAppRegex(ap.getAppPrefix(), ds.getDateSpec(), ds.getTimeSpec()));
-                        String archiveDir = StringUtils.replace(ap.getArchiveDir(), "${HOSTNAME}", theHost);
-                        hostInventory.addHost(theHost, theAppHost, getHH(ap, findrx, archiveDir));
+                        String rxString = getAppRegex(ap.getAppPrefix(), ds.getDateSpec(), ds.getTimeSpec());
+                        String archiveDir;
+                        if (StringUtils.isNotEmpty(
+                                archiveDir = StringUtils.replace(ap.getArchiveDir(), "${HOSTNAME}", theHost))) {
+                            hostInventory.addHost(theHost + "_archive", theAppHost,
+                                    getHH(ap, fillRxs(rxString), archiveDir));
+                        } else
+                            logMessage(Level.ERROR, "Archive directory not configured", appProfile, ap);
+                        if (StringUtils.isNotEmpty(ds.getFindAnyDir()))
+                            hostInventory.addHost(theHost + "_main", theAppHost,
+                                    getHH(ap, fillRxs(rxString), ds.getFindAnyDir()));
+                        else
+                            logMessage(Level.ERROR, "Main log directory not configured", appProfile, ap);
 
                     }
                 }
@@ -2421,9 +2439,9 @@ public final class CommandExecutor {
 
         hh.put("lastfiles", ds.getMaxFiles());
 
-        if(StringUtils.isNotBlank(log_dir))
+        if (StringUtils.isNotBlank(log_dir))
             hh.put("dir", log_dir);
-        if(findRx!=null && !findRx.isEmpty())
+        if (findRx != null && !findRx.isEmpty())
             hh.put("findrx", findRx);
 
         hh.put("webport", "8082");

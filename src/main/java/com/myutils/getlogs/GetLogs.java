@@ -956,7 +956,7 @@ public class GetLogs {
     static void showGui(DownloadSettings ds) throws InterruptedException, InvocationTargetException {
         try {
             UIManager.setLookAndFeel(
-                    UIManager.getCrossPlatformLookAndFeelClassName());
+                    UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                 | UnsupportedLookAndFeelException ex) {
             logger.fatal("Cannot load look and feel", ex);
