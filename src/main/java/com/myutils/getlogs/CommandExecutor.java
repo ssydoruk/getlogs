@@ -1912,6 +1912,7 @@ public final class CommandExecutor {
             while (m.find()) {
                 sshParams.add(m.group(0));
             }
+            logger.info("download ansible; executing: " + StringUtils.join(sshParams, " "));
 
             procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, true, true));
             procSSH.setStdOutFilter(s -> {
@@ -2318,6 +2319,7 @@ public final class CommandExecutor {
             while (m.find()) {
                 sshParams.add(m.group(0));
             }
+            logger.info("ls ansible; executing: " + StringUtils.join(sshParams, " "));
             procSSH = extProcessManager.addProcess(new ExtProcessApp(appProfile, ap, sshParams, true, true));
             procSSH.setStdOutFilter(s -> {
                 return (StringUtils.defaultIfEmpty(StringUtils.substringAfter(s, "— INFO —"), s));
