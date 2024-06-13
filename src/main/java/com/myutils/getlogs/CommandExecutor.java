@@ -2288,11 +2288,16 @@ public final class CommandExecutor {
                 case ShellRegex: {
                     for (String theHost : getAllHostNames(theAppHost.getHost())) {
                         String rxString = getAppRegex(ap.getAppPrefix(), ds.getDateSpec(), ds.getTimeSpec());
-                        String archiveDir;
-                        if (StringUtils.isNotEmpty(
-                                archiveDir = StringUtils.replace(ap.getArchiveDir(), "${HOSTNAME}", theHost))) {
-                            hostInventory.addHost(theHost + "_archive", theAppHost,
-                                    getHH(ap, fillRxs(rxString), archiveDir));
+                        List<String> archiveDir1 = ap.getArchiveDir();
+                        if( archiveDir1 != null && !archiveDir1.isEmpty()) {
+                            String archiveDir;
+                            for (String arch_dir : archiveDir1) {
+                                if (StringUtils.isNotEmpty(
+                                        archiveDir = StringUtils.replace(arch_dir, "${HOSTNAME}", theHost))) {
+                                    hostInventory.addHost(theHost + "_archive", theAppHost,
+                                            getHH(ap, fillRxs(rxString), archiveDir));
+                                }                                
+                            }
                         } else
                             logMessage(Level.ERROR, "Archive directory not configured", appProfile, ap);
                         if (StringUtils.isNotEmpty(ds.getFindAnyDir()))

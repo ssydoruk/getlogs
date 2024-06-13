@@ -247,6 +247,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 ds.setMaxThreads((int) jsMaxThreads.getValue());
             }
         });
+        tfArchiveDir.setModel(new DefaultComboBoxModel<>());
     }
 
     private void jtfLogDirectoryTextChanged(FocusEvent e) {
@@ -587,10 +588,17 @@ public class SettingsPanel extends javax.swing.JPanel {
                 : "");
 
         tfArchiveDir.setEnabled(appIdx >= 0);
-        tfArchiveDir.setText((appIdx >= 0)
-                ? ((App) lmApps.getElementAt(appIdx)).getArchiveDir()
-                : "");
-
+        ComboBoxModel<String> aModel=new DefaultComboBoxModel<>();
+        
+        DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) tfArchiveDir.getModel();
+        if(appIdx>=0){
+            model.removeAllElements();
+            model.addAll(((App) lmApps.getElementAt(appIdx)).getArchiveDir());
+            tfArchiveDir.setSelectedIndex(0);
+        }
+        else {
+            model.removeAllElements();
+        }
         if (appIdx >= 0) {
             if (((App) lmApps.getElementAt(appIdx)).isIsWindows()) {
                 jrbOSWindows.setSelected(true);
@@ -747,7 +755,14 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel51 = new javax.swing.JPanel();
         jPanel52 = new javax.swing.JPanel();
         lbArchiveDir = new javax.swing.JLabel();
-        tfArchiveDir = new javax.swing.JTextField();
+        tfArchiveDir = new javax.swing.JComboBox<>();
+        jPanel53 = new javax.swing.JPanel();
+        jPanel54 = new javax.swing.JPanel();
+        jLabel6 = new javax.swing.JLabel();
+        cbGetUsing = new javax.swing.JComboBox<>();
+        jPanel55 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        cbLSUsing = new javax.swing.JComboBox<>();
         jPanel2 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         cbProdLog = new javax.swing.JCheckBox();
@@ -948,7 +963,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel4.setLayout(new java.awt.GridLayout());
+        jPanel4.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel42.setLayout(new javax.swing.BoxLayout(jPanel42, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -966,7 +981,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel3.add(jPanel4);
 
-        jPanel12.setLayout(new java.awt.GridLayout());
+        jPanel12.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel43.setLayout(new javax.swing.BoxLayout(jPanel43, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -982,7 +997,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpProfileProperties.add(jPanel1);
 
-        jPanel31.setLayout(new java.awt.GridLayout());
+        jPanel31.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel44.setLayout(new javax.swing.BoxLayout(jPanel44, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1078,7 +1093,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel35.setLayout(new javax.swing.BoxLayout(jPanel35, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel28.setLayout(new java.awt.GridLayout());
+        jPanel28.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel33.setLayout(new javax.swing.BoxLayout(jPanel33, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1096,7 +1111,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel35.add(jPanel28);
 
-        jPanel29.setLayout(new java.awt.GridLayout());
+        jPanel29.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel34.setLayout(new javax.swing.BoxLayout(jPanel34, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1114,7 +1129,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel35.add(jPanel29);
 
-        jPanel36.setLayout(new java.awt.GridLayout());
+        jPanel36.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel40.setLayout(new javax.swing.BoxLayout(jPanel40, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1137,7 +1152,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel35.add(jPanel36);
 
-        jPanel37.setLayout(new java.awt.GridLayout());
+        jPanel37.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel41.setLayout(new javax.swing.BoxLayout(jPanel41, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1155,18 +1170,14 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel35.add(jPanel37);
 
-        jPanel51.setLayout(new java.awt.GridLayout());
+        jPanel51.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel52.setLayout(new javax.swing.BoxLayout(jPanel52, javax.swing.BoxLayout.LINE_AXIS));
 
         lbArchiveDir.setText("Archive directory");
         jPanel52.add(lbArchiveDir);
 
-        tfArchiveDir.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                tfArchiveDirFocusLost(evt);
-            }
-        });
+        tfArchiveDir.setEditable(true);
         jPanel52.add(tfArchiveDir);
 
         jPanel51.add(jPanel52);
@@ -1174,6 +1185,30 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel35.add(jPanel51);
 
         jpAppProperties.add(jPanel35);
+
+        jPanel53.setLayout(new javax.swing.BoxLayout(jPanel53, javax.swing.BoxLayout.LINE_AXIS));
+
+        jPanel54.setLayout(new javax.swing.BoxLayout(jPanel54, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabel6.setText("Get using");
+        jPanel54.add(jLabel6);
+
+        cbGetUsing.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jPanel54.add(cbGetUsing);
+
+        jPanel53.add(jPanel54);
+
+        jPanel55.setLayout(new javax.swing.BoxLayout(jPanel55, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabel7.setText("ls using");
+        jPanel55.add(jLabel7);
+
+        cbLSUsing.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jPanel55.add(cbLSUsing);
+
+        jPanel53.add(jPanel55);
+
+        jpAppProperties.add(jPanel53);
 
         jpAppsBase.add(jpAppProperties);
 
@@ -1289,7 +1324,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel16.setLayout(new javax.swing.BoxLayout(jPanel16, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel23.setLayout(new java.awt.GridLayout());
+        jPanel23.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel49.setLayout(new javax.swing.BoxLayout(jPanel49, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1308,7 +1343,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel16.add(jPanel23);
 
-        jPanel32.setLayout(new java.awt.GridLayout());
+        jPanel32.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel50.setLayout(new javax.swing.BoxLayout(jPanel50, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1335,7 +1370,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel18.add(jPanel20);
 
-        jPanel21.setLayout(new java.awt.GridLayout());
+        jPanel21.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel46.setLayout(new javax.swing.BoxLayout(jPanel46, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1353,9 +1388,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpDownloadParams.setLayout(new javax.swing.BoxLayout(jpDownloadParams, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel24.setLayout(new java.awt.GridLayout());
+        jPanel24.setLayout(new java.awt.GridLayout(1, 0));
 
-        jPanel45.setLayout(new java.awt.GridLayout());
+        jPanel45.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel47.setLayout(new javax.swing.BoxLayout(jPanel47, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1389,7 +1424,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jpStatusScript.setLayout(new javax.swing.BoxLayout(jpStatusScript, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel27.setLayout(new java.awt.GridLayout());
+        jPanel27.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanel48.setLayout(new javax.swing.BoxLayout(jPanel48, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1713,16 +1748,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     }//GEN-LAST:event_rbSearchAnyActionPerformed
 
-    private void tfArchiveDirFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfArchiveDirFocusLost
-
-        JTextField fld = (JTextField) evt.getSource();
-        if (fld.isEnabled() && appIdx >= 0) {//single app selected
-            ((App) clbApps.getModel().getElementAt(appIdx)).setArchiveDir(fld.getText()
-            );
-        }
-
-    }//GEN-LAST:event_tfArchiveDirFocusLost
-
     private void jtfLogDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfLogDirectoryActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jtfLogDirectoryActionPerformed
@@ -1743,7 +1768,9 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JButton btEditLoginProfile;
     private javax.swing.JCheckBox cbAppLogs;
     private javax.swing.JComboBox cbCommand;
+    private javax.swing.JComboBox<String> cbGetUsing;
     private javax.swing.JCheckBox cbLCALogs;
+    private javax.swing.JComboBox<String> cbLSUsing;
     private javax.swing.JComboBox<String> cbLoginProfile;
     private javax.swing.JCheckBox cbParseWhileDownload;
     private javax.swing.JCheckBox cbProdLog;
@@ -1756,6 +1783,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
@@ -1804,6 +1833,9 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel50;
     private javax.swing.JPanel jPanel51;
     private javax.swing.JPanel jPanel52;
+    private javax.swing.JPanel jPanel53;
+    private javax.swing.JPanel jPanel54;
+    private javax.swing.JPanel jPanel55;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
@@ -1863,7 +1895,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton rbSearchAny;
     private javax.swing.JSpinner spMaxFiles;
     private javax.swing.JTextField tfAnsibleBecomeUser;
-    private javax.swing.JTextField tfArchiveDir;
+    private javax.swing.JComboBox<String> tfArchiveDir;
     private javax.swing.JTextField tfDateRegex;
     private javax.swing.JTextField tfDefaultRX;
     private javax.swing.JTextField tfFindAnyDirectory;

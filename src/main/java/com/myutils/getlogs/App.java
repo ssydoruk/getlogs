@@ -38,9 +38,7 @@ class App implements Comparable {
         return archiveDir;
     }
 
-    public void setArchiveDir(String archiveDir) {
-        this.archiveDir = archiveDir;
-    }
+ 
 
     public String getBecomeUser() {
         return becomeUser;

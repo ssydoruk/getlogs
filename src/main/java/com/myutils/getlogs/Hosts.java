@@ -26,7 +26,7 @@ import org.yaml.snakeyaml.Yaml;
  *
  * @author stepansydoruk class contain hosts configuration as read from file.
  *
- *         Lines in the file: host,app[,applicationDirectory]
+ * Lines in the file: host,app[,applicationDirectory]
  *
  */
 class Hosts extends HashMap<String, HostAppdir> {
@@ -81,10 +81,9 @@ class Hosts extends HashMap<String, HostAppdir> {
                                 vals.get("ansible_become_user").toString(),
                                 vals.get("defaultrx").toString(),
                                 hostType,
-                                [vals.get("archive_dir1").toString(), vals.get("archive_dir2").toString()]
-                                ));
-                             
-                
+                                new String[]{vals.get("archive_dir1"), vals.get("archive_dir2")}
+                        ));
+
             }
 //            for (HostEntry host : hosts) {
 //                put(host.getKey(),
@@ -94,7 +93,7 @@ class Hosts extends HashMap<String, HostAppdir> {
 //                                host.getValue().getAnsible_become_user(),
 //                                host.getValue().getDefaultrx()));                
 //            }
-            
+
         }
     }
 
