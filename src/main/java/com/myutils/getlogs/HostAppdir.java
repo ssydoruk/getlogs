@@ -5,6 +5,10 @@
  */
 package com.myutils.getlogs;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import Utils.Pair;
 
 /**
@@ -18,9 +22,9 @@ public class HostAppdir {
     private String becomeUser;
     private String defaultRx;
     private String appType;
-    private String archiveDir;
+    private List<String> archiveDir;
 
-    public String getArchiveDir() {
+    public List<String> getArchiveDir() {
         return archiveDir;
     }
 
@@ -32,15 +36,16 @@ public class HostAppdir {
         this(_host, _appDir, _becomeUser);
         defaultRx = _defaultRx;
     }
-    
+
     public HostAppdir(String _host, String _appDir, String _becomeUser, String _defaultRx, String _appType) {
         this(_host, _appDir, _becomeUser, _defaultRx);
         appType = _appType;
     }
 
-    public HostAppdir(String _host, String _appDir, String _becomeUser, String _defaultRx, String _appType, String _archiveDir) {
+    public HostAppdir(String _host, String _appDir, String _becomeUser, String _defaultRx, String _appType,
+            String[] _archiveDir) {
         this(_host, _appDir, _becomeUser, _defaultRx, _appType);
-        archiveDir = _archiveDir;
+        archiveDir = new ArrayList<String>(Arrays.asList(_archiveDir));
     }
 
     public String getBecomeUser() {

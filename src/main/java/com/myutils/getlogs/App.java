@@ -7,6 +7,9 @@ package com.myutils.getlogs;
 
 import static com.myutils.getlogs.GetLogs.logger;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.*;
 
@@ -22,21 +25,16 @@ class App implements Comparable {
     private boolean isWindows;
     private String becomeUser;
     private String defaultRx;
-    private String archiveDir;
+    private List<String> archiveDir;
 
     App(String appName, HostAppdir appParams, String baseLogDirectory) {
         this(appName, appParams.getAppDir());
         setBecomeUser(appParams.getBecomeUser());
         setDefaultRx(appParams.getDefaultRx());
-        String archDir = StringUtils.isNotEmpty(appParams.getArchiveDir()) ? appParams.getArchiveDir()
-                : Paths.get(baseLogDirectory, appParams.getBecomeUser(), "sharedmount", "${HOSTNAME}", "logs", appName)
-                        .toString();
-        setArchiveDir((isWindows)
-                ? FilenameUtils.separatorsToWindows(archDir)
-                : FilenameUtils.separatorsToUnix(archDir));
+        archiveDir = new ArrayList<String>(appParams.getArchiveDir());
     }
 
-    public String getArchiveDir() {
+    public List<String> getArchiveDir() {
         return archiveDir;
     }
 
