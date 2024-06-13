@@ -2297,7 +2297,7 @@ public final class CommandExecutor {
                             logMessage(Level.ERROR, "Archive directory not configured", appProfile, ap);
                         if (StringUtils.isNotEmpty(ds.getFindAnyDir()))
                             hostInventory.addHost(theHost + "_main", theAppHost,
-                                    getHH(ap, fillRxs(rxString), ds.getFindAnyDir()));
+                                    getHH(ap, fillRxs(rxString), theAppHost.getAppDir()));
                         else
                             logMessage(Level.ERROR, "Main log directory not configured", appProfile, ap);
 
@@ -2382,7 +2382,7 @@ public final class CommandExecutor {
                 return lsFiles;
             }
         } finally {
-            FileUtils.deleteQuietly(tmpYml);
+            // FileUtils.deleteQuietly(tmpYml);
         }
         return null;
     }
