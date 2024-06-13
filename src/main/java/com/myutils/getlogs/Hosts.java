@@ -80,7 +80,9 @@ class Hosts extends HashMap<String, HostAppdir> {
                                 vals.get("dir").toString(),
                                 vals.get("ansible_become_user").toString(),
                                 vals.get("defaultrx").toString(),
-                                hostType));
+                                hostType,
+                                vals.get("archive_dir").toString()
+                                ));
                              
                 
             }

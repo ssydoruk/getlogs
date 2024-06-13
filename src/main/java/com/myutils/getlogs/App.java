@@ -28,9 +28,9 @@ class App implements Comparable {
         this(appName, appParams.getAppDir());
         setBecomeUser(appParams.getBecomeUser());
         setDefaultRx(appParams.getDefaultRx());
-        String archDir = Paths
-                .get(baseLogDirectory, appParams.getBecomeUser(), "sharedmount", "${HOSTNAME}", "logs", appName)
-                .toString();
+        String archDir = StringUtils.isNotEmpty(appParams.getArchiveDir()) ? appParams.getArchiveDir()
+                : Paths.get(baseLogDirectory, appParams.getBecomeUser(), "sharedmount", "${HOSTNAME}", "logs", appName)
+                        .toString();
         setArchiveDir((isWindows)
                 ? FilenameUtils.separatorsToWindows(archDir)
                 : FilenameUtils.separatorsToUnix(archDir));
