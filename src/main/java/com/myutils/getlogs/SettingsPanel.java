@@ -59,8 +59,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private DateTimePicker newPicker(String dateFormat) {
         DateTimePicker dateTimePicker1 = new DateTimePicker();
-//        dateTimePicker1.datePicker.setDate(LocalDate.now());
-//        dateTimePicker1.timePicker.setTimeToNow();
+        // dateTimePicker1.datePicker.setDate(LocalDate.now());
+        // dateTimePicker1.timePicker.setTimeToNow();
         dateTimePicker1.getDatePicker().setBorder(null);
         TimePickerSettings timeSettings = dateTimePicker1.getTimePicker().getSettings();
         timeSettings.setFormatForDisplayTime(PickerUtilities.createFormatterFromPatternString(
@@ -206,11 +206,16 @@ public class SettingsPanel extends javax.swing.JPanel {
         pBeforeActions.add(beforeActions);
 
         tfGrepText.setMaximumSize(new Dimension(tfGrepText.getMaximumSize().width, tfGrepText.getMinimumSize().height));
-        jtfOutputDir.setMaximumSize(new Dimension(jtfOutputDir.getMaximumSize().width, jtfOutputDir.getMinimumSize().height));
-        jtfStatusScript.setMaximumSize(new Dimension(jtfStatusScript.getMaximumSize().width, jtfStatusScript.getMinimumSize().height));
-        tfDateRegex.setMaximumSize(new Dimension(tfDateRegex.getMaximumSize().width, tfDateRegex.getMinimumSize().height));
-        tfTimeRegex.setMaximumSize(new Dimension(tfTimeRegex.getMaximumSize().width, tfTimeRegex.getMinimumSize().height));
-        jpCommandParams.setMaximumSize(new Dimension(jpCommandParams.getMaximumSize().width, jpCommandParams.getMinimumSize().height));
+        jtfOutputDir.setMaximumSize(
+                new Dimension(jtfOutputDir.getMaximumSize().width, jtfOutputDir.getMinimumSize().height));
+        jtfStatusScript.setMaximumSize(
+                new Dimension(jtfStatusScript.getMaximumSize().width, jtfStatusScript.getMinimumSize().height));
+        tfDateRegex
+                .setMaximumSize(new Dimension(tfDateRegex.getMaximumSize().width, tfDateRegex.getMinimumSize().height));
+        tfTimeRegex
+                .setMaximumSize(new Dimension(tfTimeRegex.getMaximumSize().width, tfTimeRegex.getMinimumSize().height));
+        jpCommandParams.setMaximumSize(
+                new Dimension(jpCommandParams.getMaximumSize().width, jpCommandParams.getMinimumSize().height));
 
         jtfLogDirectory.addFocusListener(new FocusListener() {
             @Override
@@ -268,22 +273,22 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void tfFilenameSuffixesChanged() {
         AppProfile pr = (AppProfile) clbProfile.getSelectedValue();
         if (pr != null) {
-//            pr.setNameSuffixes(tfFilenameSuffixes.getText());
+            // pr.setNameSuffixes(tfFilenameSuffixes.getText());
         }
     }
 
     private void clbProfileCheckedChanged(ListSelectionEvent evt) {
         if (!evt.getValueIsAdjusting()) {
             CheckBoxListSelectionModel lsm = (CheckBoxListSelectionModel) evt.getSource();
-//            SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {
+            // SwingUtilities.invokeLater(new Runnable() {
+            // public void run() {
             int maxSelectionIndex = lsm.getMaxSelectionIndex();
             int minSelectionIndex = lsm.getMinSelectionIndex();
-//                    System.out.println("-1-" + evt
-//                            + " f: " + evt.getFirstIndex()
-//                            + " l: " + evt.getLastIndex()
-//                            + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
-//                    );
+            // System.out.println("-1-" + evt
+            // + " f: " + evt.getFirstIndex()
+            // + " l: " + evt.getLastIndex()
+            // + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
+            // );
             for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
                 if (i < lmProfile.getSize()) {
                     Object elementAt = lmProfile.getElementAt(i);
@@ -295,13 +300,13 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
             updateProfileTitle();
             updateStartButton();
-//                }
-//            });
+            // }
+            // });
         }
     }
 
     private boolean canRunProfiles() {
-//(AppProfile) lmProfile.get(minIndex);
+        // (AppProfile) lmProfile.get(minIndex);
 
         CheckBoxListSelectionModel lsm = clbProfile.getCheckBoxListSelectionModel();
         DefaultListModel<Object> lm = (DefaultListModel<Object>) clbProfile.getModel();
@@ -319,7 +324,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private int getSelectedNum(CheckBoxList clb) {
         int numSelected = 0;
-//(AppProfile) lmProfile.get(minIndex);
+        // (AppProfile) lmProfile.get(minIndex);
 
         CheckBoxListSelectionModel lsm = clb.getCheckBoxListSelectionModel();
         DefaultListModel<Object> lm = (DefaultListModel<Object>) clb.getModel();
@@ -365,7 +370,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                ((TitledBorder) jpAllProfiles.getBorder()).setTitle(profileAllTitleBase + " (apps selected " + getSelectedApp() + "/" + ds.getTotalApps() + ")");
+                ((TitledBorder) jpAllProfiles.getBorder()).setTitle(
+                        profileAllTitleBase + " (apps selected " + getSelectedApp() + "/" + ds.getTotalApps() + ")");
                 jpAllProfiles.repaint();
             }
 
@@ -378,7 +384,8 @@ public class SettingsPanel extends javax.swing.JPanel {
             @Override
             public void run() {
 
-                ((TitledBorder) jpProfileBase.getBorder()).setTitle(profileTitleBase + " (" + getSelectedNum(clbProfile) + "/" + (getAllSize(clbProfile)) + ")");
+                ((TitledBorder) jpProfileBase.getBorder()).setTitle(
+                        profileTitleBase + " (" + getSelectedNum(clbProfile) + "/" + (getAllSize(clbProfile)) + ")");
                 jpProfileBase.repaint();
 
             }
@@ -389,7 +396,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private int getSelectedApp() {
         int numSelected = 0;
-//(AppProfile) lmProfile.get(minIndex);
+        // (AppProfile) lmProfile.get(minIndex);
 
         CheckBoxListSelectionModel lsm = clbProfile.getCheckBoxListSelectionModel();
         DefaultListModel<Object> lm = (DefaultListModel<Object>) clbProfile.getModel();
@@ -423,7 +430,7 @@ public class SettingsPanel extends javax.swing.JPanel {
      */
     private void clbProfileSelectionChanged(ListSelectionEvent evt) {
         if (!evt.getValueIsAdjusting()) {
-//            System.out.println("clbProfileSelectionChanged List item changed - " + evt);
+            // System.out.println("clbProfileSelectionChanged List item changed - " + evt);
             ListSelectionModel lsm = (ListSelectionModel) evt.getSource();
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -432,7 +439,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     int maxIndex = lsm.getMaxSelectionIndex();
                     boolean singleSelection = (minIndex == maxIndex && minIndex >= 0);
                     int numSelected = (minIndex >= 0) ? (maxIndex - minIndex + 1) : 0;
-                    if (singleSelection) { //one item selected
+                    if (singleSelection) { // one item selected
                         Object theProfile = lmProfile.get(minIndex);
                         profileSelectionChanged(((theProfile instanceof AppProfile)) ? (AppProfile) theProfile : null);
                         if (!(theProfile instanceof AppProfile)) {
@@ -463,7 +470,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             clbAppSelectionModel.removeListSelectionListener(listSelectionListener);
         }
 
-//                        clbAppSelectionModel.addSelectionInterval(maxIndex, maxIndex);
+        // clbAppSelectionModel.addSelectionInterval(maxIndex, maxIndex);
         clbAppSelectionModel.clearSelection();
         lmApps.clear();
         if (pr != null) {
@@ -472,7 +479,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             for (App app : apps) {
                 lmApps.addElement(app);
             }
-//        Collections.sort( lmApps);
+            // Collections.sort( lmApps);
 
             if (!lmApps.isEmpty()) {
                 lmApps.insertElementAt(CheckBoxList.ALL_ENTRY, 0);
@@ -500,7 +507,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 }
             }
 
-//        tfFilenameSuffixes.setText(pr.getNameSuffixes());
+            // tfFilenameSuffixes.setText(pr.getNameSuffixes());
         }
         updateAppTitle();
     }
@@ -512,7 +519,7 @@ public class SettingsPanel extends javax.swing.JPanel {
      */
     private void clbAppsSelectionChanged(ListSelectionEvent evt) {
         if (!evt.getValueIsAdjusting()) {
-//                    System.out.println("app List item changed - " + evt);
+            // System.out.println("app List item changed - " + evt);
             ListSelectionModel lsm = (ListSelectionModel) evt.getSource();
 
             SwingUtilities.invokeLater(new Runnable() {
@@ -531,15 +538,14 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         if (!evt.getValueIsAdjusting()) {
             CheckBoxListSelectionModel lsm = (CheckBoxListSelectionModel) evt.getSource();
-//            SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {
+            // SwingUtilities.invokeLater(new Runnable() {
+            // public void run() {
             int maxSelectionIndex = lsm.getMaxSelectionIndex();
             int minSelectionIndex = lsm.getMinSelectionIndex();
             logger.debug("-1-" + evt
                     + " f: " + evt.getFirstIndex()
                     + " l: " + evt.getLastIndex()
-                    + " min: " + minSelectionIndex + " max: " + maxSelectionIndex
-            );
+                    + " min: " + minSelectionIndex + " max: " + maxSelectionIndex);
             for (int i = evt.getFirstIndex(); i <= evt.getLastIndex(); i++) {
                 if (!lmApps.isEmpty() && i < lmApps.getSize()) {
                     if (lmApps.getElementAt(i) instanceof App) {
@@ -550,8 +556,8 @@ public class SettingsPanel extends javax.swing.JPanel {
                 }
 
             }
-//                }
-//            });
+            // }
+            // });
             updateAppTitle();
         }
 
@@ -563,8 +569,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         this.appIdx = (!lsm.isSelectionEmpty() && lsm.getMaxSelectionIndex() == lsm.getMinSelectionIndex()
                 && lmApps.getElementAt(lsm.getMinSelectionIndex()) != CheckBoxList.ALL_ENTRY)
-                ? lsm.getMinSelectionIndex()
-                : -1;
+                        ? lsm.getMinSelectionIndex()
+                        : -1;
         jlbAppFileNameBase.setEnabled(appIdx >= 0);
         jlbAppLogDirectory.setEnabled(appIdx >= 0);
         jtfAppFileNameBase.setEnabled(appIdx >= 0);
@@ -588,15 +594,17 @@ public class SettingsPanel extends javax.swing.JPanel {
                 : "");
 
         tfArchiveDir.setEnabled(appIdx >= 0);
-        ComboBoxModel<String> aModel=new DefaultComboBoxModel<>();
-        
+        ComboBoxModel<String> aModel = new DefaultComboBoxModel<>();
+
         DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) tfArchiveDir.getModel();
-        if(appIdx>=0){
+        if (appIdx >= 0) {
             model.removeAllElements();
-            model.addAll(((App) lmApps.getElementAt(appIdx)).getArchiveDir());
-            tfArchiveDir.setSelectedIndex(0);
-        }
-        else {
+            List<String> dirs = ((App) lmApps.getElementAt(appIdx)).getArchiveDir();
+            if (dirs != null && !dirs.isEmpty()) {
+                model.addAll(((App) lmApps.getElementAt(appIdx)).getArchiveDir());
+                tfArchiveDir.setSelectedIndex(0);
+            }
+        } else {
             model.removeAllElements();
         }
         if (appIdx >= 0) {
@@ -606,10 +614,10 @@ public class SettingsPanel extends javax.swing.JPanel {
                 jrbOSLinux.setSelected(true);
             }
         }
-//        rbCloudLogs.setEnabled(singleSelection);
-//        rbGenesysLogs.setEnabled(singleSelection);
-//        cbLFMTs.setEnabled(singleSelection);
-//        btEditLFMTs.setEnabled(singleSelection);
+        // rbCloudLogs.setEnabled(singleSelection);
+        // rbGenesysLogs.setEnabled(singleSelection);
+        // cbLFMTs.setEnabled(singleSelection);
+        // btEditLFMTs.setEnabled(singleSelection);
     }
 
     private AppProfile getActiveAppProfile() {
@@ -671,7 +679,8 @@ public class SettingsPanel extends javax.swing.JPanel {
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated
+    // Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         bgFileNaming = new javax.swing.ButtonGroup();
@@ -1193,7 +1202,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         jLabel6.setText("Get using");
         jPanel54.add(jLabel6);
 
-        cbGetUsing.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbGetUsing.setModel(
+                new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         jPanel54.add(cbGetUsing);
 
         jPanel53.add(jPanel54);
@@ -1203,7 +1213,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         jLabel7.setText("ls using");
         jPanel55.add(jLabel7);
 
-        cbLSUsing.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbLSUsing.setModel(
+                new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         jPanel55.add(cbLSUsing);
 
         jPanel53.add(jPanel55);
@@ -1331,7 +1342,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         lCommand.setText("Command");
         jPanel49.add(lCommand);
 
-        cbCommand.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbCommand.setModel(
+                new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cbCommand.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbCommandActionPerformed(evt);
@@ -1449,15 +1461,15 @@ public class SettingsPanel extends javax.swing.JPanel {
         add(jPanel9);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jbProfileAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbProfileAddActionPerformed
+    private void jbProfileAddActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jbProfileAddActionPerformed
         String name = getProfileName("Enter new profile name", null);
 
         if (name != null) {
             addProfile(name);
         }
-    }//GEN-LAST:event_jbProfileAddActionPerformed
+    }// GEN-LAST:event_jbProfileAddActionPerformed
 
-    private void jbSelectDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSelectDirectoryActionPerformed
+    private void jbSelectDirectoryActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jbSelectDirectoryActionPerformed
         JFileChooser fc = null;
         String curDir = jtfOutputDir.getText();
 
@@ -1471,16 +1483,16 @@ public class SettingsPanel extends javax.swing.JPanel {
         if (fc == null) {
             fc = new FolderChooser();
         }
-//        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-//In response to a button click:
+        // fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        // In response to a button click:
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             jtfOutputDir.setText(fc.getSelectedFile().getAbsolutePath());
         }
 
-    }//GEN-LAST:event_jbSelectDirectoryActionPerformed
+    }// GEN-LAST:event_jbSelectDirectoryActionPerformed
 
-    private void jbProfileDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbProfileDeleteActionPerformed
+    private void jbProfileDeleteActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jbProfileDeleteActionPerformed
         List<AppProfile> selectedValuesList = clbProfile.getSelectedValuesList();
         if (selectedValuesList != null && !selectedValuesList.isEmpty()) {
             StringBuilder sPrompt = new StringBuilder();
@@ -1500,9 +1512,9 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         }
 
-    }//GEN-LAST:event_jbProfileDeleteActionPerformed
+    }// GEN-LAST:event_jbProfileDeleteActionPerformed
 
-    private void jbProfileRenameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbProfileRenameActionPerformed
+    private void jbProfileRenameActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jbProfileRenameActionPerformed
         AppProfile appPr = (AppProfile) clbProfile.getSelectedValue();
         if (appPr != null) {
             String name = getProfileName("Edit the profile name", appPr.getName());
@@ -1511,9 +1523,9 @@ public class SettingsPanel extends javax.swing.JPanel {
                 clbProfile.updateUI();
             }
         }
-    }//GEN-LAST:event_jbProfileRenameActionPerformed
+    }// GEN-LAST:event_jbProfileRenameActionPerformed
 
-    private void jbProfileSaveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbProfileSaveAsActionPerformed
+    private void jbProfileSaveAsActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jbProfileSaveAsActionPerformed
 
         Object selectedValue = clbProfile.getSelectedValue();
         if (selectedValue instanceof AppProfile) {
@@ -1523,24 +1535,24 @@ public class SettingsPanel extends javax.swing.JPanel {
                 addProfile(name, appPr);
             }
         }
-    }//GEN-LAST:event_jbProfileSaveAsActionPerformed
+    }// GEN-LAST:event_jbProfileSaveAsActionPerformed
 
-    private void rbGenesysLogsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbGenesysLogsItemStateChanged
+    private void rbGenesysLogsItemStateChanged(java.awt.event.ItemEvent evt) {// GEN-FIRST:event_rbGenesysLogsItemStateChanged
         AppProfile prof = getActiveAppProfile();
         if (prof != null) {
             prof.setIsGenesysName(evt.getStateChange() == ItemEvent.SELECTED);
         }
-    }//GEN-LAST:event_rbGenesysLogsItemStateChanged
+    }// GEN-LAST:event_rbGenesysLogsItemStateChanged
 
-    private void rbGenesysLogsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbGenesysLogsActionPerformed
+    private void rbGenesysLogsActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_rbGenesysLogsActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_rbGenesysLogsActionPerformed
+    }// GEN-LAST:event_rbGenesysLogsActionPerformed
 
-    private void rbGenesysLogsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbGenesysLogsStateChanged
+    private void rbGenesysLogsStateChanged(javax.swing.event.ChangeEvent evt) {// GEN-FIRST:event_rbGenesysLogsStateChanged
         // TODO add your handling code here:
-    }//GEN-LAST:event_rbGenesysLogsStateChanged
+    }// GEN-LAST:event_rbGenesysLogsStateChanged
 
-    private void jbAppAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAppAddActionPerformed
+    private void jbAppAddActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jbAppAddActionPerformed
 
         if (p == null) {
             tab = getJTablePopup();
@@ -1563,7 +1575,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         Collections.sort(apps);
         for (String app : apps) {
-            infoTableModel.addRow(new Object[]{app});
+            infoTableModel.addRow(new Object[] { app });
         }
         tab.setModel(infoTableModel);
 
@@ -1571,7 +1583,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         if (p.getCloseCause() == JOptionPane.OK_OPTION) {
             int[] selectedRows = tab.getSelectedRows();
-//            HashSet<String> selValues = new HashSet<>(selectedRows.length);
+            // HashSet<String> selValues = new HashSet<>(selectedRows.length);
             Object selectedValue = clbProfile.getSelectedValue();
             if (selectedValue instanceof AppProfile) {
                 AppProfile profile = (AppProfile) selectedValue;
@@ -1579,19 +1591,19 @@ public class SettingsPanel extends javax.swing.JPanel {
                     String app = (String) infoTableModel.getValueAt(selectedRow, 0);
 
                     App addApp = profile.addApp(app, GetLogs.getHosts().lookupHost(app), profile.getLogDirectory());
-//                lmApps.addElement(addApp);
-//                selValues.add((String) infoTableModel.getValueAt(selectedRow, 0));
+                    // lmApps.addElement(addApp);
+                    // selValues.add((String) infoTableModel.getValueAt(selectedRow, 0));
                 }
                 profileSelectionChanged(profile);
             } else {
                 profileSelectionChanged(null);
             }
-//            profileSelected(true);
+            // profileSelected(true);
         }
 
-    }//GEN-LAST:event_jbAppAddActionPerformed
+    }// GEN-LAST:event_jbAppAddActionPerformed
 
-    private void jbAppDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAppDeleteActionPerformed
+    private void jbAppDeleteActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jbAppDeleteActionPerformed
         AppProfile appPr = (AppProfile) clbProfile.getSelectedValue();
         List<App> selectedValuesList = clbApps.getSelectedValuesList();
         if (appPr != null && selectedValuesList != null) {
@@ -1605,33 +1617,36 @@ public class SettingsPanel extends javax.swing.JPanel {
             sPrompt.append(" from profile [")
                     .append(appPr.getName())
                     .append("]");
-            if (JOptionPane.showConfirmDialog(this, sPrompt, "Please confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                for (App app : selectedValuesList) {
-                    appPr.removeApp(app);
-                    lmApps.removeElement(app);
-                    if (lmApps.size() == 1 && (lmApps.getElementAt(0).equals(CheckBoxList.ALL_ENTRY))) {
-                        lmApps.remove(0);
+            if (JOptionPane.showConfirmDialog(this, sPrompt, "Please confirm",
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                for (Object obj : selectedValuesList) {
+                    if (obj instanceof App) {
+                        App app=(App) obj;
+                        appPr.removeApp(app);
+                        lmApps.removeElement(app);
+                        if (lmApps.size() == 1 && (lmApps.getElementAt(0).equals(CheckBoxList.ALL_ENTRY))) {
+                            lmApps.remove(0);
+                        }
                     }
-
                 }
             }
         }
-    }//GEN-LAST:event_jbAppDeleteActionPerformed
+    }// GEN-LAST:event_jbAppDeleteActionPerformed
 
-    private void cbCommandActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbCommandActionPerformed
+    private void cbCommandActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cbCommandActionPerformed
         cbCommandSelectionChanged((GetCommand) ((JComboBox) evt.getSource()).getSelectedItem());
-    }//GEN-LAST:event_cbCommandActionPerformed
+    }// GEN-LAST:event_cbCommandActionPerformed
 
-    private void cbAppLogsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbAppLogsItemStateChanged
+    private void cbAppLogsItemStateChanged(java.awt.event.ItemEvent evt) {// GEN-FIRST:event_cbAppLogsItemStateChanged
         updateStartButton();
 
-    }//GEN-LAST:event_cbAppLogsItemStateChanged
+    }// GEN-LAST:event_cbAppLogsItemStateChanged
 
-    private void cbLCALogsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbLCALogsItemStateChanged
+    private void cbLCALogsItemStateChanged(java.awt.event.ItemEvent evt) {// GEN-FIRST:event_cbLCALogsItemStateChanged
         updateStartButton();
-    }//GEN-LAST:event_cbLCALogsItemStateChanged
+    }// GEN-LAST:event_cbLCALogsItemStateChanged
 
-    private void cbmShowHostsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbmShowHostsItemStateChanged
+    private void cbmShowHostsItemStateChanged(java.awt.event.ItemEvent evt) {// GEN-FIRST:event_cbmShowHostsItemStateChanged
         JCheckBoxMenuItem source = (JCheckBoxMenuItem) evt.getSource();
         GetLogs.setHostsVisible(source.isSelected());
         Object selectedValue = clbProfile.getSelectedValue();
@@ -1641,57 +1656,55 @@ public class SettingsPanel extends javax.swing.JPanel {
         } else {
             profileSelectionChanged(null);
         }
-    }//GEN-LAST:event_cbmShowHostsItemStateChanged
+    }// GEN-LAST:event_cbmShowHostsItemStateChanged
 
-    private void cbmCopyHostNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbmCopyHostNameItemStateChanged
-    }//GEN-LAST:event_cbmCopyHostNameItemStateChanged
+    private void cbmCopyHostNameItemStateChanged(java.awt.event.ItemEvent evt) {// GEN-FIRST:event_cbmCopyHostNameItemStateChanged
+    }// GEN-LAST:event_cbmCopyHostNameItemStateChanged
 
-    private void cbmCopyHostNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbmCopyHostNameActionPerformed
+    private void cbmCopyHostNameActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cbmCopyHostNameActionPerformed
         App selectedApp = (App) clbApps.getSelectedValue();
         if (selectedApp != null) {
             Utils.SystemClipboard.copy(selectedApp.getHost());
         }
-    }//GEN-LAST:event_cbmCopyHostNameActionPerformed
+    }// GEN-LAST:event_cbmCopyHostNameActionPerformed
 
-    private void jbSelectScriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSelectScriptActionPerformed
+    private void jbSelectScriptActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jbSelectScriptActionPerformed
         // TODO add your handling code here:
 
-    }//GEN-LAST:event_jbSelectScriptActionPerformed
+    }// GEN-LAST:event_jbSelectScriptActionPerformed
 
-    private void jtfAppLogDirectoryFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jtfAppLogDirectoryFocusLost
+    private void jtfAppLogDirectoryFocusLost(java.awt.event.FocusEvent evt) {// GEN-FIRST:event_jtfAppLogDirectoryFocusLost
         // TODO add your handling code here:
         JTextField fld = (JTextField) evt.getSource();
-        if (fld.isEnabled() && appIdx >= 0) {//single app selected
+        if (fld.isEnabled() && appIdx >= 0) {// single app selected
             ((App) clbApps.getModel().getElementAt(appIdx)).setAppDir(
-                    fld.getText()
-            );
+                    fld.getText());
         }
-    }//GEN-LAST:event_jtfAppLogDirectoryFocusLost
+    }// GEN-LAST:event_jtfAppLogDirectoryFocusLost
 
-    private void jtfAppFileNameBaseFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jtfAppFileNameBaseFocusLost
+    private void jtfAppFileNameBaseFocusLost(java.awt.event.FocusEvent evt) {// GEN-FIRST:event_jtfAppFileNameBaseFocusLost
         JTextField fld = (JTextField) evt.getSource();
-        if (fld.isEnabled() && appIdx >= 0) {//single app selected
+        if (fld.isEnabled() && appIdx >= 0) {// single app selected
             ((App) clbApps.getModel().getElementAt(appIdx)).setAppPrefix(
-                    fld.getText()
-            );
+                    fld.getText());
         }
-    }//GEN-LAST:event_jtfAppFileNameBaseFocusLost
+    }// GEN-LAST:event_jtfAppFileNameBaseFocusLost
 
-    private void jrbOSLinuxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jrbOSLinuxItemStateChanged
+    private void jrbOSLinuxItemStateChanged(java.awt.event.ItemEvent evt) {// GEN-FIRST:event_jrbOSLinuxItemStateChanged
 
-    }//GEN-LAST:event_jrbOSLinuxItemStateChanged
+    }// GEN-LAST:event_jrbOSLinuxItemStateChanged
 
-    private void jrbOSWindowsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jrbOSWindowsItemStateChanged
-        if (jrbOSWindows.isEnabled() && appIdx >= 0) {//single app selected
+    private void jrbOSWindowsItemStateChanged(java.awt.event.ItemEvent evt) {// GEN-FIRST:event_jrbOSWindowsItemStateChanged
+        if (jrbOSWindows.isEnabled() && appIdx >= 0) {// single app selected
             ((App) clbApps.getModel().getElementAt(appIdx)).setIsWindows(evt.getStateChange() == ItemEvent.SELECTED);
         }
-    }//GEN-LAST:event_jrbOSWindowsItemStateChanged
+    }// GEN-LAST:event_jrbOSWindowsItemStateChanged
 
-    private void btEditLoginProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btEditLoginProfileActionPerformed
+    private void btEditLoginProfileActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btEditLoginProfileActionPerformed
         editLoginProfiles();
-    }//GEN-LAST:event_btEditLoginProfileActionPerformed
+    }// GEN-LAST:event_btEditLoginProfileActionPerformed
 
-    private void cbLoginProfileItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbLoginProfileItemStateChanged
+    private void cbLoginProfileItemStateChanged(java.awt.event.ItemEvent evt) {// GEN-FIRST:event_cbLoginProfileItemStateChanged
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             Object item = evt.getItem();
             AppProfile prof = (AppProfile) clbProfile.getSelectedValue();
@@ -1699,67 +1712,65 @@ public class SettingsPanel extends javax.swing.JPanel {
                 prof.setLoginProfile(item.toString());
             }
         }
-    }//GEN-LAST:event_cbLoginProfileItemStateChanged
+    }// GEN-LAST:event_cbLoginProfileItemStateChanged
 
-    private void cbZipDestItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbZipDestItemStateChanged
+    private void cbZipDestItemStateChanged(java.awt.event.ItemEvent evt) {// GEN-FIRST:event_cbZipDestItemStateChanged
         // TODO add your handling code here:
-    }//GEN-LAST:event_cbZipDestItemStateChanged
+    }// GEN-LAST:event_cbZipDestItemStateChanged
 
-    private void cbAppLogsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAppLogsActionPerformed
+    private void cbAppLogsActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cbAppLogsActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_cbAppLogsActionPerformed
+    }// GEN-LAST:event_cbAppLogsActionPerformed
 
-    private void tfAnsibleBecomeUserFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfAnsibleBecomeUserFocusLost
+    private void tfAnsibleBecomeUserFocusLost(java.awt.event.FocusEvent evt) {// GEN-FIRST:event_tfAnsibleBecomeUserFocusLost
         // TODO add your handling code here:
-    }//GEN-LAST:event_tfAnsibleBecomeUserFocusLost
+    }// GEN-LAST:event_tfAnsibleBecomeUserFocusLost
 
-    private void tfDefaultRXFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfDefaultRXFocusLost
+    private void tfDefaultRXFocusLost(java.awt.event.FocusEvent evt) {// GEN-FIRST:event_tfDefaultRXFocusLost
 
         JTextField fld = (JTextField) evt.getSource();
-        if (fld.isEnabled() && appIdx >= 0) {//single app selected
-            ((App) clbApps.getModel().getElementAt(appIdx)).setDefaultRx(fld.getText()
-            );
+        if (fld.isEnabled() && appIdx >= 0) {// single app selected
+            ((App) clbApps.getModel().getElementAt(appIdx)).setDefaultRx(fld.getText());
         }
 
-    }//GEN-LAST:event_tfDefaultRXFocusLost
+    }// GEN-LAST:event_tfDefaultRXFocusLost
 
-    private void rbDefaultMaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbDefaultMaskActionPerformed
+    private void rbDefaultMaskActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_rbDefaultMaskActionPerformed
         jpRangeParams.removeAll();
         jpRangeParams.repaint();
         jpRangeParams.revalidate();
         setRxType(regexType.Default);
 
-    }//GEN-LAST:event_rbDefaultMaskActionPerformed
+    }// GEN-LAST:event_rbDefaultMaskActionPerformed
 
-    private void rbDateTimeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbDateTimeActionPerformed
+    private void rbDateTimeActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_rbDateTimeActionPerformed
         jpRangeParams.removeAll();
         jpRangeParams.add(jpRegEx);
         jpRangeParams.repaint();
         jpRangeParams.revalidate();
         setRxType(regexType.ShellRegex);
-    }//GEN-LAST:event_rbDateTimeActionPerformed
+    }// GEN-LAST:event_rbDateTimeActionPerformed
 
-    private void rbSearchAnyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbSearchAnyActionPerformed
+    private void rbSearchAnyActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_rbSearchAnyActionPerformed
         jpRangeParams.removeAll();
         jpRangeParams.add(jpFindAny);
         jpRangeParams.repaint();
         jpRangeParams.revalidate();
         setRxType(regexType.Any);
 
-    }//GEN-LAST:event_rbSearchAnyActionPerformed
+    }// GEN-LAST:event_rbSearchAnyActionPerformed
 
-    private void jtfLogDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfLogDirectoryActionPerformed
+    private void jtfLogDirectoryActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jtfLogDirectoryActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jtfLogDirectoryActionPerformed
+    }// GEN-LAST:event_jtfLogDirectoryActionPerformed
 
-    private void tfAnsibleBecomeUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfAnsibleBecomeUserActionPerformed
+    private void tfAnsibleBecomeUserActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tfAnsibleBecomeUserActionPerformed
         JTextField fld = (JTextField) evt.getSource();
-        if (fld.isEnabled() && appIdx >= 0) {//single app selected
-            ((App) clbApps.getModel().getElementAt(appIdx)).setBecomeUser(fld.getText()
-            );
+        if (fld.isEnabled() && appIdx >= 0) {// single app selected
+            ((App) clbApps.getModel().getElementAt(appIdx)).setBecomeUser(fld.getText());
         }
 
-    }//GEN-LAST:event_tfAnsibleBecomeUserActionPerformed
+    }// GEN-LAST:event_tfAnsibleBecomeUserActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgFileNaming;
@@ -1947,7 +1958,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private void loadConfig() {
         loadProfile(null);
 
-//        cbListFiles.setSelected(ds.isListFiles());
+        // cbListFiles.setSelected(ds.isListFiles());
         cbProdLog.setSelected(ds.isProd());
         cbAppLogs.setSelected(ds.isAppLogs());
         cbZipDest.setSelected(ds.isZipDest());
@@ -1959,8 +1970,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         afterActions.setData(ds.getAfterActions(), true);
         beforeActions.setData(ds.getBeforeActions(), true);
         jtfStatusScript.setText(ds.getStatusScript());
-//        afterActions.setMaximumSize(new Dimension(afterActions.getMaximumSize().width, afterActions.getHeight()));
-//        pAfterActions.setMaximumSize(new Dimension(pAfterActions.getMaximumSize().width, afterActions.getHeight()));
+        // afterActions.setMaximumSize(new
+        // Dimension(afterActions.getMaximumSize().width, afterActions.getHeight()));
+        // pAfterActions.setMaximumSize(new
+        // Dimension(pAfterActions.getMaximumSize().width, afterActions.getHeight()));
 
         tfDateRegex.setText(simpleDateFormat.format(Calendar.getInstance().getTime()));
         tfTimeRegex.setText(simpleTimeFormat.format(Calendar.getInstance().getTime()));
@@ -1986,8 +1999,8 @@ public class SettingsPanel extends javax.swing.JPanel {
                 break;
         }
         setRxType(rxType);
-        initCB(cbCommand, actionCommand, GetCommand.values(), new Object[]{GetCommand.Unknown});
-//        cbCommand.addItemListener(aListener);
+        initCB(cbCommand, actionCommand, GetCommand.values(), new Object[] { GetCommand.Unknown });
+        // cbCommand.addItemListener(aListener);
         tfGrepText.setText(ds.getGrepText());
         reloadLoginProfiles();
         updateProfileTitle();
@@ -1997,15 +2010,17 @@ public class SettingsPanel extends javax.swing.JPanel {
     }
 
     private void addProfile(String showInputDialog) {
-//        AppProfile addProfile = ds.addProfile(showInputDialog); //To change body of generated methods, choose Tools | Templates.
-//        lmProfile.addElement(addProfile);
+        // AppProfile addProfile = ds.addProfile(showInputDialog); //To change body of
+        // generated methods, choose Tools | Templates.
+        // lmProfile.addElement(addProfile);
         AppProfile addProfile = ds.addProfile(showInputDialog);
         loadProfile(addProfile);
     }
 
     private void addProfile(String showInputDialog, AppProfile appPr) {
-//        AppProfile addProfile = ds.addProfile(showInputDialog, appPr); //To change body of generated methods, choose Tools | Templates.
-//        lmProfile.addElement(addProfile);
+        // AppProfile addProfile = ds.addProfile(showInputDialog, appPr); //To change
+        // body of generated methods, choose Tools | Templates.
+        // lmProfile.addElement(addProfile);
         AppProfile addProfile = ds.addProfile(showInputDialog, appPr);
         loadProfile(addProfile);
     }
@@ -2013,7 +2028,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     public void saveConfig() {
         ds.setMaxFiles(((Integer) spMaxFiles.getValue()).intValue());
         ds.setUseRSync(cbUseRSync.isSelected());
-//        ds.setListFiles(cbListFiles.isSelected());
+        // ds.setListFiles(cbListFiles.isSelected());
         ds.setGrepText(tfGrepText.getText());
         ds.setOutputDir(jtfOutputDir.getText());
         ds.setProd(cbProdLog.isSelected());
@@ -2061,7 +2076,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void cbCommandSelectionChanged(GetCommand getCommand) {
         cbUseRSync.setEnabled(getCommand == GetCommand.GET || getCommand == GetCommand.GREPGET);
-//        cbListFiles.setEnabled(getCommand == GetCommand.LS);
+        // cbListFiles.setEnabled(getCommand == GetCommand.LS);
         tfGrepText.setEnabled(getCommand == GetCommand.GREP || getCommand == GetCommand.GREPGET);
         lGrepText.setEnabled(getCommand == GetCommand.GREP || getCommand == GetCommand.GREPGET);
 
@@ -2095,8 +2110,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void updateStartButton() {
         dlg.setJBRunEnabled(
-                canRun()
-        );
+                canRun());
     }
 
     boolean canRun() {
@@ -2159,15 +2173,14 @@ public class SettingsPanel extends javax.swing.JPanel {
                     "Select %d profiles",
                     new FieldProfile("Name", EditType.COMBOBOX, StringValue.class),
                     new FieldProfile("Username", EditType.COMBOBOX, StringValue.class),
-                    new FieldProfile("Password", EditType.PASSWORD, PasswordValue.class)
-            );
+                    new FieldProfile("Password", EditType.PASSWORD, PasswordValue.class));
 
         }
         ArrayList<EditableValue[]> loginProfiles = new ArrayList<>();
         for (LoginProfile lp : ds.getLoginProfiles()) {
-            loginProfiles.add(new EditableValue[]{new StringValue(lp.getName()),
-                new StringValue(lp.getUsername()),
-                new PasswordValue(lp.getPassword())});
+            loginProfiles.add(new EditableValue[] { new StringValue(lp.getName()),
+                    new StringValue(lp.getUsername()),
+                    new PasswordValue(lp.getPassword()) });
         }
         loginProfilesEditor.setData(loginProfiles);
         if (loginProfilesEditor.doShow()) {
@@ -2229,7 +2242,9 @@ public class SettingsPanel extends javax.swing.JPanel {
             uniquePopup.getActionMap().put(act, new FindForward(uniquePopup));
 
             act = "SearchBack (Shift-F3)";
-            uniquePopup.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F3, java.awt.event.InputEvent.SHIFT_DOWN_MASK), act);
+            uniquePopup.getInputMap().put(
+                    KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F3, java.awt.event.InputEvent.SHIFT_DOWN_MASK),
+                    act);
             uniquePopup.getActionMap().put(act, new FindBack(uniquePopup));
 
             popupMenu1.add(new Find());
@@ -2299,7 +2314,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-//            Frame theParent = getTheParent(e);
+            // Frame theParent = getTheParent(e);
             Component c = (Component) e.getSource();
             JPopupMenu popup = (JPopupMenu) c.getParent();
 
@@ -2325,7 +2340,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-//            Frame theParent = getTheParent(e);
+            // Frame theParent = getTheParent(e);
             Component c = (Component) e.getSource();
             JPopupMenu popup = (JPopupMenu) c.getParent();
 
@@ -2351,7 +2366,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-//            Frame theParent = getTheParent(e);
+            // Frame theParent = getTheParent(e);
             Component c = (Component) e.getSource();
             JPopupMenu popup = (JPopupMenu) c.getParent();
 
@@ -2376,7 +2391,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                           // choose Tools | Templates.
         }
 
     }
@@ -2390,7 +2406,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                           // choose Tools | Templates.
         }
 
     }
