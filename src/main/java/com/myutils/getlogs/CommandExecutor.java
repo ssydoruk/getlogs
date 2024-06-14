@@ -315,8 +315,8 @@ public final class CommandExecutor {
             }
 
             logsDir.append("/").append(h) // .append("/")
-            // .append(ap)
-            ;
+                    // .append(ap)
+                    ;
         } else {
             logsDir.append(GetLogs.getProdBaseDir());
 
@@ -584,7 +584,7 @@ public final class CommandExecutor {
      *
      * @param logDir
      * @return Pair of [1st letter to lower case with $ attached], [Path without
-     *         dir]
+     * dir]
      */
     private Pair<String, String> getWinDrive(String logDir) {
         if (StringUtils.isNotEmpty(logDir) && logDir.length() > 1
@@ -643,7 +643,7 @@ public final class CommandExecutor {
 
                         if (entryNameSuffix.getKey().isEmpty()
                                 || (entryNameSuffix.getKey().equals(".")
-                                        || fileName.contains(ap.getName().toLowerCase()))
+                                || fileName.contains(ap.getName().toLowerCase()))
                                 || (fileName.contains(entryNameSuffix.getKey().toLowerCase()))) {
                             if (rxDateTime == null || rxDateTime.reset(fileName).find()) {
                                 BasicFileAttributes basicFileAttributes = Files.readAttributes(f.toPath(),
@@ -798,9 +798,9 @@ public final class CommandExecutor {
                             }
                         }
                         logger.debug("file [" + fileName + "] range: " + timeRange.toString()
-                        // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
-                        // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
-                        // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
+                                // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
+                                // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
+                                // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
                                 + " shouldadd: " + shouldAdd);
                         if (shouldAdd) {
                             lsFiles.add(new JTableFileEntry(appProfile,
@@ -860,7 +860,7 @@ public final class CommandExecutor {
             }
             try {
                 ExtProcess.ExecutionResult cmdOuts = executeCommand(
-                        StringUtils.join(new String[] { ds.getStatusScript(), StringUtils.join(appNames, " ") }, " "),
+                        StringUtils.join(new String[]{ds.getStatusScript(), StringUtils.join(appNames, " ")}, " "),
                         true, true, true);
                 logger.log(Level.INFO, StringUtils.join(cmdOuts));
                 if (cmdOuts != null) {
@@ -1343,7 +1343,7 @@ public final class CommandExecutor {
      * @param ap
      * @param theAppHost
      * @param logsDir
-     * @param fileNames  - expected to contain only list of file names, no path
+     * @param fileNames - expected to contain only list of file names, no path
      * @param isLFMT
      * @param lcaLog
      * @throws IOException
@@ -1897,6 +1897,7 @@ public final class CommandExecutor {
                 filesList.add(f.getFileName());
             }
             hh.put("files", filesList);
+            hh.put("check_archive", "false");
 
             dumpInventory(tmpYml, ap.getName(), theAppHost, hh);
 
@@ -2118,7 +2119,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     *         parameter results in a zero sized array.
+     * parameter results in a zero sized array.
      */
     public static String[] translateCommandline1(String toProcess) {
         if (toProcess == null || toProcess.length() == 0) {
@@ -2186,7 +2187,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     *         parameter results in a zero sized array.
+     * parameter results in a zero sized array.
      */
     public static String[] translateCommandline(String toProcess) {
         if (toProcess == null || toProcess.isEmpty()) {
@@ -2281,9 +2282,9 @@ public final class CommandExecutor {
                 case Any: {
                     ArrayList<String> findrxAny = new ArrayList<>();
                     findrxAny.add(RegExUtils.replaceAll(ds.getFindAnyRx(), unquotedStar, "\\*"));
-                    hostInventory.addHost(ap.getName(), theAppHost, getHH(ap, findrxAny, ds.getFindAnyDir()));
+                    hostInventory.addHost(ap.getName(), theAppHost, getHH(ap, findrxAny, theAppHost.getAppDir()));
                 }
-                    break;
+                break;
 
                 case ShellRegex: {
                     for (String theHost : getAllHostNames(theAppHost.getHost())) {
@@ -2298,23 +2299,25 @@ public final class CommandExecutor {
                                             getHH(ap, fillRxs(rxString), archiveDir));
                                 }
                             }
-                        } else
+                        } else {
                             logMessage(Level.ERROR, "Archive directory not configured", appProfile, ap);
-                        if (StringUtils.isNotEmpty(ds.getFindAnyDir()))
+                        }
+                        if (StringUtils.isNotEmpty(theAppHost.getAppDir())) {
                             hostInventory.addHost(theHost + "_main", theAppHost,
                                     getHH(ap, fillRxs(rxString), theAppHost.getAppDir()));
-                        else
+                        } else {
                             logMessage(Level.ERROR, "Main log directory not configured", appProfile, ap);
+                        }
 
                     }
                 }
-                    break;
+                break;
 
                 case Default: {
                     hostInventory.addHost(ap.getName(), theAppHost, getHH(ap, null, null));
 
                 }
-                    break;
+                break;
 
             }
             hostInventory.dump(tmpYml);
@@ -2387,7 +2390,7 @@ public final class CommandExecutor {
                 return lsFiles;
             }
         } finally {
-            // FileUtils.deleteQuietly(tmpYml);
+            FileUtils.deleteQuietly(tmpYml);
         }
         return null;
     }
@@ -2402,7 +2405,7 @@ public final class CommandExecutor {
             if (records1 == null) {
                 logger.error("Empty response from DNS");
                 ret.add(host);
-            } else
+            } else {
                 for (org.xbill.DNS.Record record : records1) {
                     if (record instanceof CNAMERecord) {
                         CNAMERecord r = (CNAMERecord) record;
@@ -2411,6 +2414,7 @@ public final class CommandExecutor {
                         addNotEmptyHostName(ret, r.getTarget());
                     }
                 }
+            }
         } catch (TextParseException | UnknownHostException e) {
             logger.error("Failed to do DNS lookup", e);
             ret.add(host);
@@ -2422,8 +2426,9 @@ public final class CommandExecutor {
     private void addNotEmptyHostName(ArrayList<String> arr, Name name) {
         if (name != null) {
             String theName = name.toString(true);
-            if (StringUtils.isNotBlank(theName))
+            if (StringUtils.isNotBlank(theName)) {
                 arr.add(theName);
+            }
         }
     }
 
@@ -2446,10 +2451,12 @@ public final class CommandExecutor {
 
         hh.put("lastfiles", ds.getMaxFiles());
 
-        if (StringUtils.isNotBlank(log_dir))
+        if (StringUtils.isNotBlank(log_dir)) {
             hh.put("dir", log_dir);
-        if (findRx != null && !findRx.isEmpty())
+        }
+        if (findRx != null && !findRx.isEmpty()) {
             hh.put("findrx", findRx);
+        }
 
         hh.put("webport", "8082");
         hh.put("csv_dir", "/Users/ssydoruk/work/getfiles/csv");
