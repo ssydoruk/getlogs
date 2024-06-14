@@ -1897,7 +1897,7 @@ public final class CommandExecutor {
                 filesList.add(f.getFileName());
             }
             hh.put("files", filesList);
-            hh.put("check_archive", "false");
+            hh.put("check_archive", false);
 
             dumpInventory(tmpYml, ap.getName(), theAppHost, hh);
 

@@ -594,7 +594,6 @@ public class SettingsPanel extends javax.swing.JPanel {
                 : "");
 
         tfArchiveDir.setEnabled(appIdx >= 0);
-        ComboBoxModel<String> aModel = new DefaultComboBoxModel<>();
 
         DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) tfArchiveDir.getModel();
         if (appIdx >= 0) {
