@@ -315,8 +315,8 @@ public final class CommandExecutor {
             }
 
             logsDir.append("/").append(h) // .append("/")
-                    // .append(ap)
-                    ;
+            // .append(ap)
+            ;
         } else {
             logsDir.append(GetLogs.getProdBaseDir());
 
@@ -584,7 +584,7 @@ public final class CommandExecutor {
      *
      * @param logDir
      * @return Pair of [1st letter to lower case with $ attached], [Path without
-     * dir]
+     *         dir]
      */
     private Pair<String, String> getWinDrive(String logDir) {
         if (StringUtils.isNotEmpty(logDir) && logDir.length() > 1
@@ -643,7 +643,7 @@ public final class CommandExecutor {
 
                         if (entryNameSuffix.getKey().isEmpty()
                                 || (entryNameSuffix.getKey().equals(".")
-                                || fileName.contains(ap.getName().toLowerCase()))
+                                        || fileName.contains(ap.getName().toLowerCase()))
                                 || (fileName.contains(entryNameSuffix.getKey().toLowerCase()))) {
                             if (rxDateTime == null || rxDateTime.reset(fileName).find()) {
                                 BasicFileAttributes basicFileAttributes = Files.readAttributes(f.toPath(),
@@ -798,9 +798,9 @@ public final class CommandExecutor {
                             }
                         }
                         logger.debug("file [" + fileName + "] range: " + timeRange.toString()
-                                // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
-                                // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
-                                // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
+                        // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
+                        // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
+                        // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
                                 + " shouldadd: " + shouldAdd);
                         if (shouldAdd) {
                             lsFiles.add(new JTableFileEntry(appProfile,
@@ -860,7 +860,7 @@ public final class CommandExecutor {
             }
             try {
                 ExtProcess.ExecutionResult cmdOuts = executeCommand(
-                        StringUtils.join(new String[]{ds.getStatusScript(), StringUtils.join(appNames, " ")}, " "),
+                        StringUtils.join(new String[] { ds.getStatusScript(), StringUtils.join(appNames, " ") }, " "),
                         true, true, true);
                 logger.log(Level.INFO, StringUtils.join(cmdOuts));
                 if (cmdOuts != null) {
@@ -1343,7 +1343,7 @@ public final class CommandExecutor {
      * @param ap
      * @param theAppHost
      * @param logsDir
-     * @param fileNames - expected to contain only list of file names, no path
+     * @param fileNames  - expected to contain only list of file names, no path
      * @param isLFMT
      * @param lcaLog
      * @throws IOException
@@ -2119,7 +2119,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     * parameter results in a zero sized array.
+     *         parameter results in a zero sized array.
      */
     public static String[] translateCommandline1(String toProcess) {
         if (toProcess == null || toProcess.length() == 0) {
@@ -2187,7 +2187,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     * parameter results in a zero sized array.
+     *         parameter results in a zero sized array.
      */
     public static String[] translateCommandline(String toProcess) {
         if (toProcess == null || toProcess.isEmpty()) {
@@ -2282,9 +2282,9 @@ public final class CommandExecutor {
                 case Any: {
                     ArrayList<String> findrxAny = new ArrayList<>();
                     findrxAny.add(RegExUtils.replaceAll(ds.getFindAnyRx(), unquotedStar, "\\*"));
-                    hostInventory.addHost(ap.getName(), theAppHost, getHH(ap, findrxAny, theAppHost.getAppDir()));
+                    hostInventory.addHost(ap.getName(), theAppHost, getHH(ap, findrxAny, ds.getFindAnyDir()));
                 }
-                break;
+                    break;
 
                 case ShellRegex: {
                     for (String theHost : getAllHostNames(theAppHost.getHost())) {
@@ -2311,13 +2311,13 @@ public final class CommandExecutor {
 
                     }
                 }
-                break;
+                    break;
 
                 case Default: {
                     hostInventory.addHost(ap.getName(), theAppHost, getHH(ap, null, null));
 
                 }
-                break;
+                    break;
 
             }
             hostInventory.dump(tmpYml);
