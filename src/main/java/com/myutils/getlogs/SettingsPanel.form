@@ -569,6 +569,9 @@
                       </Layout>
                       <SubComponents>
                         <Container class="javax.swing.JPanel" name="jPanel52">
+                          <Events>
+                            <EventHandler event="componentResized" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="jPanel52ComponentResized"/>
+                          </Events>
 
                           <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
                           <SubComponents>
@@ -577,14 +580,24 @@
                                 <Property name="text" type="java.lang.String" value="Archive directory"/>
                               </Properties>
                             </Component>
-                            <Component class="javax.swing.JComboBox" name="tfArchiveDir">
-                              <Properties>
-                                <Property name="editable" type="boolean" value="true"/>
-                              </Properties>
-                              <AuxValues>
-                                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
-                              </AuxValues>
-                            </Component>
+                            <Container class="javax.swing.JPanel" name="ptfArchiveDir">
+
+                              <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
+                              <SubComponents>
+                                <Component class="javax.swing.JComboBox" name="tfArchiveDir">
+                                  <Properties>
+                                    <Property name="editable" type="boolean" value="true"/>
+                                    <Property name="autoscrolls" type="boolean" value="true"/>
+                                    <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                      <Dimension value="[300, 32767]"/>
+                                    </Property>
+                                  </Properties>
+                                  <AuxValues>
+                                    <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                                  </AuxValues>
+                                </Component>
+                              </SubComponents>
+                            </Container>
                           </SubComponents>
                         </Container>
                       </SubComponents>

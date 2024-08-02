@@ -569,8 +569,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         this.appIdx = (!lsm.isSelectionEmpty() && lsm.getMaxSelectionIndex() == lsm.getMinSelectionIndex()
                 && lmApps.getElementAt(lsm.getMinSelectionIndex()) != CheckBoxList.ALL_ENTRY)
-                        ? lsm.getMinSelectionIndex()
-                        : -1;
+                ? lsm.getMinSelectionIndex()
+                : -1;
         jlbAppFileNameBase.setEnabled(appIdx >= 0);
         jlbAppLogDirectory.setEnabled(appIdx >= 0);
         jtfAppFileNameBase.setEnabled(appIdx >= 0);
@@ -679,7 +679,7 @@ public class SettingsPanel extends javax.swing.JPanel {
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated
-    // Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         bgFileNaming = new javax.swing.ButtonGroup();
@@ -763,6 +763,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel51 = new javax.swing.JPanel();
         jPanel52 = new javax.swing.JPanel();
         lbArchiveDir = new javax.swing.JLabel();
+        ptfArchiveDir = new javax.swing.JPanel();
         tfArchiveDir = new javax.swing.JComboBox<>();
         jPanel53 = new javax.swing.JPanel();
         jPanel54 = new javax.swing.JPanel();
@@ -1180,13 +1181,24 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel51.setLayout(new java.awt.GridLayout(1, 0));
 
+        jPanel52.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                jPanel52ComponentResized(evt);
+            }
+        });
         jPanel52.setLayout(new javax.swing.BoxLayout(jPanel52, javax.swing.BoxLayout.LINE_AXIS));
 
         lbArchiveDir.setText("Archive directory");
         jPanel52.add(lbArchiveDir);
 
+        ptfArchiveDir.setLayout(new javax.swing.BoxLayout(ptfArchiveDir, javax.swing.BoxLayout.LINE_AXIS));
+
         tfArchiveDir.setEditable(true);
-        jPanel52.add(tfArchiveDir);
+        tfArchiveDir.setAutoscrolls(true);
+        tfArchiveDir.setMaximumSize(new java.awt.Dimension(300, 32767));
+        ptfArchiveDir.add(tfArchiveDir);
+
+        jPanel52.add(ptfArchiveDir);
 
         jPanel51.add(jPanel52);
 
@@ -1201,8 +1213,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jLabel6.setText("Get using");
         jPanel54.add(jLabel6);
 
-        cbGetUsing.setModel(
-                new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbGetUsing.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         jPanel54.add(cbGetUsing);
 
         jPanel53.add(jPanel54);
@@ -1212,8 +1223,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jLabel7.setText("ls using");
         jPanel55.add(jLabel7);
 
-        cbLSUsing.setModel(
-                new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbLSUsing.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         jPanel55.add(cbLSUsing);
 
         jPanel53.add(jPanel55);
@@ -1341,8 +1351,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         lCommand.setText("Command");
         jPanel49.add(lCommand);
 
-        cbCommand.setModel(
-                new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbCommand.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cbCommand.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbCommandActionPerformed(evt);
@@ -1460,6 +1469,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         add(jPanel9);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jPanel52ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jPanel52ComponentResized
+        tfArchiveDir.setMaximumSize(new Dimension(((JPanel) evt.getSource()).getWidth() - lbArchiveDir.getWidth() - 3, tfArchiveDir.getMaximumSize().height));
+        tfArchiveDir.setSize(((JPanel) evt.getSource()).getWidth() - lbArchiveDir.getWidth()+1, tfArchiveDir.getHeight());
+        tfArchiveDir.getParent().revalidate();
+    }//GEN-LAST:event_jPanel52ComponentResized
+
     private void jbProfileAddActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jbProfileAddActionPerformed
         String name = getProfileName("Enter new profile name", null);
 
@@ -1574,7 +1589,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         Collections.sort(apps);
         for (String app : apps) {
-            infoTableModel.addRow(new Object[] { app });
+            infoTableModel.addRow(new Object[]{app});
         }
         tab.setModel(infoTableModel);
 
@@ -1620,7 +1635,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 for (Object obj : selectedValuesList) {
                     if (obj instanceof App) {
-                        App app=(App) obj;
+                        App app = (App) obj;
                         appPr.removeApp(app);
                         lmApps.removeElement(app);
                         if (lmApps.size() == 1 && (lmApps.getElementAt(0).equals(CheckBoxList.ALL_ENTRY))) {
@@ -1898,6 +1913,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel pAfterActions;
     private javax.swing.JPanel pBeforeActions;
     private javax.swing.JPanel pExtensions;
+    private javax.swing.JPanel ptfArchiveDir;
     private javax.swing.JRadioButton rbCloudLogs;
     private javax.swing.JRadioButton rbDateTime;
     private javax.swing.JRadioButton rbDefaultMask;
@@ -1998,7 +2014,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 break;
         }
         setRxType(rxType);
-        initCB(cbCommand, actionCommand, GetCommand.values(), new Object[] { GetCommand.Unknown });
+        initCB(cbCommand, actionCommand, GetCommand.values(), new Object[]{GetCommand.Unknown});
         // cbCommand.addItemListener(aListener);
         tfGrepText.setText(ds.getGrepText());
         reloadLoginProfiles();
@@ -2177,9 +2193,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         ArrayList<EditableValue[]> loginProfiles = new ArrayList<>();
         for (LoginProfile lp : ds.getLoginProfiles()) {
-            loginProfiles.add(new EditableValue[] { new StringValue(lp.getName()),
-                    new StringValue(lp.getUsername()),
-                    new PasswordValue(lp.getPassword()) });
+            loginProfiles.add(new EditableValue[]{new StringValue(lp.getName()),
+                new StringValue(lp.getUsername()),
+                new PasswordValue(lp.getPassword())});
         }
         loginProfilesEditor.setData(loginProfiles);
         if (loginProfilesEditor.doShow()) {
@@ -2391,7 +2407,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
-                                                                           // choose Tools | Templates.
+            // choose Tools | Templates.
         }
 
     }
@@ -2406,7 +2422,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
-                                                                           // choose Tools | Templates.
+            // choose Tools | Templates.
         }
 
     }
