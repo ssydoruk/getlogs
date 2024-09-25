@@ -89,7 +89,11 @@ abstract class JTableFileListBase<EntryType> extends JTablePopup {
     public ArrayList<EntryType> getSelectedFiles() {
         int[] selectedRows = getSelectedRows();
         if (selectedRows != null && selectedRows.length > 0) {
-            return ((JTableFileBaseModel) getModel()).getSelectedRows(selectedRows);
+            ArrayList<EntryType> ret = new ArrayList<>(selectedRows.length);
+            for (int i = 0; i < selectedRows.length; i++) {
+                ret.add((EntryType) ((JTableFileBaseModel) getModel()).get(convertRowIndexToModel(i)));
+            }
+            return ret;
         } else {
             return null;
         }
