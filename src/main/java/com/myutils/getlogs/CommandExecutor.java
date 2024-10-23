@@ -330,7 +330,7 @@ public final class CommandExecutor {
         if (GetLogs.appHost == null || GetLogs.appHost.isEmpty()) {
             theAppHost = GetLogs.getHosts().get(ap.getName()); // first for one application only
             if (theAppHost == null) {
-                GetLogs.exitHelp("Host for app [" + ap + "] not found; exiting");
+                logMessage("Host for app [" + ap + "] not found; exiting", appProfile, ap);
                 return;
             }
         } else {
