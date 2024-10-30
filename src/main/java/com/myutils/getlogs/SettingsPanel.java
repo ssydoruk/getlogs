@@ -1978,6 +1978,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbAppLogs.setSelected(ds.isAppLogs());
         cbZipDest.setSelected(ds.isZipDest());
         cbParseWhileDownload.setSelected(ds.isParserWhileDownload());
+        cbParseWhileDownload.setEnabled( !GetLogs.isbUseAnsible());
         cbLCALogs.setSelected(ds.isLcaLogs());
         spMaxFiles.setValue(ds.getMaxFiles());
         jtfOutputDir.setText(ds.getOutputDir());
