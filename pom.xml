@@ -19,7 +19,7 @@
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
-            <version>1.8.2</version>
+            <version>1.10.15</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -89,7 +89,7 @@
         <dependency>
             <groupId>dnsjava</groupId>
             <artifactId>dnsjava</artifactId>
-            <version>3.5.3</version>
+            <version>3.6.2</version>
         </dependency>
         <dependency>
             <groupId>com.formdev</groupId>
@@ -118,13 +118,22 @@
             <version>1.0</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>com.myutils</groupId>
             <artifactId>logbrowser</artifactId>
             <version>1.0</version>
             <type>jar</type>
+        </dependency>-->
+<!--        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>logbrowser</artifactId>
+            <version>${project.version}</version>
+        </dependency>-->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>logbrowser</artifactId>
+            <version>${project.version}</version>
         </dependency>
-	
     </dependencies>
     <dependencyManagement>
         <dependencies>
