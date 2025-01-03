@@ -118,13 +118,13 @@
             <version>1.0</version>
             <type>jar</type>
         </dependency>
-<!--        <dependency>
+        <!--        <dependency>
             <groupId>com.myutils</groupId>
             <artifactId>logbrowser</artifactId>
             <version>1.0</version>
             <type>jar</type>
         </dependency>-->
-<!--        <dependency>
+        <!--        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>logbrowser</artifactId>
             <version>${project.version}</version>
@@ -229,4 +229,13 @@
             <url>file:${project.basedir}/lib</url>
         </repository>
     </repositories>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.19.1</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>
