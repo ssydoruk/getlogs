@@ -177,7 +177,6 @@ public class GetLogs {
 
     public static void main(String[] args) throws Exception {
 
-
         // set the name of the application menu item
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "WikiTeX");
 
@@ -484,9 +483,7 @@ public class GetLogs {
             showHelpExit("Option " + optHosts.getOpt() + " (" + optHosts.getLongOpt() + ") is mandatory", options);
         }
 
-        inventory = HostsInventory.load(new File(hostAppFile));
-        // hosts = new Hosts(hostAppFile);
-        hosts = new Hosts(inventory);
+        reloadHostFile();
 
         sLogDirectory = (String) cmd.getParsedOptionValue(optLogDirectory.getLongOpt());
         if (sLogDirectory == null || sLogDirectory.isEmpty()) {
@@ -993,6 +990,26 @@ public class GetLogs {
 
     public static boolean isHostsVisible() {
         return hostsVisible;
+    }
+
+    private static void reloadHostFile() {
+        reloadHostFile(null);
+    }
+
+    public static void reloadHostFile(java.awt.Component parent) {
+        try {
+            inventory = HostsInventory.load(new File(hostAppFile));
+            // hosts = new Hosts(hostAppFile);
+            hosts = new Hosts(inventory);
+        } catch (IOException iOException) {
+            JOptionPane.showMessageDialog(parent, "Error reading hosts file "+hostAppFile+ "\n"+
+                    iOException.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        if (parent != null) {
+            JOptionPane.showMessageDialog(parent, "Loaded file " + hostAppFile + "\n"
+                    + "Total hosts: " + hosts.size(), "Info", JOptionPane.INFORMATION_MESSAGE);
+
+        }
     }
 
 }

@@ -739,6 +739,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         jbAppAdd = new javax.swing.JButton();
         jbAppDelete = new javax.swing.JButton();
         jPanel14 = new javax.swing.JPanel();
+        jbAppDelete1 = new javax.swing.JButton();
         jpAppProperties = new javax.swing.JPanel();
         jPanel30 = new javax.swing.JPanel();
         jrbOSLinux = new javax.swing.JRadioButton();
@@ -1070,6 +1071,14 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel14.setLayout(new javax.swing.BoxLayout(jPanel14, javax.swing.BoxLayout.LINE_AXIS));
         jPanel10.add(jPanel14);
+
+        jbAppDelete1.setText("Reload");
+        jbAppDelete1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbAppDelete1ActionPerformed(evt);
+            }
+        });
+        jPanel10.add(jbAppDelete1);
 
         jPanel19.add(jPanel10);
 
@@ -1475,6 +1484,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         tfArchiveDir.getParent().revalidate();
     }//GEN-LAST:event_jPanel52ComponentResized
 
+    private void jbAppDelete1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAppDelete1ActionPerformed
+        GetLogs.reloadHostFile(this.getTopLevelAncestor());
+    }//GEN-LAST:event_jbAppDelete1ActionPerformed
+
     private void jbProfileAddActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jbProfileAddActionPerformed
         String name = getProfileName("Enter new profile name", null);
 
@@ -1867,6 +1880,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel9;
     private javax.swing.JButton jbAppAdd;
     private javax.swing.JButton jbAppDelete;
+    private javax.swing.JButton jbAppDelete1;
     private javax.swing.JButton jbProfileAdd;
     private javax.swing.JButton jbProfileDelete;
     private javax.swing.JButton jbProfileRename;
