@@ -54,17 +54,25 @@ class Hosts extends HashMap<String, HostAppdir> {
         } else { // reading as csv
             try (Reader r = new BufferedReader(new FileReader(fileName))) {
                 CSVParser parser = CSVParser.parse(r, CSVFormat.EXCEL.builder()
-                        .setSkipHeaderRecord(true).setHeader()
+                        .setSkipHeaderRecord(true)
+                        .setHeader()
+                        .setDelimiter(',')
                         .setQuote('\"').build());
 
                 for (CSVRecord csvRecord : parser) {
-                    put(csvRecord.get("application"), new HostAppdir(csvRecord.get("host"), csvRecord.get("logpath")));
+                    put(csvRecord.isMapped(CSV_FIELD_APP) ? csvRecord.get(CSV_FIELD_APP) : "",
+                            new HostAppdir(csvRecord.isMapped(CSV_FIELD_HOST) ? csvRecord.get(CSV_FIELD_HOST) : "",
+                                    csvRecord.isMapped(CSV_FIELD_LOGPATH) ? csvRecord.get(CSV_FIELD_LOGPATH) : ""));
                 }
             }
         }
 
         logger.debug("Read " + size() + " records");
     }
+
+    static final String CSV_FIELD_HOST = "host";
+    static final String CSV_FIELD_APP = "application";
+    static final String CSV_FIELD_LOGPATH = "logpath";
 
     Hosts(HostsInventory inventory) {
         for (Entry<String, LinkedHashMap> entry : inventory.entrySet()) {

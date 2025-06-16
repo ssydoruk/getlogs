@@ -45,7 +45,7 @@ public class HostAppdir {
     public HostAppdir(String _host, String _appDir, String _becomeUser, String _defaultRx, String _appType,
             String[] _archiveDir) {
         this(_host, _appDir, _becomeUser, _defaultRx, _appType);
-        archiveDir = new ArrayList<String>(Arrays.asList(_archiveDir));
+        archiveDir.addAll(Arrays.asList(_archiveDir));
     }
 
     public String getBecomeUser() {
@@ -64,6 +64,7 @@ public class HostAppdir {
     public HostAppdir(String _host, String _appDir) {
         host = _host;
         appDir = _appDir;
+        archiveDir = new ArrayList<String>();
     }
 
     public String getHost() {

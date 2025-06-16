@@ -998,12 +998,17 @@ public class GetLogs {
 
     public static void reloadHostFile(java.awt.Component parent) {
         try {
-            inventory = HostsInventory.load(new File(hostAppFile));
-            // hosts = new Hosts(hostAppFile);
-            hosts = new Hosts(inventory);
+            if (isbUseAnsible()) {
+                inventory = HostsInventory.load(new File(hostAppFile));
+                // hosts = new Hosts(hostAppFile);
+                hosts = new Hosts(inventory);
+            }
+            else {
+                hosts = new Hosts(hostAppFile);
+            }
         } catch (IOException iOException) {
-            JOptionPane.showMessageDialog(parent, "Error reading hosts file "+hostAppFile+ "\n"+
-                    iOException.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(parent, "Error reading hosts file " + hostAppFile + "\n"
+                    + iOException.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
         if (parent != null) {
             JOptionPane.showMessageDialog(parent, "Loaded file " + hostAppFile + "\n"

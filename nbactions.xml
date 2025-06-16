@@ -12,8 +12,8 @@
             <properties>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>--gui-profile=/Users/ssydoruk/GCTI/var/getfilesUAT.txt --hosts=/Users/ssydoruk/work/getfiles/inventory/invUAT_all.yml --debug=TRACE '--ssh-opt=-l gatt -o ConnectTimeout=300 --rsync-username=ssydoruk --prod-base-dir=/ngs/app/gcti --useansible --log-file=/Users/ssydoruk/GCTI/tmp/logdown --cfgxml=/Users/ssydoruk/GCTI/etc/logbrowser/backend.xml --sqlite.pragma</exec.appArgs>
-                <exec.vmArgs>-Dlog4j2.configurationFile=/Users/ssydoruk/GCTI/etc/logdownloader.xml -DlogPath=/Users/ssydoruk/GCTI/tmp  -Dsun.java2d.d3d=false -Dall=1 -Xms4G -Xmx10G -Dog4j2.debug -Dsqlite.pragma=true -Dtlib.norequest=false -Dtimediff.parse=false -DSIPLINES=1</exec.vmArgs>
+                <exec.appArgs>--gui-profile=/Users/ssydo/GCTI/var/getfilesUAT.txt --hosts=C:\Users\ssydo\GCTI\etc\ppeHosts.txt --debug=TRACE '--ssh-opt=-l gatt -o ConnectTimeout=300' --rsync-username=ssydo --prod-base-dir=/ngs/app/gcti --log-file=/Users/ssydo/GCTI/tmp/logdown --cfgxml=/Users/ssydo/GCTI/etc/logbrowser/backend.xml --sqlite.pragma</exec.appArgs>
+                <exec.vmArgs>-Dlog4j2.configurationFile=/Users/ssydo/GCTI/etc/logdownloader.xml -DlogPath=/Users/ssydo/GCTI/tmp  -Dsun.java2d.d3d=false -Dall=1 -Xms4G -Xmx10G -Dog4j2.debug -Dsqlite.pragma=true -Dtlib.norequest=false -Dtimediff.parse=false -DSIPLINES=1</exec.vmArgs>
                 <exec.mainClass>com.myutils.getlogs.GetLogs</exec.mainClass>
             </properties>
         </action>
@@ -30,8 +30,8 @@
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
-                <exec.appArgs>--gui-profile=/Users/ssydoruk/GCTI/var/getfilesUAT.txt --hosts=/Users/ssydoruk/work/getfiles/inventory/invUAT_all.yml --debug=TRACE '--ssh-opt=-l gatt -o ConnectTimeout=300 --rsync-username=ssydoruk --prod-base-dir=/ngs/app/gcti --useansible --log-file=/Users/ssydoruk/GCTI/tmp/logdown --cfgxml=/Users/ssydoruk/GCTI/etc/logbrowser/backend.xml --sqlite.pragma</exec.appArgs>
-                <exec.vmArgs>-Dlog4j2.configurationFile=/Users/ssydoruk/GCTI/etc/logdownloader.xml -DlogPath=/Users/ssydoruk/GCTI/tmp  -Dsun.java2d.d3d=false -Dall=1 -Xms4G -Xmx10G -Dog4j2.debug -Dsqlite.pragma=true -Dtlib.norequest=false -Dtimediff.parse=false -DSIPLINES=1 -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
+                <exec.appArgs>--gui-profile=/Users/ssydo/GCTI/var/getfilesUAT.txt --hosts=C:\Users\ssydo\GCTI\etc\ppeHosts.txt --debug=TRACE '--ssh-opt=-l gatt -o ConnectTimeout=300' --rsync-username=ssydo --prod-base-dir=/ngs/app/gcti --log-file=/Users/ssydo/GCTI/tmp/logdown --cfgxml=/Users/ssydo/GCTI/etc/logbrowser/backend.xml --sqlite.pragma</exec.appArgs>
+                <exec.vmArgs>-Dlog4j2.configurationFile=/Users/ssydo/GCTI/etc/logdownloader.xml -DlogPath=/Users/ssydo/GCTI/tmp  -Dsun.java2d.d3d=false -Dall=1 -Xms4G -Xmx10G -Dog4j2.debug -Dsqlite.pragma=true -Dtlib.norequest=false -Dtimediff.parse=false -DSIPLINES=1 -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.mainClass>com.myutils.getlogs.GetLogs</exec.mainClass>
             </properties>
         </action>
@@ -47,8 +47,8 @@
             <properties>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>--gui-profile=/Users/ssydoruk/GCTI/var/getfilesUAT.txt --hosts=/Users/ssydoruk/work/getfiles/inventory/invUAT_all.yml --debug=TRACE '--ssh-opt=-l gatt -o ConnectTimeout=300 --rsync-username=ssydoruk --prod-base-dir=/ngs/app/gcti --useansible --log-file=/Users/ssydoruk/GCTI/tmp/logdown --cfgxml=/Users/ssydoruk/GCTI/etc/logbrowser/backend.xml --sqlite.pragma</exec.appArgs>
-                <exec.vmArgs>-Dlog4j2.configurationFile=/Users/ssydoruk/GCTI/etc/logdownloader.xml -DlogPath=/Users/ssydoruk/GCTI/tmp  -Dsun.java2d.d3d=false -Dall=1 -Xms4G -Xmx10G -Dog4j2.debug -Dsqlite.pragma=true -Dtlib.norequest=false -Dtimediff.parse=false -DSIPLINES=1</exec.vmArgs>
+                <exec.appArgs>--gui-profile=/Users/ssydo/GCTI/var/getfilesUAT.txt --hosts=C:\Users\ssydo\GCTI\etc\ppeHosts.txt --debug=TRACE '--ssh-opt=-l gatt -o ConnectTimeout=300' --rsync-username=ssydo --prod-base-dir=/ngs/app/gcti --log-file=/Users/ssydo/GCTI/tmp/logdown --cfgxml=/Users/ssydo/GCTI/etc/logbrowser/backend.xml --sqlite.pragma</exec.appArgs>
+                <exec.vmArgs>-Dlog4j2.configurationFile=/Users/ssydo/GCTI/etc/logdownloader.xml -DlogPath=/Users/ssydo/GCTI/tmp  -Dsun.java2d.d3d=false -Dall=1 -Xms4G -Xmx10G -Dog4j2.debug -Dsqlite.pragma=true -Dtlib.norequest=false -Dtimediff.parse=false -DSIPLINES=1</exec.vmArgs>
                 <exec.mainClass>com.myutils.getlogs.GetLogs</exec.mainClass>
             </properties>
         </action>
