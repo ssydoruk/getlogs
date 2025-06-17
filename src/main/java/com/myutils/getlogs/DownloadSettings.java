@@ -47,15 +47,15 @@ public class DownloadSettings {
     public void setRxType(RegexType rxType) {
         this.rxType = rxType;
     }
-    
+
     public int getMaxFiles() {
-        return maxFiles > 0? maxFiles:1;
+        return maxFiles > 0 ? maxFiles : 1;
     }
 
     public void setMaxFiles(int maxFiles) {
         this.maxFiles = maxFiles;
     }
-    
+
     public String getCsvDir() {
         return csvDir;
     }
@@ -68,6 +68,7 @@ public class DownloadSettings {
     private boolean appLogs;
     private boolean zipDest;
     private String date_time_rx;
+
     public String getDate_time_rx() {
         return date_time_rx;
     }
@@ -85,7 +86,6 @@ public class DownloadSettings {
     public void setParserWhileDownload(boolean parserWhileDownload) {
         this.parserWhileDownload = parserWhileDownload;
     }
-    
 
     public boolean isZipDest() {
         return zipDest;
@@ -109,7 +109,7 @@ public class DownloadSettings {
     private String hours;
     private long rangeStart;
     private long rangeEnd;
-    
+
     private AnsibleSettings ansible;
 
     public AnsibleSettings getAnsible() {
@@ -136,7 +136,7 @@ public class DownloadSettings {
         this.loginProfiles = new ArrayList<>();
         this.ansible = new AnsibleSettings(
                 "./getfiles.py ls --inventory ${INV}/invUAT_all.yml --csvdir /Users/ssydoruk/work/getfiles/csv --files $FILES",
-                " ./getfiles.py csv --destdir $DESTDIR  --inventory ${INV}/invUAT_all.yml $CSVFILES", 
+                " ./getfiles.py csv --destdir $DESTDIR  --inventory ${INV}/invUAT_all.yml $CSVFILES",
                 "./getfiles.py last --destdir $DESTDIR --inventory ${INV}/invUAT_all.yml --files $FILES");
         lfmt = true;
         prod = true;
@@ -284,8 +284,8 @@ public class DownloadSettings {
 
     void loadLFMTs(ArrayList<EditableValue[]> data) {
         lfmtHostInstances = new ArrayList<>();
-        for (Object[] objects : data) {
-            lfmtHostInstances.add(new LFMTHostInstance(objects));
+        for (EditableValue[] values : data) {
+            lfmtHostInstances.add(new LFMTHostInstance(values));
         }
     }
 
@@ -412,7 +412,7 @@ public class DownloadSettings {
                 lp.setUsername((String) objects[1].getValue());
             }
             if (objects.length >= 2) {
-                lp.setPassword(new PasswordValue( objects[2].toString()));
+                lp.setPassword(new PasswordValue(objects[2].toString()));
             }
             loginProfiles.add(lp);
         }
@@ -448,8 +448,10 @@ public class DownloadSettings {
             this.baseDir = baseDir;
         }
 
-        private LFMTHostInstance(Object[] objects) {
-            this(StringUtils.defaultString((String) objects[0]), StringUtils.defaultString((String) objects[1]), StringUtils.defaultString((String) objects[2]));
+        private LFMTHostInstance(EditableValue[] vals) {
+            this(StringUtils.defaultString((String) vals[0].getValue()),
+                    StringUtils.defaultString((String) vals[1].getValue()),
+                    StringUtils.defaultString((String) vals[0].getValue()));
 
         }
 
