@@ -739,11 +739,6 @@
             <Property name="rows" type="int" value="0"/>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JCheckBox" name="cbProdLog">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="logs from prod"/>
-              </Properties>
-            </Component>
             <Component class="javax.swing.JCheckBox" name="cbLCALogs">
               <Properties>
                 <Property name="text" type="java.lang.String" value="LCA logs"/>

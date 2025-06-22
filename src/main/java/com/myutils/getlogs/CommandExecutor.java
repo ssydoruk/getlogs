@@ -915,7 +915,7 @@ public final class CommandExecutor {
                         }
                     });
                 }
-                if (getDs().isProd()) {
+                if (getDs().isAppLogs()) {
                     ret1.add(() -> {
                         HostAppdir hh = GetLogs.getHosts().lookupHost(key.getApp().getName());
                         try {
@@ -2060,7 +2060,7 @@ public final class CommandExecutor {
                     for (App app : appProfile.getApps()) {
                         GetLogs.logger.debug("processing app  " + app + ": " + app.isChecked());
                         if (app.isChecked()) {
-                            if (ds.isProd()) {
+                            if (ds.isAppLogs()) {
                                 ret1.add(() -> {
                                     try {
                                         executeCmd(appProfile, app, false);

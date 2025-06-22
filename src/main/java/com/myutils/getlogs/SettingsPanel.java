@@ -811,7 +811,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbLSUsing = new javax.swing.JComboBox<>();
         jPanel2 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
-        cbProdLog = new javax.swing.JCheckBox();
         cbLCALogs = new javax.swing.JCheckBox();
         cbAppLogs = new javax.swing.JCheckBox();
         cbZipDest = new javax.swing.JCheckBox();
@@ -1313,9 +1312,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         jPanel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jPanel7.setLayout(new java.awt.GridLayout(0, 2));
-
-        cbProdLog.setText("logs from prod");
-        jPanel7.add(cbProdLog);
 
         cbLCALogs.setText("LCA logs");
         cbLCALogs.addItemListener(new java.awt.event.ItemListener() {
@@ -1926,7 +1922,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbLfmtLog;
     private javax.swing.JComboBox<String> cbLoginProfile;
     private javax.swing.JCheckBox cbParseWhileDownload;
-    private javax.swing.JCheckBox cbProdLog;
     private javax.swing.JCheckBox cbUseRSync;
     private javax.swing.JCheckBox cbZipDest;
     private javax.swing.JMenuItem cbmCopyHostName;
@@ -2106,7 +2101,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         loadProfile(null);
 
         // cbListFiles.setSelected(ds.isListFiles());
-        cbProdLog.setSelected(ds.isProd());
         cbAppLogs.setSelected(ds.isAppLogs());
         cbZipDest.setSelected(ds.isZipDest());
         cbParseWhileDownload.setSelected(ds.isParserWhileDownload());
@@ -2163,7 +2157,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         ds.setGrepText(tfGrepText.getText());
         ds.setOutputDir(jtfOutputDir.getText());
         ds.setLfmt(cbLfmtLog.isSelected());
-        ds.setProd(cbProdLog.isSelected());
         ds.setLcaLogs(cbLCALogs.isSelected());
         ds.setAppLogs(cbAppLogs.isSelected());
         ds.setZipDest(cbZipDest.isSelected());

@@ -335,14 +335,6 @@ public class DownloadSettings {
         this.lfmt = lfmt;
     }
 
-    public boolean isProd() {
-        return prod;
-    }
-
-    public void setProd(boolean prod) {
-        this.prod = prod;
-    }
-
     AppProfile addProfile(String name) {
         AppProfile appProfile = new AppProfile(name);
         appProfiles.add(appProfile);
