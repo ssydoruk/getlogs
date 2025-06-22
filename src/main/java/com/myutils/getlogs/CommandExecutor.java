@@ -335,7 +335,7 @@ public final class CommandExecutor {
         } else {
             theAppHost = new HostAppdir(GetLogs.appHost, null);
         }
-        logMessage("executing command lfmt: " + isLFMT+" host:"+theAppHost.getHost(), appProfile, ap);
+        logMessage("executing command lfmt: " + isLFMT + " host:" + theAppHost.getHost(), appProfile, ap);
 
         String logsDir = getLogDir(appProfile, ap, isLFMT, theAppHost.toString());
 
@@ -722,7 +722,7 @@ public final class CommandExecutor {
         if (GetLogs.isbIsSSHJava()) {
             RemoteExecutionResult ret1 = sshClient.executeRemoteCommand(ds.getUser(appProfile),
                     ds.getPassword(appProfile),
-                    theAppHost.getHost(), 22, remoteCmd);
+                    (isLFMT) ? appProfile.getLFMT().getHost() : theAppHost.getHost(), 22, remoteCmd);
             executionResult = ret1.getRetCode();
             stderr = ret1.getStderr();
             stdout = ret1.getStdout();
