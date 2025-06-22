@@ -299,29 +299,18 @@ public final class CommandExecutor {
     }
 
     @SuppressWarnings("null")
-    private String getLogDir(AppProfile appProfile, App ap, boolean isLFMT, String h) {
-        StringBuilder logsDir = new StringBuilder();
-
+    private String getLogDir(AppProfile appProfile, App ap, boolean isLFMT, String hostName) {
         if (isLFMT) {
             DownloadSettings.LFMTHostInstance lfmtHostInstance = appProfile.getLFMT();
             if (lfmtHostInstance == null || lfmtHostInstance.getHost() == null) {
                 GetLogs.exitHelp("LFMT not configured properly for app " + ap);
             }
-            logsDir.append(lfmtHostInstance.getBaseDir());
-            String instance = lfmtHostInstance.getInstance();
-            if (instance != null && !instance.isEmpty()) {
-                logsDir.append(lfmtHostInstance.getInstance()).append("/").append(lfmtHostInstance.getInstance())
-                        .append("_cls");
-            }
+            return getBaseLFMTPath(lfmtHostInstance, hostName);
 
-            logsDir.append("/").append(h) // .append("/")
-                    // .append(ap)
-                    ;
         } else {
-            logsDir.append(GetLogs.getProdBaseDir());
+            return GetLogs.getProdBaseDir();
 
         }
-        return logsDir.toString();
     }
 
     protected void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws Exception {
@@ -1060,11 +1049,11 @@ public final class CommandExecutor {
         // ssh -c "cd <dest>; find . -name <app_start> -print|xargs tar -cz" | tar zx
         // tar -C <dest directory> -cz file1,file2,,, | tar zx
         // https://mkyong.com/java/how-to-create-tar-gz-in-java/
-        StringBuilder remoteCmd = new StringBuilder().append("tar -C ").append(appProfile.getLogDirectory())
+        StringBuilder remoteCmd = new StringBuilder("tar -C ").append(getLogDir(appProfile, ap, isLFMT, theAppHost.getHost()))
                 .append(" -cz ").append(fileListForTar);
         try {
             ThreadedUnTarGZ stdoutReader = new ThreadedUnTarGZ(FilenameUtils.concat(ds.getOutputDir(), ap.getName()),
-                    ds.isZipDest());
+                    (isLFMT) ? false : ds.isZipDest());
             stdoutReader.setProgressProc(new IProcessOutputRead() {
                 @Override
                 public void lineRead(String s) {
@@ -1085,7 +1074,11 @@ public final class CommandExecutor {
             });
             RemoteExecutionResult ret1 = sshClient.executePipedRemoteCommand(
                     ds.getUser(appProfile),
-                    ds.getPassword(appProfile), theAppHost.getHost(), 22, remoteCmd.toString(), stdoutReader);
+                    ds.getPassword(appProfile),
+                    (isLFMT) ? appProfile.getLFMT().getHost() : theAppHost.getHost(),
+                    22,
+                    remoteCmd.toString(),
+                    stdoutReader);
         } catch (Exception e) {
             SettingsForm.error("Exception while executing remote command: " + e.getMessage());
         }
@@ -2466,6 +2459,21 @@ public final class CommandExecutor {
         hostList.add(ap.getName());
         hh.put("target_hosts", hostList);
         return hh;
+    }
+
+    private String getBaseLFMTPath(DownloadSettings.LFMTHostInstance lfmtHostInstance, String hostName) {
+        StringBuilder ret = new StringBuilder();
+        ret.append(lfmtHostInstance.getBaseDir());
+        String instance = lfmtHostInstance.getInstance();
+        if (instance != null && !instance.isEmpty()) {
+            ret.append(lfmtHostInstance.getInstance()).append("/").append(lfmtHostInstance.getInstance())
+                    .append("_cls");
+        }
+
+        ret.append("/").append(hostName) // .append("/")
+                // .append(ap)
+                ;
+        return ret.toString();
     }
 
     @FunctionalInterface
