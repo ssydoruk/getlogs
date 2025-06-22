@@ -2246,7 +2246,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     boolean canRun() {
         return canRunProfiles()
-                && (cbAppLogs.isSelected() || cbLCALogs.isSelected());
+                && (cbAppLogs.isSelected() || cbLCALogs.isSelected() || cbLfmtLog.isSelected());
     }
 
     private boolean hasCheckedApp(AppProfile elementAt) {
