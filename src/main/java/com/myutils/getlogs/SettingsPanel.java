@@ -2102,6 +2102,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         // cbListFiles.setSelected(ds.isListFiles());
         cbAppLogs.setSelected(ds.isAppLogs());
+        cbLfmtLog.setSelected(ds.isLfmt());
         cbZipDest.setSelected(ds.isZipDest());
         cbParseWhileDownload.setSelected(ds.isParserWhileDownload());
         cbParseWhileDownload.setEnabled( !GetLogs.isbUseAnsible());
