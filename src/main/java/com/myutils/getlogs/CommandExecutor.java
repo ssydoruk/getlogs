@@ -325,7 +325,6 @@ public final class CommandExecutor {
     }
 
     protected void executeCmd(AppProfile appProfile, App ap, boolean isLFMT) throws Exception {
-        logMessage("executing command lfmt: " + isLFMT, appProfile, ap);
         HostAppdir theAppHost;
         if (GetLogs.appHost == null || GetLogs.appHost.isEmpty()) {
             theAppHost = GetLogs.getHosts().get(ap.getName()); // first for one application only
@@ -336,6 +335,7 @@ public final class CommandExecutor {
         } else {
             theAppHost = new HostAppdir(GetLogs.appHost, null);
         }
+        logMessage("executing command lfmt: " + isLFMT+" host:"+theAppHost.getHost(), appProfile, ap);
 
         String logsDir = getLogDir(appProfile, ap, isLFMT, theAppHost.toString());
 
