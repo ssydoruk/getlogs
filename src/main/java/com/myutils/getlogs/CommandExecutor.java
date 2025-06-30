@@ -279,7 +279,7 @@ public final class CommandExecutor {
                     "Cannot continue", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
+
         if (!ds.isLfmt() && !ds.isApplicationConfigured()) {
             JOptionPane.showMessageDialog(parent, "Either logs configured on Application or LFMT checkbox needs to be checked",
                     "Cannot continue", JOptionPane.ERROR_MESSAGE);
@@ -767,47 +767,11 @@ public final class CommandExecutor {
                     String[] split = StringUtils.split(stdoutLine);
                     String fileName = split[0];
                     long fileSize = Long.parseLong(split[1]);
-                    if (ds.getRxType() == RegexType.ShellRegex) {
-                        Pair<Long, String> utcTime = appProfile.getFileNameTime(fileName);
-                        boolean shouldAdd = true;
-                        UTCTimeRange timeRange = ds.getTimeRange();
-                        if (utcTime != null) { // was able to parse time name
-                            if (utcTime.getKey() > timeRange.getEnd()) {
-                                shouldAdd = false;
-                            } else {
-                                if ((utcTime.getKey() > timeRange.getStart())) {
-                                    shouldAdd = true;
-                                } else {
-                                    /* so the assumption is that files are always sorted */
-                                    if (startFound == false) {
-                                        startFound = true;
-                                        savedPrefix = utcTime.getValue();
-                                        shouldAdd = true;
-                                    } else {
-                                        if (savedPrefix == null || !savedPrefix.equals(utcTime.getValue())) {
-                                            startFound = false;
-                                        }
-                                        shouldAdd = false;
-                                    }
-                                }
-                            }
-                        }
-                        logger.debug("file [" + fileName + "] range: " + timeRange.toString()
-                                // +" utcTime:" + utcTime + "timeRange:" + timeRange + "(utcTime >
-                                // timeRange.getStart()): " + (utcTime > timeRange.getStart()) + " (utcTime <
-                                // timeRange.getEnd()):" + (utcTime < timeRange.getEnd())
-                                + " shouldadd: " + shouldAdd);
-                        if (shouldAdd) {
-                            lsFiles.add(new JTableFileEntry(appProfile,
-                                    getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog),
-                                    new OSFile(fileName, fileSize)));
-                        }
 
-                    } else {
-                        lsFiles.add(new JTableFileEntry(appProfile,
-                                getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog),
-                                new OSFile(fileName, fileSize)));
-                    }
+                    lsFiles.add(new JTableFileEntry(appProfile,
+                            getStorage(appProfile, ap, theAppHost, logsDir, isLFMT, lcaLog),
+                            new OSFile(fileName, fileSize)));
+
                 }
                 logMessage("ls successful " + ((isLFMT) ? " on LFMT" : "") + " : got " + lsFiles.size() + " files",
                         appProfile, ap);
