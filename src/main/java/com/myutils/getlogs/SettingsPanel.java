@@ -811,11 +811,15 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbLSUsing = new javax.swing.JComboBox<>();
         jPanel2 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
+        jPanel58 = new javax.swing.JPanel();
+        cbParseWhileDownload = new javax.swing.JCheckBox();
+        cbZipDest = new javax.swing.JCheckBox();
+        jPanel59 = new javax.swing.JPanel();
+        cbLfmtLog = new javax.swing.JCheckBox();
+        cbApplicationConfigured = new javax.swing.JCheckBox();
+        jPanel60 = new javax.swing.JPanel();
         cbLCALogs = new javax.swing.JCheckBox();
         cbAppLogs = new javax.swing.JCheckBox();
-        cbZipDest = new javax.swing.JCheckBox();
-        cbParseWhileDownload = new javax.swing.JCheckBox();
-        cbLfmtLog = new javax.swing.JCheckBox();
         jpRangeSelect = new javax.swing.JPanel();
         jPanel38 = new javax.swing.JPanel();
         jlbAppLogDirectory3 = new javax.swing.JLabel();
@@ -1311,7 +1315,42 @@ public class SettingsPanel extends javax.swing.JPanel {
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
 
         jPanel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        jPanel7.setLayout(new java.awt.GridLayout(0, 2));
+        jPanel7.setLayout(new javax.swing.BoxLayout(jPanel7, javax.swing.BoxLayout.PAGE_AXIS));
+
+        jPanel58.setBorder(javax.swing.BorderFactory.createTitledBorder("Options"));
+        jPanel58.setLayout(new java.awt.BorderLayout());
+
+        cbParseWhileDownload.setText("Parse while download");
+        jPanel58.add(cbParseWhileDownload, java.awt.BorderLayout.CENTER);
+
+        cbZipDest.setText("Zip destination");
+        cbZipDest.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbZipDestItemStateChanged(evt);
+            }
+        });
+        jPanel58.add(cbZipDest, java.awt.BorderLayout.PAGE_START);
+
+        jPanel7.add(jPanel58);
+
+        jPanel59.setBorder(javax.swing.BorderFactory.createTitledBorder("Logs location"));
+        jPanel59.setLayout(new java.awt.BorderLayout());
+
+        cbLfmtLog.setText("Logs from LFMT");
+        cbLfmtLog.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbLfmtLogActionPerformed(evt);
+            }
+        });
+        jPanel59.add(cbLfmtLog, java.awt.BorderLayout.CENTER);
+
+        cbApplicationConfigured.setText("As configured on application");
+        jPanel59.add(cbApplicationConfigured, java.awt.BorderLayout.PAGE_START);
+
+        jPanel7.add(jPanel59);
+
+        jPanel60.setBorder(javax.swing.BorderFactory.createTitledBorder("Log type"));
+        jPanel60.setLayout(new java.awt.BorderLayout());
 
         cbLCALogs.setText("LCA logs");
         cbLCALogs.addItemListener(new java.awt.event.ItemListener() {
@@ -1319,7 +1358,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 cbLCALogsItemStateChanged(evt);
             }
         });
-        jPanel7.add(cbLCALogs);
+        jPanel60.add(cbLCALogs, java.awt.BorderLayout.CENTER);
 
         cbAppLogs.setText("Application logs");
         cbAppLogs.addItemListener(new java.awt.event.ItemListener() {
@@ -1332,26 +1371,9 @@ public class SettingsPanel extends javax.swing.JPanel {
                 cbAppLogsActionPerformed(evt);
             }
         });
-        jPanel7.add(cbAppLogs);
+        jPanel60.add(cbAppLogs, java.awt.BorderLayout.PAGE_START);
 
-        cbZipDest.setText("Zip destination");
-        cbZipDest.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbZipDestItemStateChanged(evt);
-            }
-        });
-        jPanel7.add(cbZipDest);
-
-        cbParseWhileDownload.setText("Parse while download");
-        jPanel7.add(cbParseWhileDownload);
-
-        cbLfmtLog.setText("Logs from LFMT");
-        cbLfmtLog.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbLfmtLogActionPerformed(evt);
-            }
-        });
-        jPanel7.add(cbLfmtLog);
+        jPanel7.add(jPanel60);
 
         jPanel2.add(jPanel7);
 
@@ -1914,6 +1936,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JButton btEditLFMTs;
     private javax.swing.JButton btEditLoginProfile;
     private javax.swing.JCheckBox cbAppLogs;
+    private javax.swing.JCheckBox cbApplicationConfigured;
     private javax.swing.JComboBox cbCommand;
     private javax.swing.JComboBox<String> cbGetUsing;
     private javax.swing.JCheckBox cbLCALogs;
@@ -1987,7 +2010,10 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel55;
     private javax.swing.JPanel jPanel56;
     private javax.swing.JPanel jPanel57;
+    private javax.swing.JPanel jPanel58;
+    private javax.swing.JPanel jPanel59;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel60;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
@@ -2103,6 +2129,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         // cbListFiles.setSelected(ds.isListFiles());
         cbAppLogs.setSelected(ds.isAppLogs());
         cbLfmtLog.setSelected(ds.isLfmt());
+        cbApplicationConfigured.setSelected(ds.isApplicationConfigured());
         cbZipDest.setSelected(ds.isZipDest());
         cbParseWhileDownload.setSelected(ds.isParserWhileDownload());
         cbParseWhileDownload.setEnabled( !GetLogs.isbUseAnsible());
@@ -2158,6 +2185,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         ds.setGrepText(tfGrepText.getText());
         ds.setOutputDir(jtfOutputDir.getText());
         ds.setLfmt(cbLfmtLog.isSelected());
+        ds.setApplicationConfigured(cbApplicationConfigured.isSelected());
         ds.setLcaLogs(cbLCALogs.isSelected());
         ds.setAppLogs(cbAppLogs.isSelected());
         ds.setZipDest(cbZipDest.isSelected());

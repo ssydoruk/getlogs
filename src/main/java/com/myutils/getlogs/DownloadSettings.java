@@ -105,7 +105,15 @@ public class DownloadSettings {
     private ArrayList<LoginProfile> loginProfiles;
 
     private boolean lfmt;
-    private boolean prod;
+    private boolean applicationConfigured;
+
+    public boolean isApplicationConfigured() {
+        return applicationConfigured;
+    }
+
+    public void setApplicationConfigured(boolean applicationConfigured) {
+        this.applicationConfigured = applicationConfigured;
+    }
     private String hours;
     private long rangeStart;
     private long rangeEnd;
@@ -139,7 +147,7 @@ public class DownloadSettings {
                 " ./getfiles.py csv --destdir $DESTDIR  --inventory ${INV}/invUAT_all.yml $CSVFILES",
                 "./getfiles.py last --destdir $DESTDIR --inventory ${INV}/invUAT_all.yml --files $FILES");
         lfmt = true;
-        prod = true;
+        applicationConfigured = true;
         rangeStart = 0;
         rangeEnd = 0;
     }
