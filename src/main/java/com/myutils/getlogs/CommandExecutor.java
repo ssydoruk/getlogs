@@ -279,6 +279,12 @@ public final class CommandExecutor {
                     "Cannot continue", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        
+        if (!ds.isLfmt() && !ds.isApplicationConfigured()) {
+            JOptionPane.showMessageDialog(parent, "Either logs configured on Application or LFMT checkbox needs to be checked",
+                    "Cannot continue", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         SettingsForm.info("* " + ds.getActionCommand() + " started");
         FileUtils.forceMkdir(new File(ds.getOutputDir()));
@@ -904,7 +910,7 @@ public final class CommandExecutor {
                         }
                     });
                 }
-                if (getDs().isAppLogs()) {
+                if (getDs().isApplicationConfigured()) {
                     ret1.add(() -> {
                         HostAppdir hh = GetLogs.getHosts().lookupHost(key.getApp().getName());
                         try {
@@ -2053,7 +2059,7 @@ public final class CommandExecutor {
                     for (App app : appProfile.getApps()) {
                         GetLogs.logger.debug("processing app  " + app + ": " + app.isChecked());
                         if (app.isChecked()) {
-                            if (ds.isAppLogs()) {
+                            if (ds.isApplicationConfigured()) {
                                 ret1.add(() -> {
                                     try {
                                         executeCmd(appProfile, app, false);
