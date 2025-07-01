@@ -330,7 +330,9 @@ public final class CommandExecutor {
         } else {
             theAppHost = new HostAppdir(GetLogs.appHost, null);
         }
-        logMessage("executing command lfmt: " + isLFMT + " host:" + theAppHost.getHost(), appProfile, ap);
+        logMessage("executing command lfmt: " + isLFMT
+                + ((isLFMT) ? " LFMT host: " + appProfile.getLFMT().getHost() : "")
+                + " host:" + theAppHost.getHost(), appProfile, ap);
 
         String logsDir = getLogDir(appProfile, ap, isLFMT, theAppHost.toString());
 
