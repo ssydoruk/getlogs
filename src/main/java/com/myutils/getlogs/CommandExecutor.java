@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -281,7 +282,8 @@ public final class CommandExecutor {
         }
 
         if (!ds.isLfmt() && !ds.isApplicationConfigured()) {
-            JOptionPane.showMessageDialog(parent, "Either logs configured on Application or LFMT checkbox needs to be checked",
+            JOptionPane.showMessageDialog(parent,
+                    "Either logs configured on Application or LFMT checkbox needs to be checked",
                     "Cannot continue", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -581,7 +583,7 @@ public final class CommandExecutor {
      *
      * @param logDir
      * @return Pair of [1st letter to lower case with $ attached], [Path without
-     * dir]
+     *         dir]
      */
     private Pair<String, String> getWinDrive(String logDir) {
         if (StringUtils.isNotEmpty(logDir) && logDir.length() > 1
@@ -640,7 +642,7 @@ public final class CommandExecutor {
 
                         if (entryNameSuffix.getKey().isEmpty()
                                 || (entryNameSuffix.getKey().equals(".")
-                                || fileName.contains(ap.getName().toLowerCase()))
+                                        || fileName.contains(ap.getName().toLowerCase()))
                                 || (fileName.contains(entryNameSuffix.getKey().toLowerCase()))) {
                             if (rxDateTime == null || rxDateTime.reset(fileName).find()) {
                                 BasicFileAttributes basicFileAttributes = Files.readAttributes(f.toPath(),
@@ -821,7 +823,7 @@ public final class CommandExecutor {
             }
             try {
                 ExtProcess.ExecutionResult cmdOuts = executeCommand(
-                        StringUtils.join(new String[]{ds.getStatusScript(), StringUtils.join(appNames, " ")}, " "),
+                        StringUtils.join(new String[] { ds.getStatusScript(), StringUtils.join(appNames, " ") }, " "),
                         true, true, true);
                 logger.log(Level.INFO, StringUtils.join(cmdOuts));
                 if (cmdOuts != null) {
@@ -1021,7 +1023,8 @@ public final class CommandExecutor {
         // ssh -c "cd <dest>; find . -name <app_start> -print|xargs tar -cz" | tar zx
         // tar -C <dest directory> -cz file1,file2,,, | tar zx
         // https://mkyong.com/java/how-to-create-tar-gz-in-java/
-        StringBuilder remoteCmd = new StringBuilder("tar -C ").append(getLogDir(appProfile, ap, isLFMT, theAppHost.getHost()))
+        StringBuilder remoteCmd = new StringBuilder("tar -C ")
+                .append(getLogDir(appProfile, ap, isLFMT, theAppHost.getHost()))
                 .append(" -cz ").append(fileListForTar);
         try {
             ThreadedUnTarGZ stdoutReader = new ThreadedUnTarGZ(FilenameUtils.concat(ds.getOutputDir(), ap.getName()),
@@ -1308,7 +1311,7 @@ public final class CommandExecutor {
      * @param ap
      * @param theAppHost
      * @param logsDir
-     * @param fileNames - expected to contain only list of file names, no path
+     * @param fileNames  - expected to contain only list of file names, no path
      * @param isLFMT
      * @param lcaLog
      * @throws IOException
@@ -1593,7 +1596,9 @@ public final class CommandExecutor {
             return;
         }
         int lines = 0;
-        for (String wrd : StringUtils.split(data)) {
+        Set<String> uniqueFiles = new HashSet<String>();
+        uniqueFiles.addAll(Arrays.asList(StringUtils.split(data)));
+        for (String wrd : uniqueFiles) {
             lines++;
             Matcher m;
             String app = null;
@@ -1619,7 +1624,7 @@ public final class CommandExecutor {
         // JOptionPane.showConfirmDialog(parent, "lines processed: " +lines+"\n"+"files
         // matched: "+ftd.size(), "Info", JOptionPane.OK_OPTION,
         // JOptionPane.INFORMATION_MESSAGE);
-        JOptionPane.showMessageDialog(parent, "lines processed: " + lines + "\n" + "files matched: " + ftd.filesCount(),
+        JOptionPane.showMessageDialog(parent, "Unique lines processed: " + lines + "\n" + "files matched: " + ftd.filesCount(),
                 "Info", JOptionPane.INFORMATION_MESSAGE);
         if (!ftd.isEmpty()) {
             if (lsGeneralTab == null) {
@@ -2084,7 +2089,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     * parameter results in a zero sized array.
+     *         parameter results in a zero sized array.
      */
     public static String[] translateCommandline1(String toProcess) {
         if (toProcess == null || toProcess.length() == 0) {
@@ -2152,7 +2157,7 @@ public final class CommandExecutor {
      *
      * @param toProcess the command line to process.
      * @return the command line broken into strings. An empty or null toProcess
-     * parameter results in a zero sized array.
+     *         parameter results in a zero sized array.
      */
     public static String[] translateCommandline(String toProcess) {
         if (toProcess == null || toProcess.isEmpty()) {
@@ -2249,7 +2254,7 @@ public final class CommandExecutor {
                     findrxAny.add(RegExUtils.replaceAll(ds.getFindAnyRx(), unquotedStar, "\\*"));
                     hostInventory.addHost(ap.getName(), theAppHost, getHH(ap, findrxAny, ds.getFindAnyDir()));
                 }
-                break;
+                    break;
 
                 case ShellRegex: {
                     for (String theHost : getAllHostNames(theAppHost.getHost())) {
@@ -2276,13 +2281,13 @@ public final class CommandExecutor {
 
                     }
                 }
-                break;
+                    break;
 
                 case Default: {
                     hostInventory.addHost(ap.getName(), theAppHost, getHH(ap, null, null));
 
                 }
-                break;
+                    break;
 
             }
             hostInventory.dump(tmpYml);
@@ -2443,8 +2448,8 @@ public final class CommandExecutor {
         }
 
         ret.append("/").append(hostName) // .append("/")
-                // .append(ap)
-                ;
+        // .append(ap)
+        ;
         return ret.toString();
     }
 

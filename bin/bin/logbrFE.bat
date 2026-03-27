@@ -1,11 +1,11 @@
 @echo on
 
-set BASEDIR=C:\gcti
+set BASEDIR=C:\Users\A793320\GCTI
 
 set LIBDIR=%BASEDIR%\lib
 
 if [%1]==[] (
-set RUN_DIR=%CD%
+set RUN_DIR="%CD%"
 ) else (
 set RUN_DIR=%1
 )
@@ -19,7 +19,8 @@ set VARDIR=%BASEDIR%\var
 
 set ETCDIR=%BASEDIR%\etc\logbrowser
 
-set JAVA_HOME=C:\Tools\graalvm-ce-java8-21.1.0
+set JAVA_HOME='C:\Program Files\Amazon Corretto\jdk21.0.5_11'
+rem set JAVA_HOME='C:\Program Files\RedHat\java-11-openjdk-11.0.8-2'
 
 set PATH=%JAVA_HOME%\bin;%PATH%
 
@@ -31,9 +32,10 @@ set LOGBR_TMP=.tmp
 
 set LOGBR_TMP_OPT=-Dlogbr.dir=%LOGBR_TMP%
 
-rem DBG="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y"
+rem set DBG=-Xdebug -Xrunjdwp:transport=dt_socket,address=0.0.0.0:8000,server=y,suspend=y
+
 set LOG_OPTS=-Dlog4j.configurationFile=%ETCDIR%\logbr.log4j2.inquirer.xml -DlogPath=%LOGDIR%
-set MISC_OPTIONS=-Dsun.java2d.d3d=false -Dall=1 -Xms4000m -Xmx4000m -Djacob.dll=C:\GCTI\bin\logbrowser\jacob-1.20-x64.dll
+set MISC_OPTIONS=-Dsun.java2d.d3d=false -Dall=1 -Xms4000m -Xmx16G -Djacob.dll=C:\Users\A793320\GCTI\bin\logbrowser\jacob-1.20-x64.dll
 
 set SQLITE_PRAGMAS=-Dsqlite.pragma=true
 
@@ -50,6 +52,6 @@ set DB=%RUN_DIR%\logbr
 set CFG=%ETCDIR%\backend.xml
 
 rem uncomment below if database is too large
-set REFERENCE=--no-ref-sync
+rem set REFERENCE=--no-ref-sync
 
-%LIBDIR%\bin\inquirer.bat %REFERENCE% --dbname=%DB% --config=%ETCDIR%\inquirer.cfg.json --basedir=%RUN_DIR% --outputspec=%ETCDIR%\outputspec3.xml
+%BASEDIR%\bin\inquirer.bat %REFERENCE% --dbname=%DB% --config=%ETCDIR%\inquirer.cfg.json --basedir=%RUN_DIR% --outputspec=%ETCDIR%\outputspec3.xml
